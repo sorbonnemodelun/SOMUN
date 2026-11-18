@@ -245,7 +245,7 @@ footer a:hover{text-decoration:underline}
 <script>
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://pztwaqlprzzoomnnziaq.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_HbWvEKW4oc8J27C8aI9Izw_15T2fFoy";
+const SUPABASE_ANON_KEY="sb_publishable_qbTr9jyjy7pXDiz81KDjEg";
 const HELLOASSO_ORG="VOTRE-ASSO";                    // à remplacer par le slug HelloAsso de l'association
 const HELLOASSO_MEMBERSHIP_SLUG="adhesion";          // identifiant du formulaire d'adhésion
 const DEFAULT_COTISATION=15;
@@ -297,7 +297,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  about_1t:"Prise de parole",about_1:"Les trainings t'apprennent à débattre et à convaincre, en français et en anglais.",about_2t:"Conférences",about_2:"Participe à des MUN en France et à l'étranger.",about_3t:"Communauté",about_3:"Visites, soirées, voyages : une association vivante toute l'année.",
  contact:"Contact",follow:"Nous suivre",
  details:"Détails",ev_404:"Cet événement n'existe plus.",back_acts:"← Toutes les activités",at:"à",
- registrants:"Inscrits",export_csv:"Exporter (CSV)",no_registrants:"Aucun inscrit pour le moment.",st_confirmed:"Confirmé",st_pending:"Paiement en attente",
+ registrants:"Inscrits",validate:"Valider",export_csv:"Exporter (CSV)",no_registrants:"Aucun inscrit pour le moment.",st_confirmed:"Confirmé",st_pending:"Paiement en attente",
  col_fn:"Prénom",col_ln:"Nom",col_mail:"E-mail",col_status:"Statut",col_member:"Adhérent",yes:"Oui",no:"Non",
  cancel_reg:"Annuler mon inscription",confirm_cancel:"Annuler ton inscription à cet événement ?",t_cancelled:"Inscription annulée",
  paid_cancel:"Pour annuler une inscription déjà payée, contacte le Bureau.",
@@ -348,7 +348,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  about_1t:"Public speaking",about_1:"Trainings teach you to debate and persuade, in French and English.",about_2t:"Conferences",about_2:"Take part in MUNs in France and abroad.",about_3t:"Community",about_3:"Visits, parties, trips: a lively association all year long.",
  contact:"Contact",follow:"Follow us",
  details:"Details",ev_404:"This event no longer exists.",back_acts:"← All activities",at:"at",
- registrants:"Registrants",export_csv:"Export (CSV)",no_registrants:"No registrants yet.",st_confirmed:"Confirmed",st_pending:"Payment pending",
+ registrants:"Registrants",validate:"Confirm",export_csv:"Export (CSV)",no_registrants:"No registrants yet.",st_confirmed:"Confirmed",st_pending:"Payment pending",
  col_fn:"First name",col_ln:"Last name",col_mail:"Email",col_status:"Status",col_member:"Member",yes:"Yes",no:"No",
  cancel_reg:"Cancel my registration",confirm_cancel:"Cancel your registration for this event?",t_cancelled:"Registration cancelled",
  paid_cancel:"To cancel a registration you've already paid for, contact the Board.",
@@ -913,7 +913,7 @@ async function loadRegistrants(){
 }
 function registrantRows(){
   const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
-  return (regList.rows||[]).map(r=>{const m=byId[r.user_id]||{};return {prenom:m.prenom||"",nom:m.nom||"",email:m.email||"",paid:Boolean(m.paid),status:r.status}})
+  return (regList.rows||[]).map(r=>{const m=byId[r.user_id]||{};return {uid:r.user_id,prenom:m.prenom||"",nom:m.nom||"",email:m.email||"",paid:Boolean(m.paid),status:r.status}})
     .sort((a,b)=>(a.nom+" "+a.prenom).localeCompare(b.nom+" "+b.prenom,"fr"));
 }
 const stLabel=s=>s==="confirmed"?t("st_confirmed"):t("st_pending");
@@ -921,9 +921,18 @@ function registrantsBlock(e){
   if(regList.event!==String(e.id))return `<h2>${t("registrants")}</h2>${loadingBox()}`;
   const rows=registrantRows();
   return `<h2>${t("registrants")} (${rows.length}) ${rows.length?`<button onclick="exportCSV(${idArg(e.id)})">⬇ ${t("export_csv")}</button>`:""}</h2>
-  ${rows.length?`<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>${t("col_ln")}</th><th>${t("col_fn")}</th><th>${t("col_mail")}</th><th>${t("col_member")}</th><th>${t("col_status")}</th></tr></thead><tbody>
-  ${rows.map(r=>`<tr><td>${esc(r.nom)}</td><td>${esc(r.prenom)}</td><td>${esc(r.email)}</td><td>${r.paid?t("yes"):t("no")}</td><td><span class="tag ${r.status==="confirmed"?"free":"paid"}">${stLabel(r.status)}</span></td></tr>`).join("")}
+  ${rows.length?`<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>${t("col_ln")}</th><th>${t("col_fn")}</th><th>${t("col_mail")}</th><th>${t("col_member")}</th><th>${t("col_status")}</th>${isStaff()?"<th></th>":""}</tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${esc(r.nom)}</td><td>${esc(r.prenom)}</td><td>${esc(r.email)}</td><td>${r.paid?t("yes"):t("no")}</td><td><span class="tag ${r.status==="confirmed"?"free":"paid"}">${stLabel(r.status)}</span></td>${isStaff()?`<td>${r.status==="pending"?`<button class="btn sm" onclick="confirmRegistration(${idArg(e.id)},'${sid(r.uid)}',this)">${t("validate")}</button>`:""}</td>`:""}</tr>`).join("")}
   </tbody></table></div>`:`<div class="card empty">${t("no_registrants")}</div>`}`;
+}
+async function confirmRegistration(eid,uid,btn){
+  if(!isStaff())return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("registrations").update({status:"confirmed"}).eq("event_id",eid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadRegistrants(),loadTaken()]);
+    render(true);toast(t("t_ok"));
+  });
 }
 function exportCSV(id){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
