@@ -208,18 +208,22 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .empty{text-align:center;padding:30px;color:var(--mute)}
 
 /* ---------- Pied de page ---------- */
-footer{background:var(--marine);color:rgba(255,255,255,.78);font-size:12.5px;padding:24px 16px;border-top:5px solid var(--or)}
+/* ---------- Pied de page ---------- */
+footer{background:var(--marine);color:rgba(255,255,255,.82);font-size:12.5px;padding:20px 16px;border-top:3px solid var(--or)}
 .f-inner{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
-footer .f-brand{display:inline-flex;align-items:center;gap:10px;background:#ffffff;padding:8px 16px;border-radius:14px;border:2px solid var(--or);box-shadow:0 6px 18px rgba(0,0,0,.22)}
-footer .f-brand img{height:46px;width:auto;display:block}
-footer .f-brand span{font-family:var(--f-marque);font-weight:900;font-size:18px;letter-spacing:2px;color:var(--bleu);padding-top:2px}
+footer .f-brand{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.94);padding:7px 14px;border-radius:14px;border:2px solid var(--or);box-shadow:0 6px 18px rgba(2,2,89,.16)}
+footer .f-brand img{height:44px;width:auto;display:block}
 footer .f-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px}
 footer a{color:var(--or);text-decoration:none;font-weight:600;font-size:13px}
 footer a:hover{text-decoration:underline}
+body:has(.bureau-wrap) footer{background:rgba(255,255,255,.42);backdrop-filter:blur(10px);color:var(--marine);border-top:2px solid rgba(235,192,0,.75)}
+body:has(.bureau-wrap) footer a{color:var(--bleu)}
 @media(min-width:760px){
   .f-inner{flex-direction:row;justify-content:space-between;text-align:left}
   .f-meta{text-align:right}
+  body:has(.bureau-wrap) footer .f-links{justify-content:flex-end}
 }
+
 
 /* ---------- Fiche événement, présentation, tableaux ---------- */
 .linkish{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -246,7 +250,7 @@ footer a:hover{text-decoration:underline}
 </head>
 <body>
 <header><div class="bar">
-  <button class="brand" onclick="go('accueil')" aria-label="Accueil"><span id="logo"></span><span class="wordmark">SOMUN</span></button>
+  <button class="brand" onclick="go('accueil')" aria-label="Accueil"><span id="logo"></span></button>
   <nav class="dnav" id="dnav"></nav>
   <div class="right"><button class="lang" id="langbtn" onclick="toggleLang()"></button><span id="auth"></span></div>
 </div></header>
@@ -665,7 +669,7 @@ function render(keep){
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
-  $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}<span>SOMUN</span></div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
+    $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
