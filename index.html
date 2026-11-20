@@ -84,12 +84,10 @@ main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;pos
 .view{will-change:transform,opacity}
 .view.anim-right{animation:goRight .34s var(--ios-ease) forwards}
 .view.anim-left{animation:goLeft .34s var(--ios-ease) forwards}
-/* Vers un onglet à droite : arrive depuis la droite (+42px -> 0) */
 @keyframes goRight{
   from{opacity:0;transform:translateX(42px)}
   to{opacity:1;transform:translateX(0)}
 }
-/* Vers un onglet à gauche : arrive depuis la gauche (-42px -> 0) */
 @keyframes goLeft{
   from{opacity:0;transform:translateX(-42px)}
   to{opacity:1;transform:translateX(0)}
@@ -175,15 +173,29 @@ a{color:var(--bleu);transition:color .2s var(--ease)}
 .news h3{font-family:var(--f-titre);font-weight:700;font-size:19.5px;padding-top:2px}
 .page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
 
-/* ---------- Bureau : fond pleine page & portraits ---------- */
+/* ---------- Bureau : fond pleine page, portraits & fiche bio ---------- */
 body:has(.bureau-wrap){position:relative}
 body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url('photo_bureau.jpeg') center 18%/cover no-repeat;opacity:.26;z-index:-1;pointer-events:none}
 body:has(.bureau-wrap) header{background:rgba(255,255,255,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:rgba(226,228,242,.65)}
 .bureau-wrap{padding:6px 0}
-.board-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:4px solid var(--or);border-radius:20px}
-.board-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);background:rgba(255,255,255,.98)}
+.board-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.board-card{flex:1 1 280px;max-width:340px;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:4px solid var(--or);border-radius:20px;cursor:pointer}
+.board-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);background:rgba(255,255,255,.98);border-color:#c6c9e8;border-top-color:var(--or)}
 .board-photo{width:106px;height:106px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:12px;box-shadow:0 8px 20px rgba(2,2,89,.15);transition:transform .3s var(--ease)}
 .board-card:hover .board-photo{transform:scale(1.05)}
+.board-hint{margin-top:10px;font-size:12px;font-weight:600;color:var(--bleu)}
+
+.bio-modal{text-align:center}
+.bio-hero-photo{width:148px;height:148px;border-radius:50%;object-fit:cover;object-position:center 18%;border:4px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:46px;margin:0 auto 14px;box-shadow:0 12px 28px rgba(2,2,89,.16)}
+.bio-text{text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:14px 0;white-space:pre-line;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.bio-footer{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.bio-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bio-socials{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-left:auto;text-align:right}
+.bio-socials-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mute)}
+.bio-socials-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.bio-socials-links a{font-size:13px;font-weight:600;text-decoration:none}
+.bio-socials-links a:hover{text-decoration:underline}
+.bio-preview{width:92px;height:92px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:28px;margin:10px auto 4px}
 
 /* ---------- Formulaires ---------- */
 .search,input,select,textarea{width:100%;padding:11px 15px;min-height:42px;border-radius:13px;border:1.5px solid var(--line);background:#fff;font-size:15px;color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -239,12 +251,12 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .sg-box{background:var(--or-soft);border:1px solid rgba(235,192,0,.65);border-radius:16px;padding:16px;margin-top:16px}
 
 /* ---------- Fenêtres, notifications ---------- */
-.sheet-bg{position:fixed;inset:0;background:rgba(2,2,89,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg{position:fixed;inset:0;background:rgba(2,2,89,.42);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .sheet-bg.open{display:flex;animation:fadeBg .2s var(--ease) both}
 @keyframes fadeBg{from{opacity:0}to{opacity:1}}
-.sheet{background:#fff;width:100%;max-width:540px;border-radius:26px 26px 0 0;padding:24px 22px 32px;animation:up .28s var(--ease);max-height:88vh;overflow-y:auto;border-top:6px solid var(--or);box-shadow:var(--shadow-lg)}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:26px 26px 0 0;padding:24px 22px 28px;animation:up .28s var(--ease);max-height:82vh;overflow-y:auto;border-top:6px solid var(--or);box-shadow:var(--shadow-lg)}
 .sheet h3{font-family:var(--f-titre);font-weight:700;font-size:22px;color:var(--bleu);padding-top:2px}
-@media(min-width:760px){.sheet-bg{align-items:center;padding:16px}.sheet{border-radius:26px}}
+@media(min-width:760px){.sheet-bg{align-items:center;padding:24px}.sheet{border-radius:26px;max-height:84vh}}
 @keyframes up{from{transform:translateY(26px);opacity:0}to{transform:none;opacity:1}}
 .toast{position:fixed;bottom:104px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(2,2,89,.95);backdrop-filter:blur(12px);color:#fff;padding:12px 20px;border-radius:14px;border-left:4px solid var(--or);opacity:0;pointer-events:none;transition:opacity .28s var(--ease),transform .28s var(--ease);z-index:300;max-width:90%;text-align:center;font-size:14px;font-weight:500;box-shadow:0 12px 32px rgba(2,2,89,.32)}
 @media(min-width:860px){.toast{bottom:28px}}
@@ -322,6 +334,7 @@ const BOARD_PHOTOS={
   emna:"photo_emna_bureau.jpeg",
   come:"photo_come_bureau.jpeg"
 };
+const BOARD_ORDER=["come","servan","pierre","emna","clara"];
 const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
 const DEFAULT_INSTAGRAM="";
 const DEFAULT_LINKEDIN="";
@@ -346,6 +359,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  pay:"Payer sur HelloAsso",need_acc:"Se connecter pour adhérer",secure:"Paiement sécurisé par HelloAsso, versé directement sur le compte de l'association.",
  ha_sync:"Important : utilise sur HelloAsso le même e-mail que ton compte ({e}). Ton adhésion sera reconnue automatiquement.",ha_verified:"Adhésion validée ✓",ha_unverified:"Adhésion non encore reconnue",paid_until:"valable jusqu'au {d}",refresh_status:"Actualiser mon statut",ha_soon:"Le paiement de la cotisation en ligne est en cours de configuration.",
  bureau_t:"Membres du Bureau",bureau_s:"L'équipe dirigeante de Sorbonne Model UN 2026-2027.",
+ see_bio:"Voir photo & bio",no_bio:"Biographie à venir.",edit_bio_photo:"Modifier photo & bio",f_photo_url:"Photo (URL https ou nom de fichier)",f_photo_file:"Ou importer une photo depuis l'appareil",f_bio_full:"Biographie",
  admin_t:"Administration",admin_s:"Gère les membres, les pôles et le contenu du site.",admin_only:"Accès réservé au Bureau.",
  tab_members:"Membres",tab_content:"Contenu",tab_org:"Organisation & Site",search_member:"Rechercher un membre…",role_member:"Membre",role_bureau:"Bureau",no_members:"Aucun membre",
  filter_all:"Tous",filter_paid:"Adhérents ✓",filter_unpaid:"Non reconnus",filter_bureau:"Bureau",
@@ -398,6 +412,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  pay:"Pay on HelloAsso",need_acc:"Log in to join",secure:"Secure payment through HelloAsso, paid directly to the association's account.",
  ha_sync:"Important: use the same email on HelloAsso as your account ({e}). Your membership will be recognised automatically.",ha_verified:"Membership verified ✓",ha_unverified:"Membership not recognised yet",paid_until:"valid until {d}",refresh_status:"Refresh status",ha_soon:"Online membership payment is currently being set up.",
  bureau_t:"Board members",bureau_s:"The executive team of Sorbonne Model UN 2026-2027.",
+ see_bio:"View photo & bio",no_bio:"Biography coming soon.",edit_bio_photo:"Edit photo & bio",f_photo_url:"Photo (https URL or filename)",f_photo_file:"Or upload a photo from your device",f_bio_full:"Biography",
  admin_t:"Administration",admin_s:"Manage members, teams and site content.",admin_only:"Access reserved for the Board.",
  tab_members:"Members",tab_content:"Content",tab_org:"Organisation & Site",search_member:"Search a member…",role_member:"Member",role_bureau:"Board",no_members:"No members",
  filter_all:"All",filter_paid:"Members ✓",filter_unpaid:"Unverified",filter_bureau:"Board",
@@ -543,6 +558,7 @@ const idArg=id=>typeof id==="number"&&Number.isFinite(id)?String(id):`'${sid(id)
 const safeUrl=u=>{try{const x=new URL(u);return x.protocol==="https:"?x.href:null}catch(e){return null}};
 const safeAsset=u=>{
   const s=String(u||"").trim();if(!s)return null;
+  if(/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(s))return s;
   if(/^[\w.-]+\.(jpg|jpeg|png|webp|gif)$/i.test(s))return s;
   return safeUrl(s);
 };
@@ -955,27 +971,154 @@ function vAdherer(){
    <p class="mute" style="font-size:12px;margin:14px 0 0">${S.user&&!hasPaid()&&u?esc(t("ha_sync",{e:S.user.email}))+"<br>":""}${t("secure")}</p></div>`;
 }
 
-/* --- Onglet Bureau (Photo de fond photo_bureau.jpeg + Portraits .jpeg en dur) --- */
+/* --- Onglet Bureau : ordre Côme / Servan / Pierre / Emna / Clara, centrage & Insta/LinkedIn --- */
+function firstKey(name){
+  return String(name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+function sortedBoard(){
+  return [...D.board].sort((a,b)=>{
+    const ia=BOARD_ORDER.indexOf(firstKey(a.name));
+    const ib=BOARD_ORDER.indexOf(firstKey(b.name));
+    const ra=ia===-1?999:ia;
+    const rb=ib===-1?999:ib;
+    if(ra!==rb)return ra-rb;
+    return (a.sort||0)-(b.sort||0);
+  });
+}
 function boardMemberPhoto(m){
-  const first=String(m.name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  return BOARD_PHOTOS[first]||null;
+  const custom=safeAsset(m.photo_url||m.avatar_url||m.image_url);
+  if(custom)return custom;
+  return BOARD_PHOTOS[firstKey(m.name)]||null;
+}
+function avatarMarkup(src,init,cls){
+  const safe=safeAsset(src);
+  return safe
+    ?`<img class="${cls}" src="${esc(safe)}" alt="${esc(init)}" loading="lazy" onerror="this.outerHTML='<div class=\\'${cls}\\'>${esc(init)}</div>'">`
+    :`<div class="${cls}">${esc(init)}</div>`;
 }
 function vBureau(){
   if(D.loading)return loadingBox();
+  const ordered=sortedBoard();
   return `<h1>${t("bureau_t")}</h1><p class="mute">${t("bureau_s")}</p>
   <div class="bureau-wrap" style="margin-top:16px">
-    <div class="grid">${D.board.map(m=>{
+    <div class="board-grid">${ordered.map(m=>{
       const pUrl=boardMemberPhoto(m);
       const init=((m.name||"?").trim()[0]||"?").toUpperCase();
-      return `<div class="card board-card reveal">
-        ${pUrl?`<img class="board-photo" src="${esc(pUrl)}" alt="${esc(m.name)}" loading="lazy" onerror="this.outerHTML='<div class=\\'board-photo\\'>${esc(init)}</div>'">`:`<div class="board-photo">${esc(init)}</div>`}
+      return `<div class="card board-card reveal" role="button" tabindex="0" onclick="openBoardBio(${idArg(m.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBoardBio(${idArg(m.id)})}">
+        ${avatarMarkup(pUrl,init,"board-photo")}
         <span class="tag">${esc(lang==="fr"?m.role_fr:(m.role_en||m.role_fr))}</span>
         <h3 style="margin-top:8px">${esc(m.name)}</h3>
-        <a class="mute" href="mailto:${esc(DEFAULT_CONTACT)}" style="text-decoration:none">${esc(DEFAULT_CONTACT)}</a>
-        ${m.bio?`<p style="font-size:14px;margin-top:8px;margin-bottom:0">${esc(T(m.bio))}</p>`:""}
+        <span class="board-hint">${t("see_bio")} →</span>
       </div>`;
     }).join("")}</div>
   </div>`;
+}
+function openBoardBio(id){
+  const m=D.board.find(x=>String(x.id)===String(id));if(!m)return;
+  const pUrl=boardMemberPhoto(m);
+  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+  const roleLabel=lang==="fr"?m.role_fr:(m.role_en||m.role_fr);
+  const bioText=m.bio?T(m.bio):t("no_bio");
+  const ig=safeUrl(m.instagram_url||m.insta_url);
+  const li=safeUrl(m.linkedin_url);
+  const links=[];
+  if(ig)links.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
+  if(li)links.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  const socialBlock=links.length
+    ?`<div class="bio-socials"><span class="bio-socials-lbl">${t("follow")}</span><div class="bio-socials-links">${links.join("")}</div></div>`
+    :"";
+
+  openSheet(`<div class="bio-modal">
+    ${avatarMarkup(pUrl,init,"bio-hero-photo")}
+    <span class="tag">${esc(roleLabel)}</span>
+    <h3 style="margin-top:8px">${esc(m.name)}</h3>
+    <div class="bio-text">${esc(bioText)}</div>
+    <div class="bio-footer">
+      <div class="bio-actions">
+        ${isStaff()?`<button class="btn sm" onclick="editBoardBio(${idArg(m.id)})">✏️ ${t("edit_bio_photo")}</button>`:""}
+        <button class="btn ghost sm" onclick="closeSheet()">${t("cancel")}</button>
+      </div>
+      ${socialBlock}
+    </div>
+  </div>`);
+}
+function editBoardBio(id){
+  if(!isStaff())return toast(t("admin_only"));
+  const m=D.board.find(x=>String(x.id)===String(id));if(!m)return;
+  const currentPhoto=m.photo_url||boardMemberPhoto(m)||"";
+  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+  openSheet(`<h3>✏️ ${esc(m.name)}</h3>
+   <form onsubmit="saveBoardBio(event,${idArg(m.id)})">
+    ${avatarMarkup(currentPhoto,init,"bio-preview")}
+    <label>${t("f_photo_url")}</label>
+    <input id="bioPhotoInput" name="photo_url" value="${esc(currentPhoto)}" placeholder="photo_pierre_bureau.jpeg ou https://…" oninput="previewBioPhoto(this.value,'${esc(init)}')">
+    <label>${t("f_photo_file")}</label>
+    <input type="file" accept="image/*" onchange="handleBioPhotoFile(this,'${esc(init)}')">
+    <div class="row2">
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="url" placeholder="https://instagram.com/…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" placeholder="https://linkedin.com/in/…" value="${esc(m.linkedin_url||"")}"></div>
+    </div>
+    <label>${t("f_bio_full")}</label>
+    <textarea name="bio" rows="6" maxlength="2000" placeholder="${esc(t("f_bio"))}…">${esc(m.bio||"")}</textarea>
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+   </form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="openBoardBio(${idArg(m.id)})">${t("back")}</button>`);
+}
+function previewBioPhoto(val,init){
+  const box=$("#sheet .bio-preview");
+  if(!box)return;
+  const safe=safeAsset(val);
+  if(safe){
+    box.outerHTML=`<img class="bio-preview" src="${esc(safe)}" alt="${esc(init)}" onerror="this.outerHTML='<div class=\\'bio-preview\\'>${esc(init)}</div>'">`;
+  }else{
+    box.outerHTML=`<div class="bio-preview">${esc(init)}</div>`;
+  }
+}
+function handleBioPhotoFile(input,init){
+  const file=input.files&&input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=480,ratio=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement("canvas");
+      c.width=Math.max(1,Math.round(img.width*ratio));
+      c.height=Math.max(1,Math.round(img.height*ratio));
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      const dataUrl=c.toDataURL("image/jpeg",0.82);
+      const inp=$("#bioPhotoInput");
+      if(inp)inp.value=dataUrl;
+      previewBioPhoto(dataUrl,init);
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+async function saveBoardBio(ev,id){
+  ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const rawPhoto=String(f.get("photo_url")||"").trim();
+    const photo=rawPhoto?safeAsset(rawPhoto):null;
+    if(rawPhoto&&!photo)return toast(t("e_url"));
+    const rawIg=String(f.get("instagram_url")||"").trim();
+    const rawLi=String(f.get("linkedin_url")||"").trim();
+    const ig=rawIg?safeUrl(rawIg):null;
+    const li=rawLi?safeUrl(rawLi):null;
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const bio=String(f.get("bio")||"").trim()||null;
+    const payload={bio,photo_url:photo,instagram_url:ig,linkedin_url:li};
+    let res=await sb.from("board_members").update(payload).eq("id",id);
+    if(res.error&&/column/i.test(res.error.message||"")){
+      const fallback={bio};
+      if("photo_url" in (D.board.find(x=>String(x.id)===String(id))||{}))fallback.photo_url=photo;
+      res=await sb.from("board_members").update(fallback).eq("id",id);
+    }
+    if(res.error)return toast(errMsg(res.error));
+    await loadPublic();render(true);openBoardBio(id);toast(t("t_ok"));
+  });
 }
 
 function vPartenaires(){
@@ -1659,7 +1802,7 @@ function adminOrg(){
     <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
 
   <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
-  ${D.board.map(m=>`<div class="card member"><div class="top"><div><h3>${esc(m.name)}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
+  ${sortedBoard().map(m=>`<div class="card member"><div class="top"><div><h3>${esc(m.name)}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
     <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`).join("")}
 
   <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
@@ -1668,7 +1811,7 @@ function adminOrg(){
 
   <h2>${t("manage_partners")} <button onclick="editPartner()">+ ${t("add_partner")}</button></h2>
   ${D.partners.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.name)}</h3><div class="mute">${esc(p.url||"")}</div></div>
-    <button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div></div>`).join("")}`;
+    <button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div></div></div>`).join("")}`;
 }
 async function saveSiteSettings(ev){
   ev.preventDefault();
@@ -1689,7 +1832,12 @@ function editBoard(id){
     <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
     <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div></div>
     <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||DEFAULT_CONTACT)}">
-    <label>${t("f_bio")}</label><textarea name="bio" rows="3" maxlength="500">${esc(m.bio||"")}</textarea>
+    <label>${t("f_photo_url")}</label><input name="photo_url" value="${esc(m.photo_url||"")}" placeholder="photo_pierre_bureau.jpeg ou https://…">
+    <div class="row2">
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="url" placeholder="https://instagram.com/…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" placeholder="https://linkedin.com/in/…" value="${esc(m.linkedin_url||"")}"></div>
+    </div>
+    <label>${t("f_bio")}</label><textarea name="bio" rows="4" maxlength="2000">${esc(m.bio||"")}</textarea>
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
@@ -1698,9 +1846,21 @@ async function saveBoard(ev,id){
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target);
-    const row={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
-    const {error}=id==null?await sb.from("board_members").insert(row):await sb.from("board_members").update(row).eq("id",id);
-    if(error)return toast(errMsg(error));
+    const rawPhoto=String(f.get("photo_url")||"").trim();
+    const photo=rawPhoto?safeAsset(rawPhoto):null;
+    if(rawPhoto&&!photo)return toast(t("e_url"));
+    const rawIg=String(f.get("instagram_url")||"").trim();
+    const rawLi=String(f.get("linkedin_url")||"").trim();
+    const ig=rawIg?safeUrl(rawIg):null;
+    const li=rawLi?safeUrl(rawLi):null;
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const baseRow={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
+    const fullRow={...baseRow,photo_url:photo,instagram_url:ig,linkedin_url:li};
+    let res=id==null?await sb.from("board_members").insert(fullRow):await sb.from("board_members").update(fullRow).eq("id",id);
+    if(res.error&&/column/i.test(res.error.message||"")){
+      res=id==null?await sb.from("board_members").insert(baseRow):await sb.from("board_members").update(baseRow).eq("id",id);
+    }
+    if(res.error)return toast(errMsg(res.error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
