@@ -208,11 +208,18 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .empty{text-align:center;padding:30px;color:var(--mute)}
 
 /* ---------- Pied de page ---------- */
-footer{background:var(--marine);color:rgba(255,255,255,.75);text-align:center;font-size:12px;padding:30px 16px 26px;border-top:5px solid var(--or)}
-footer .f-brand{display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;background:#ffffff;padding:12px 22px;border-radius:18px;border:2px solid var(--or);box-shadow:0 8px 24px rgba(0,0,0,.22)}
-footer .f-brand img{height:76px;width:auto;display:block}
-footer a{color:var(--or);text-decoration:none;font-weight:600;margin:0 8px;font-size:13px}
+footer{background:var(--marine);color:rgba(255,255,255,.78);font-size:12.5px;padding:24px 16px;border-top:5px solid var(--or)}
+.f-inner{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+footer .f-brand{display:inline-flex;align-items:center;gap:10px;background:#ffffff;padding:8px 16px;border-radius:14px;border:2px solid var(--or);box-shadow:0 6px 18px rgba(0,0,0,.22)}
+footer .f-brand img{height:46px;width:auto;display:block}
+footer .f-brand span{font-family:var(--f-marque);font-weight:900;font-size:18px;letter-spacing:2px;color:var(--bleu);padding-top:2px}
+footer .f-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px}
+footer a{color:var(--or);text-decoration:none;font-weight:600;font-size:13px}
 footer a:hover{text-decoration:underline}
+@media(min-width:760px){
+  .f-inner{flex-direction:row;justify-content:space-between;text-align:left}
+  .f-meta{text-align:right}
+}
 
 /* ---------- Fiche événement, présentation, tableaux ---------- */
 .linkish{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -303,6 +310,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  poles_t:"Espace pôles",poles_s:"Choisis ton espace de travail.",members:"Réservé aux membres connectés.",back:"← Tous les pôles",no_pole_yet:"Tu n'as pas encore été ajouté à un pôle. Le bureau doit t'y attribuer.",
  new_task:"Nouvelle tâche…",add:"Ajouter",todo:"À faire",doing:"En cours",done:"Terminé",docs:"Documents",open_docs:"Ouvrir le dossier partagé ↗",
  pole_team:"Équipe du pôle",pole_lead:"Responsable",pole_member:"Membre",add_member_pole:"Ajouter un membre au pôle…",edit_pole:"Modifier les infos du pôle",
+ subpole_all:"Tous",subpole_culturel:"Culturel",subpole_partenariats:"Partenariats",subpole_alumni:"Alumni",
  part_t:"Partenaires",part_s:"Ils soutiennent SOMUN.",part_empty:"Aucun partenaire affiché pour le moment.",part_sp:"Devenir partenaire",part_txt:"Vous souhaitez soutenir Sorbonne Model UN ou recevoir notre plaquette partenariats ? Contactez le bureau.",part_contact:"Contacter le bureau",
  pay_note:"Le paiement de {p} € se fait via HelloAsso, versé sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
  t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
@@ -354,6 +362,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  poles_t:"Team spaces",poles_s:"Choose your workspace.",members:"Logged-in members only.",back:"← All teams",no_pole_yet:"You haven't been added to a team yet. The Board needs to assign you.",
  new_task:"New task…",add:"Add",todo:"To do",doing:"In progress",done:"Done",docs:"Documents",open_docs:"Open shared folder ↗",
  pole_team:"Team members",pole_lead:"Lead",pole_member:"Member",add_member_pole:"Add a member to this team…",edit_pole:"Edit team info",
+ subpole_all:"All",subpole_culturel:"Cultural",subpole_partenariats:"Partnerships",subpole_alumni:"Alumni",
  part_t:"Partners",part_s:"They support SOMUN.",part_empty:"No partners listed yet.",part_sp:"Become a partner",part_txt:"Interested in supporting Sorbonne Model UN or receiving our partnership deck? Contact the Board.",part_contact:"Contact the Board",
  pay_note:"The €{p} payment is made through HelloAsso, paid to the association's account.",free_note:"Free registration.",go_pay:"Reserve my spot",confirm:"Confirm my registration",cancel:"Cancel",go_ha:"Continue to HelloAsso",ha_after:"Your spot is held for 2 days. It will be confirmed automatically after payment (use the same email as your account).",open_form:"Fill out the form ↗",
  t_welcome:"Welcome!",t_bye:"See you soon!",t_reg:"Registration saved ✓",t_need:"Log in to register",t_pub:"Published!",t_ok:"Saved ✓",
@@ -391,7 +400,7 @@ const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")f
 let S={user:null,profile:null};
 let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
 let evSel=null,regList={event:null,rows:null};
-let route="accueil",poleSel=null,authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
+let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
 
 /* ===== TRADUCTION AUTOMATIQUE ===== */
 let trCache=ls.get("somun_tr",{});
@@ -656,7 +665,7 @@ function render(keep){
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
-  $("#foot").innerHTML=`<div class="f-brand">${logoImg()}</div>`+(fl.length?`<div style="margin-bottom:6px">${fl.join("")}</div>`:"")+esc(t("foot")+(lang==="en"?" · "+t("autotr"):""));
+  $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}<span>SOMUN</span></div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
@@ -1143,7 +1152,18 @@ async function deleteAccount(btn){
   });
 }
 
-/* --- Pôles & droits Responsable de pôle --- */
+/* --- Pôles & droits Responsable de pôle (avec sous-pôles Relations Externes) --- */
+const SUBPOLES=[
+  {key:"culturel",label:"Culturel",i18n:"subpole_culturel",driveKey:"drive_re_culturel"},
+  {key:"partenariats",label:"Partenariats",i18n:"subpole_partenariats",driveKey:"drive_re_partenariats"},
+  {key:"alumni",label:"Alumni",i18n:"subpole_alumni",driveKey:"drive_re_alumni"}
+];
+const isRelExt=p=>Boolean(p&&/relations?\s*externes|external\s*relations/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`));
+function parseTaskSubpole(title){
+  const m=String(title||"").match(/^\[(Culturel|Partenariats|Alumni)\]\s*(.*)$/i);
+  if(!m)return {sub:"culturel",clean:String(title||"")};
+  return {sub:m[1].toLowerCase(),clean:m[2]};
+}
 function vPole(){
   if(D.loading)return loadingBox();
   if(!S.user)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("members")}<br><br><button class="btn" onclick="go('login')">${t("login")}</button></div>`;
@@ -1154,10 +1174,18 @@ function vPole(){
      <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
   }
   const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p){poleSel=null;return vPole()}
-  const docUrl=safeUrl(p.drive_url||p.doc_url),lead=isPoleLead(p.id);
-  const col=(k,l)=>{const items=D.tasks.filter(x=>x.status===k);
+  const hasSub=isRelExt(p),lead=isPoleLead(p.id);
+  const activeSub=hasSub?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
+  const rawDrive=hasSub?(cfg(activeSub.driveKey)||p.drive_url||p.doc_url):(p.drive_url||p.doc_url);
+  const docUrl=safeUrl(rawDrive);
+
+  const visibleTasks=hasSub
+    ?D.tasks.filter(x=>parseTaskSubpole(x.title).sub===activeSub.key)
+    :D.tasks;
+
+  const col=(k,l)=>{const items=visibleTasks.filter(x=>x.status===k);
     return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')">
-     <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id);return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(x.title)}
+     <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id),cleanTitle=hasSub?parseTaskSubpole(x.title).clean:x.title;return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(cleanTitle)}
       <div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
 
   let leadPanel="";
@@ -1180,17 +1208,23 @@ function vPole(){
     </div>`;
   }
 
+  const subTabs=hasSub?`<div class="chips" style="margin:14px 0 4px">${SUBPOLES.map(s=>`<button class="chip ${activeSub.key===s.key?"on":""}" onclick="subPoleSel='${s.key}';render(true)">${esc(t(s.i18n))}</button>`).join("")}</div>`:"";
+
   return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="chip" onclick="poleSel=null;go('pole')">${t("back")}</button>${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
   <h1 style="margin-top:12px">${esc(p.icon||"")} ${esc(poleName(p))}</h1><div class="mute">${esc(poleDesc(p))}</div>
-  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}" required><button class="btn" type="submit">${t("add")}</button></form>
+  ${subTabs}
+  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}${hasSub?" ("+esc(t(activeSub.i18n))+")":""}" required><button class="btn" type="submit">${t("add")}</button></form>
   <div class="cols">${col("todo",t("todo"))}${col("doing",t("doing"))}${col("done",t("done"))}</div>
-  ${docUrl?`<h2>${t("docs")}</h2><a class="btn ghost sm" href="${esc(docUrl)}" target="_blank" rel="noopener">${t("open_docs")}</a>`:""}
+  ${docUrl?`<h2>${t("docs")}${hasSub?" — "+esc(t(activeSub.i18n)):""}</h2><a class="btn ghost sm" href="${esc(docUrl)}" target="_blank" rel="noopener">${t("open_docs")}</a>`:""}
   ${leadPanel}`;
 }
-async function openPole(id){route="pole";poleSel=id;D.tasks=[];syncHash();render();await Promise.all([loadTasks(),isPoleLead(id)&&!D.members.length?loadAdmin():Promise.resolve()]);render(true)}
+async function openPole(id){route="pole";poleSel=id;subPoleSel="culturel";D.tasks=[];syncHash();render();await Promise.all([loadTasks(),isPoleLead(id)&&!D.members.length?loadAdmin():Promise.resolve()]);render(true)}
 async function addTask(ev){
   ev.preventDefault();
-  const input=ev.target.elements.t,title=input.value.trim();if(!title)return;
+  const input=ev.target.elements.t,rawTitle=input.value.trim();if(!rawTitle)return;
+  const p=D.poles.find(x=>String(x.id)===String(poleSel));
+  const sub=p&&isRelExt(p)?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
+  const title=sub?`[${sub.label}] ${rawTitle}`:rawTitle;
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const {error}=await sb.from("tasks").insert({pole_id:poleSel,title,created_by:S.user.id});
