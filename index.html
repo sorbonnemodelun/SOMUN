@@ -276,4 +276,387 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .sheet.bio-sheet{max-width:580px;padding:0}
 .sheet h3{font-family:var(--f-titre);font-weight:700;font-size:22px;color:var(--bleu);padding-top:2px}
 @media(min-width:760px){.sheet-bg{align-items:center;padding:24px}.sheet{border-radius:26px;max-height:88vh}}
-@keyframes up{from{transform:translateY(26px);opacity:0}to{transform:
+@keyframes up{from{transform:translateY(26px);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;bottom:104px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(2,2,89,.95);backdrop-filter:blur(12px);color:#fff;padding:12px 20px;border-radius:14px;border-left:4px solid var(--or);opacity:0;pointer-events:none;transition:opacity .28s var(--ease),transform .28s var(--ease);z-index:300;max-width:90%;text-align:center;font-size:14px;font-weight:500;box-shadow:0 12px 32px rgba(2,2,89,.32)}
+@media(min-width:860px){.toast{bottom:28px}}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.empty{text-align:center;padding:34px 20px;color:var(--mute)}
+
+footer{background:var(--marine);color:rgba(255,255,255,.82);font-size:12.5px;padding:22px 18px;border-top:3px solid var(--or);transition:background .25s var(--ease),color .25s var(--ease)}
+.f-inner{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+footer .f-brand{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.95);padding:7px 14px;border-radius:15px;border:2px solid var(--or);box-shadow:0 6px 18px rgba(2,2,89,.18)}
+footer .f-brand img{height:44px;width:auto;display:block}
+footer .f-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px}
+footer a{color:var(--or);text-decoration:none;font-weight:600;font-size:13px}
+footer a:hover{text-decoration:underline}
+body:has(.bureau-wrap) footer{background:rgba(255,255,255,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--marine);border-top:2px solid rgba(235,192,0,.8)}
+body:has(.bureau-wrap) footer a{color:var(--bleu)}
+@media(min-width:760px){
+  .f-inner{flex-direction:row;justify-content:space-between;text-align:left}
+  .f-meta{text-align:right}
+  body:has(.bureau-wrap) footer .f-links{justify-content:flex-end}
+}
+
+.linkish{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:color .18s var(--ease)}
+.linkish:hover{color:var(--bleu);text-decoration:underline;text-decoration-color:var(--or);text-decoration-thickness:2px;text-underline-offset:3px}
+.ev-img{width:100%;max-height:320px;object-fit:cover;border-radius:var(--r);margin:16px 0 4px;border:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 20px;color:var(--mute);font-size:14px;margin-top:12px}
+.desc{white-space:pre-line;margin:16px 0 0}
+.about{margin-top:8px}
+.about>p{max-width:720px}
+.about .grid{margin-top:16px}
+.about .card{border-top:4px solid var(--or)}
+.about .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.about .card b{display:block;font-family:var(--f-titre);font-size:18.5px;color:var(--bleu);margin-bottom:4px;padding-top:2px}
+.social{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:4px}
+.tbl th,.tbl td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line)}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--bleu);font-weight:700}
+.tbl tbody tr{transition:background .15s var(--ease)}
+.tbl tbody tr:hover{background:var(--soft)}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.danger-zone{border-color:#efc3c8;background:#fffafa}
+.danger-zone h3{color:var(--rouge)}
+.row2{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:520px){.row2{grid-template-columns:1fr 1fr}}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center}
+</style>
+</head>
+<body>
+<header id="hdr"><div class="bar">
+  <button class="brand" onclick="go('accueil')" aria-label="Accueil"><span id="logo"></span></button>
+  <nav class="dnav" id="dnav"></nav>
+  <div class="right"><button class="lang" id="langbtn" onclick="toggleLang()"></button><span id="auth"></span></div>
+</div></header>
+<main id="app"></main>
+<footer id="foot"></footer>
+<nav class="tabbar" id="tabbar"></nav>
+<div class="sheet-bg" id="sheetbg" role="dialog" aria-modal="true" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+window.__supabaseReady=(async()=>{
+  const urls=[
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
+    "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js",
+    "https://esm.sh/@supabase/supabase-js@2?bundle"
+  ];
+  for(const src of urls){
+    if(typeof window.supabase!=="undefined")return true;
+    try{
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement("script");
+        s.src=src;s.async=true;
+        const timer=setTimeout(()=>{s.remove();reject(new Error("timeout"))},3800);
+        s.onload=()=>{clearTimeout(timer);resolve(true)};
+        s.onerror=()=>{clearTimeout(timer);s.remove();reject(new Error("load error"))};
+        document.head.appendChild(s);
+      });
+      if(typeof window.supabase!=="undefined")return true;
+    }catch(e){}
+  }
+  return typeof window.supabase!=="undefined";
+})();
+</script>
+<script>
+/* ===== CONFIG ===== */
+const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_qbTr9jyjy7pXDiz81KDjEg_jHqKR9br";
+const HELLOASSO_ORG="sorbonne-model-united-nations-somun";
+const HELLOASSO_MEMBERSHIP_SLUG="adhesion-somun-2026-2027";
+const DEFAULT_COTISATION=15;
+const LOGO_SRC="logo-somun.png";
+const DEFAULT_HERO="";
+const BOARD_PHOTOS={
+  clara:"photo_bureau_clara.jpeg",
+  pierre:"photo_pierre_bureau.jpeg",
+  servan:"photo_bureau_servan.jpeg",
+  emna:"photo_emna_bureau.jpeg",
+  come:"photo_come_bureau.jpeg"
+};
+const BOARD_BIO_PHOTOS={
+  come:"photo_bio_come.jpeg"
+};
+const BOARD_ORDER=["servan","pierre","come","emna","clara"];
+const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
+const DEFAULT_INSTAGRAM="";
+const DEFAULT_LINKEDIN="";
+const MIN_PWD=12;
+
+const keysConfigured=!SUPABASE_URL.includes("VOTRE-")&&!SUPABASE_ANON_KEY.includes("VOTRE-");
+let sdkLoaded=typeof window.supabase!=="undefined";
+let configured=keysConfigured&&sdkLoaded;
+const helloassoReady=Boolean(HELLOASSO_ORG)&&!HELLOASSO_ORG.includes("VOTRE-");
+let sb=null;
+
+function ensureSupabaseClient(){
+  sdkLoaded=typeof window.supabase!=="undefined"&&typeof window.supabase.createClient==="function";
+  configured=keysConfigured&&sdkLoaded;
+  if(configured&&!sb){
+    try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)}
+    catch(e){console.error(e);sb=null;configured=false}
+  }
+  return sb;
+}
+
+/* ===== TEXTES FR / EN ===== */
+const I18N={
+fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",game:"Jeu",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
+ hero_out:"Débattre, négocier, changer le monde.",hero_sub_out:"Trainings, conférences, voyages et visites : toute la vie de l'association au même endroit.",hero_sub_in:"Voici ce qui t'attend à SOMUN.",
+ hello:"Bonjour",see_acts:"Voir les activités",st_events:"événements",st_poles:"pôles",st_regs:"inscriptions",st_my_regs:"mes inscriptions",
+ next:"Prochains événements",see_all:"Tout voir →",news:"Actualités",search:"Rechercher un événement ou un lieu",all:"Tous",mine:"Mes inscriptions",
+ Training:"Training",Conférence:"Conférence",Visite:"Visite",Voyage:"Voyage",Soirée:"Soirée",
+ places:"places restantes",full:"Complet",ended:"Terminé",done_reg:"Inscrit ✓",pending:"Paiement en attente",pay_now:"Payer",reg:"S'inscrire",free:"Gratuit",in_days:"dans {n} j",today:"aujourd'hui",past:"passé",members_only:"Adhérents",form_badge:"Formulaire",
+ join_t:"Adhérer à SOMUN",join_s:"Une cotisation, toute l'année.",season:"Adhésion 2026-27",
+ perks:["Accès à tous les trainings","Tarifs adhérents sur voyages et soirées","Espace membre et study guides","Vote à l'assemblée générale"],
+ pay:"Payer sur HelloAsso",need_acc:"Se connecter pour adhérer",secure:"Paiement sécurisé par HelloAsso, versé directement sur le compte de l'association.",
+ ha_sync:"Important : utilise sur HelloAsso le même e-mail que ton compte ({e}). Ton adhésion sera reconnue automatiquement.",ha_verified:"Adhésion validée ✓",ha_unverified:"Adhésion non encore reconnue",paid_until:"valable jusqu'au {d}",refresh_status:"Actualiser mon statut",ha_soon:"Le paiement de la cotisation en ligne est en cours de configuration.",
+ bureau_t:"Membres du Bureau",bureau_s:"L'équipe dirigeante de Sorbonne Model UN 2026-2027.",
+ see_bio:"Voir photo & bio",no_bio:"Biographie à venir.",edit_bio_photo:"Modifier photo & bio",f_photo_url:"Photo (URL https ou nom de fichier)",f_bio_photo_url:"Photo de la fiche bio (URL https ou nom de fichier)",f_photo_file:"Ou importer une photo depuis l'appareil",f_bio_full:"Biographie",
+ game_t:"Jeu — Rules of Procedure",game_s:"100 questions tirées du ROP SOMUN (UNGA Luxembourg) pour maîtriser la procédure en s'amusant.",
+ q_score:"Score",q_streak:"Série",q_best:"Record",q_answered:"Répondues",q_prev:"← Précédente",q_next:"Question suivante →",q_shuffle:"Mélanger l'ordre",q_reset:"Réinitialiser le score",
+ q_cat_all:"Toutes (100)",q_cat_gen:"I–II Bureau & Décorum",q_cat_par:"III Quorum & Votes",q_cat_deb:"IV–VI Débats, Points & Motions",q_cat_res:"VII–VIII Résolutions & Amendements",q_cat_vot:"IX Procédure de vote & Appel nominal",
+ q_correct:"Bonne réponse !",q_wrong:"Pas tout à fait — voici la bonne réponse :",q_done_title:"Session terminée !",
+ admin_t:"Administration",admin_s:"Gère les membres, les pôles et le contenu du site.",admin_only:"Accès réservé au Bureau.",
+ tab_members:"Membres",tab_content:"Contenu",tab_org:"Organisation & Site",search_member:"Rechercher un membre…",role_member:"Membre",role_bureau:"Bureau",no_members:"Aucun membre",
+ filter_all:"Tous",filter_paid:"Adhérents ✓",filter_unpaid:"Non reconnus",filter_bureau:"Bureau",
+ toggle_paid_on:"Valider l'adhésion ✓",toggle_paid_off:"Retirer l'adhésion",
+ ha_tools:"Synchronisation HelloAsso & Passation",import_csv:"Importer CSV HelloAsso",sync_ha:"Synchroniser l'API HelloAsso",reset_year:"Passation (nouvelle année)",confirm_reset_year:"Réinitialiser les cotisations expirées pour la nouvelle année universitaire ? Les comptes étudiants et leur historique sont conservés.",reset_year_done:"Passation effectuée ({n} adhésion(s) expirée(s) réinitialisée(s)).",csv_done:"{m} compte(s) mis à jour, {q} e-mail(s) pré-enregistré(s).",ha_sync_info:"Synchronise les paiements HelloAsso ou clôture les cotisations expirées lors de la passation annuelle.",
+ add_ev:"Ajouter un événement",add_news:"Publier une actualité",f_title:"Titre",f_type:"Type",f_place:"Lieu",f_date:"Date",f_price:"Prix (€)",f_cap:"Capacité",f_text:"Texte",f_slug:"Identifiant ou lien HelloAsso (si payant)",f_form_url:"Lien formulaire externe, ex. Google Form (facultatif)",f_members:"Réservé aux adhérents à jour",publish:"Publier",existing:"Déjà publié",del:"Supprimer",confirm_del:"Supprimer définitivement ?",slug_warn:"Astuce : renseigne l'identifiant HelloAsso pour que les inscrits puissent payer en ligne.",
+ acc_role:"Rôle",pole_l:"Pôles",none:"Aucun",my_regs:"Mes inscriptions",my_history:"Historique des cotisations",hist_season:"Année {s}",hist_source:"Validée le {d} ({src})",none_yet:"Aucune pour l'instant.",
+ login_t:"Connexion",signup_t:"Créer un compte",fn:"Prénom",ln:"Nom",email:"E-mail",pwd:"Mot de passe",pwd_new:"Nouveau mot de passe (12 caractères min.)",pwd_hint:"12 caractères minimum",
+ have_acc:"J'ai déjà un compte",no_acc:"Créer un compte",forgot:"Mot de passe oublié ?",send_link:"Envoyer le lien",
+ check_mail:"Compte créé ! Vérifie ta boîte mail et clique sur le lien de confirmation, puis connecte-toi.",t_mail_confirmed:"Adresse e-mail confirmée ✓",reset_sent:"Si ce compte existe, un e-mail vient d'être envoyé.",pwd_updated:"Mot de passe mis à jour ✓",reset_t:"Nouveau mot de passe",save:"Enregistrer",
+ poles_t:"Espace pôles",poles_s:"Choisis ton espace de travail.",members:"Réservé aux membres connectés.",back:"← Tous les pôles",no_pole_yet:"Tu n'as pas encore été ajouté à un pôle. Le bureau doit t'y attribuer.",
+ new_task:"Nouvelle tâche…",add:"Ajouter",todo:"À faire",doing:"En cours",done:"Terminé",docs:"Documents",open_docs:"Ouvrir le dossier partagé ↗",
+ pole_team:"Équipe du pôle",pole_lead:"Responsable",pole_member:"Membre",add_member_pole:"Ajouter un membre au pôle…",edit_pole:"Modifier les infos du pôle",
+ subpole_all:"Tous",subpole_culturel:"Culturel",subpole_partenariats:"Partenariats",subpole_alumni:"Alumni",
+ part_t:"Partenaires",part_s:"Ils soutiennent SOMUN.",part_empty:"Aucun partenaire affiché pour le moment.",part_sp:"Devenir partenaire",part_txt:"Vous souhaitez soutenir Sorbonne Model UN ou recevoir notre plaquette partenariats ? Contactez le bureau.",part_contact:"Contacter le bureau",
+ pay_note:"Le paiement de {p} € se fait via HelloAsso, versé directement sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
+ t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
+ t_err_members:"Cet événement est réservé aux adhérents à jour.",t_err_full:"Désolé, c'est complet.",t_err_slug:"Paiement HelloAsso pas encore configuré pour cet événement.",no_res:"Aucun résultat",no_events:"Aucun événement prévu pour le moment.",no_news:"Aucune actualité publiée pour le moment.",
+ foot:"Sorbonne Model UN · 2026-2027",autotr:"Contenus publiés traduits automatiquement",
+ about_t:"Qu'est-ce que SOMUN ?",about_txt:"Sorbonne Model UN est l'association de simulation des Nations unies de la Sorbonne. Lors d'une conférence Model UN (MUN), chaque participant représente un pays, défend ses positions, négocie et rédige des résolutions, comme les vrais diplomates.",
+ about_1t:"Prise de parole",about_1:"Les trainings t'apprennent à débattre et à convaincre, en français et en anglais.",about_2t:"Conférences",about_2:"Participe à des MUN en France et à l'étranger.",about_3t:"Communauté",about_3:"Visites, soirées, voyages : une association vivante toute l'année.",
+ contact:"Contact",follow:"Échanger",
+ details:"Détails",ev_404:"Cet événement n'existe plus.",back_acts:"← Toutes les activités",at:"à",
+ registrants:"Inscrits",validate:"Valider",export_csv:"Exporter (CSV)",no_registrants:"Aucun inscrit pour le moment.",st_confirmed:"Confirmé",st_pending:"Paiement en attente",
+ col_fn:"Prénom",col_ln:"Nom",col_mail:"E-mail",col_status:"Statut",col_member:"Adhérent",yes:"Oui",no:"Non",
+ cancel_reg:"Annuler mon inscription",confirm_cancel:"Annuler ton inscription à cet événement ?",t_cancelled:"Inscription annulée",
+ paid_cancel:"Pour annuler une inscription déjà payée, contacte le Bureau.",
+ edit:"Modifier",edit_ev:"Modifier l'événement",edit_news:"Modifier l'actualité",f_time:"Heure",f_desc:"Description",f_img:"Image (adresse https, facultatif)",
+ rop_t:"Ressources & ROP",rop_s:"Règlements intérieurs (Rules of Procedure) et guides généraux accessibles à tous.",no_rop:"Aucune ressource publiée pour le moment.",add_rop:"Ajouter un ROP / guide",edit_rop:"Modifier la ressource",f_lang:"Langue",f_url:"Lien du document (https://…)",open_doc:"Ouvrir le document ↗",
+ sg_box:"Study Guide du training",sg_open:"Télécharger / Ouvrir le Study Guide ↗",sg_edit:"Gérer le Study Guide",f_sg_title:"Titre du Study Guide",f_sg_url:"Lien du Study Guide (https://…)",
+ site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
+ manage_board:"Membres du Bureau",add_board:"Ajouter un membre au Bureau",f_role_fr:"Poste (FR)",f_role_en:"Poste (EN)",f_bio:"Présentation",
+ manage_poles:"Pôles de l'association",add_pole:"Ajouter un pôle",f_name_fr:"Nom (FR)",f_name_en:"Nom (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icône (emoji)",f_drive:"Lien dossier partagé (Drive)",
+ manage_partners:"Partenaires",add_partner:"Ajouter un partenaire",f_site:"Site web (https://…)",
+ profile_t:"Mes informations",ha_alt_mail:"E-mail utilisé sur HelloAsso (si différent)",ha_alt_hint:"Permet de reconnaître ton adhésion même si tu as payé avec une autre adresse.",
+ danger_t:"Supprimer mon compte",danger_txt:"Ton compte, ton profil et tes inscriptions seront définitivement effacés. Cette action est irréversible.",
+ danger_confirm:"Tape SUPPRIMER pour confirmer",danger_word:"SUPPRIMER",danger_btn:"Supprimer définitivement",t_deleted:"Compte supprimé",
+ err_load:"Impossible de charger les données pour le moment.",retry:"Réessayer",
+ e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
+ e_cancel_past:"Cet événement déjà passé.",
+ setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
+en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",game:"Game",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
+ hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
+ hello:"Hello",see_acts:"See activities",st_events:"events",st_poles:"teams",st_regs:"registrations",st_my_regs:"my registrations",
+ next:"Upcoming events",see_all:"See all →",news:"News",search:"Search an event or venue",all:"All",mine:"My registrations",
+ Training:"Training",Conférence:"Conference",Visite:"Visit",Voyage:"Trip",Soirée:"Party",
+ places:"spots left",full:"Full",ended:"Ended",done_reg:"Registered ✓",pending:"Payment pending",pay_now:"Pay",reg:"Register",free:"Free",in_days:"in {n} d",today:"today",past:"past",members_only:"Members",form_badge:"Form",
+ join_t:"Join SOMUN",join_s:"One membership, all year long.",season:"2026-27 membership",
+ perks:["Access to all trainings","Member prices on trips and parties","Member area and study guides","Vote at the general assembly"],
+ pay:"Pay on HelloAsso",need_acc:"Log in to join",secure:"Secure payment through HelloAsso, paid directly to the association's account.",
+ ha_sync:"Important: use the same email on HelloAsso as your account ({e}). Your membership will be recognised automatically.",ha_verified:"Membership verified ✓",ha_unverified:"Membership not recognised yet",paid_until:"valid until {d}",refresh_status:"Refresh status",ha_soon:"Online membership payment is currently being set up.",
+ bureau_t:"Board members",bureau_s:"The executive team of Sorbonne Model UN 2026-2027.",
+ see_bio:"View photo & bio",no_bio:"Biography coming soon.",edit_bio_photo:"Edit photo & bio",f_photo_url:"Photo (https URL or filename)",f_bio_photo_url:"Bio card photo (https URL or filename)",f_photo_file:"Or upload a photo from your device",f_bio_full:"Biography",
+ game_t:"Game — Rules of Procedure",game_s:"100 questions from the SOMUN ROP (UNGA Luxembourg) to master procedure while having fun.",
+ q_score:"Score",q_streak:"Streak",q_best:"Best",q_answered:"Answered",q_prev:"← Previous",q_next:"Next question →",q_shuffle:"Shuffle order",q_reset:"Reset score",
+ q_cat_all:"All (100)",q_cat_gen:"I–II Chairs & Decorum",q_cat_par:"III Quorum & Votes",q_cat_deb:"IV–VI Debate, Points & Motions",q_cat_res:"VII–VIII Resolutions & Amendments",q_cat_vot:"IX Voting Procedure & Roll Call",
+ q_correct:"Spot on!",q_wrong:"Not quite — here is the right rule:",q_done_title:"Round complete!",
+ admin_t:"Administration",admin_s:"Manage members, teams and site content.",admin_only:"Access reserved for the Board.",
+ tab_members:"Members",tab_content:"Content",tab_org:"Organisation & Site",search_member:"Search a member…",role_member:"Member",role_bureau:"Board",no_members:"No members",
+ filter_all:"All",filter_paid:"Members ✓",filter_unpaid:"Unverified",filter_bureau:"Board",
+ toggle_paid_on:"Verify membership ✓",toggle_paid_off:"Revoke membership",
+ ha_tools:"HelloAsso Sync & Handover",import_csv:"Import HelloAsso CSV",sync_ha:"Sync HelloAsso API",reset_year:"Handover (new year)",confirm_reset_year:"Reset expired memberships for the new academic year? Student accounts and history will be kept.",reset_year_done:"Handover completed ({n} expired membership(s) reset).",csv_done:"{m} account(s) updated, {q} email(s) pre-approved.",ha_sync_info:"Sync HelloAsso payments or reset expired memberships during the annual handover.",
+ add_ev:"Add an event",add_news:"Publish news",f_title:"Title",f_type:"Type",f_place:"Place",f_date:"Date",f_price:"Price (€)",f_cap:"Capacity",f_text:"Text",f_slug:"HelloAsso form identifier or link (if paid)",f_form_url:"External form link, e.g. Google Form (optional)",f_members:"Paid-up members only",publish:"Publish",existing:"Already published",del:"Delete",confirm_del:"Delete permanently?",slug_warn:"Tip: fill in the HelloAsso identifier so members can pay online.",
+ acc_role:"Role",pole_l:"Teams",none:"None",my_regs:"My registrations",my_history:"Membership history",hist_season:"Year {s}",hist_source:"Verified on {d} ({src})",none_yet:"None yet.",
+ login_t:"Log in",signup_t:"Create an account",fn:"First name",ln:"Last name",email:"Email",pwd:"Password",pwd_new:"New password (min. 12 characters)",pwd_hint:"At least 12 characters",
+ have_acc:"I already have an account",no_acc:"Create an account",forgot:"Forgot password?",send_link:"Send the link",
+ check_mail:"Account created! Check your inbox and click the confirmation link, then log in.",t_mail_confirmed:"Email confirmed ✓",reset_sent:"If this account exists, an email has just been sent.",pwd_updated:"Password updated ✓",reset_t:"New password",save:"Save",
+ poles_t:"Team spaces",poles_s:"Choose your workspace.",members:"Logged-in members only.",back:"← All teams",no_pole_yet:"You haven't been added to a team yet. The Board needs to assign you.",
+ new_task:"New task…",add:"Add",todo:"To do",doing:"In progress",done:"Done",docs:"Documents",open_docs:"Open shared folder ↗",
+ pole_team:"Team members",pole_lead:"Lead",pole_member:"Member",add_member_pole:"Add a member to this team…",edit_pole:"Edit team info",
+ subpole_all:"All",subpole_culturel:"Cultural",subpole_partenariats:"Partnerships",subpole_alumni:"Alumni",
+ part_t:"Partners",part_s:"They support SOMUN.",part_empty:"No partners listed yet.",part_sp:"Become a partner",part_txt:"Interested in supporting Sorbonne Model UN or receiving our partnership deck? Contact the Board.",part_contact:"Contact the Board",
+ pay_note:"The €{p} payment is made through HelloAsso, paid to the association's account.",free_note:"Free registration.",go_pay:"Reserve my spot",confirm:"Confirm my registration",cancel:"Cancel",go_ha:"Continue to HelloAsso",ha_after:"Your spot is held for 2 days. It will be confirmed automatically after payment (use the same email as your account).",open_form:"Fill out the form ↗",
+ t_welcome:"Welcome!",t_bye:"See you soon!",t_reg:"Registration saved ✓",t_need:"Log in to register",t_pub:"Published!",t_ok:"Saved ✓",
+ t_err_members:"This event is for paid-up members only.",t_err_full:"Sorry, it's full.",t_err_slug:"HelloAsso payment not yet set up for this event.",no_res:"No results",no_events:"No upcoming events at the moment.",no_news:"No news published yet.",
+ foot:"Sorbonne Model UN · 2026-2027",autotr:"Published content is automatically translated",
+ about_t:"What is SOMUN?",about_txt:"Sorbonne Model UN is the Sorbonne's United Nations simulation society. At a Model UN (MUN) conference, each participant represents a country, defends its positions, negotiates and drafts resolutions, just like real diplomats.",
+ about_1t:"Public speaking",about_1:"Trainings teach you to debate and persuade, in French and English.",about_2t:"Conferences",about_2:"Take part in MUNs in France and abroad.",about_3t:"Community",about_3:"Visits, parties, trips: a lively association all year long.",
+ contact:"Contact",follow:"Connect",
+ details:"Details",ev_404:"This event no longer exists.",back_acts:"← All activities",at:"at",
+ registrants:"Registrants",validate:"Confirm",export_csv:"Export (CSV)",no_registrants:"No registrants yet.",st_confirmed:"Confirmed",st_pending:"Payment pending",
+ col_fn:"First name",col_ln:"Last name",col_mail:"Email",col_status:"Status",col_member:"Member",yes:"Yes",no:"No",
+ cancel_reg:"Cancel my registration",confirm_cancel:"Cancel your registration for this event?",t_cancelled:"Registration cancelled",
+ paid_cancel:"To cancel a registration you've already paid for, contact the Board.",
+ edit:"Edit",edit_ev:"Edit event",edit_news:"Edit news",f_time:"Time",f_desc:"Description",f_img:"Image (https address, optional)",
+ rop_t:"Resources & ROP",rop_s:"Rules of Procedure and general guides open to everyone.",no_rop:"No resources published yet.",add_rop:"Add an ROP / guide",edit_rop:"Edit resource",f_lang:"Language",f_url:"Document link (https://…)",open_doc:"Open document ↗",
+ sg_box:"Training Study Guide",sg_open:"Download / Open Study Guide ↗",sg_edit:"Manage Study Guide",f_sg_title:"Study Guide title",f_sg_url:"Study Guide link (https://…)",
+ site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
+ manage_board:"Board members",add_board:"Add a Board member",f_role_fr:"Role (FR)",f_role_en:"Role (EN)",f_bio:"Bio",
+ manage_poles:"Association teams",add_pole:"Add a team",f_name_fr:"Name (FR)",f_name_en:"Name (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icon (emoji)",f_drive:"Shared folder link (Drive)",
+ manage_partners:"Partners",add_partner:"Add a partner",f_site:"Website (https://…)",
+ profile_t:"My details",ha_alt_mail:"Email used on HelloAsso (if different)",ha_alt_hint:"Helps recognise your membership even if you paid with another address.",
+ danger_t:"Delete my account",danger_txt:"Your account, profile and registrations will be permanently erased. This cannot be undone.",
+ danger_confirm:"Type DELETE to confirm",danger_word:"DELETE",danger_btn:"Delete permanently",t_deleted:"Account deleted",
+ err_load:"Unable to load data right now.",retry:"Retry",
+ e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"Invalid link (e.g. https://instagram.com/… or linkedin.com/in/…).",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
+ e_cancel_past:"This event has already taken place.",
+ setup_t:"Setup required",setup_txt:"Fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of index.html.",sdk_t:"Unable to load client library",sdk_txt:"The database client script could not be loaded. Check your internet connection or script blocker and reload.",loading:"Loading…"}
+};
+
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{const entries=Object.entries(v);if(entries.length>250)v=Object.fromEntries(entries.slice(-250));localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let lang=ls.get("somun_lang",null)||((navigator.language||"fr").toLowerCase().startsWith("fr")?"fr":"en");
+const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")for(const x in v)s=s.replace("{"+x+"}",v[x]);return s};
+
+/* ===== ÉTAT ===== */
+let S={user:null,profile:null};
+let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
+let evSel=null,regList={event:null,rows:null};
+let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0,navDir="right";
+
+/* ===== TRADUCTION AUTOMATIQUE ===== */
+let trCache=ls.get("somun_tr",{});
+const pending=new Set();let flushing=false,nativeT=null,trFailures=0;
+function protectProperNames(str){
+  return String(str).replace(/\bC[ôo]me\b/gi,"Côme");
+}
+function isBadTranslation(res,orig){
+  if(!res||typeof res!=="string")return true;
+  const u=res.toUpperCase();
+  if(u.includes("MYMEMORY WARNING")||u.includes("PLEASE SELECT TWO DISTINCT")||u.includes("QUERY LENGTH LIMIT"))return true;
+  return protectProperNames(res).trim()===protectProperNames(orig).trim();
+}
+function chunkText(txt,max=450){
+  if(txt.length<=max)return [txt];
+  const parts=[];
+  for(const para of txt.split(/(\n+)/)){
+    if(!para)continue;
+    if(para.length<=max){parts.push(para);continue}
+    let cur="";
+    for(const word of para.split(/(\s+)/)){
+      if((cur+word).length>max&&cur){parts.push(cur);cur=word}
+      else cur+=word;
+    }
+    if(cur)parts.push(cur);
+  }
+  return parts;
+}
+function T(txt){
+  if(!txt)return txt;
+  const raw=String(txt);
+  if(lang==="fr")return protectProperNames(raw);
+  const cached=trCache[raw];
+  if(cached&&!isBadTranslation(cached,raw)){
+    return protectProperNames(cached.replace(/\bComo\b/g,"Côme"));
+  }
+  if(cached)delete trCache[raw];
+  if(trFailures<2&&!pending.has(raw)){pending.add(raw);if(!flushing)flush()}
+  return protectProperNames(raw);
+}
+async function translateChunk(txt){
+  try{
+    if("Translator" in self){
+      if(!nativeT)nativeT=Translator.create({sourceLanguage:"fr",targetLanguage:"en"});
+      return await (await nativeT).translate(txt);
+    }
+  }catch(e){nativeT=null}
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),6000);
+  try{
+    const r=await fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(txt)+"&langpair=fr|en",{signal:ctrl.signal});
+    const j=await r.json();
+    return j&&j.responseData&&j.responseData.translatedText;
+  }finally{clearTimeout(timer)}
+}
+async function translateOne(txt){
+  const parts=chunkText(txt,450);
+  if(parts.length===1)return translateChunk(txt);
+  const out=[];
+  for(const p of parts){
+    if(!p.trim()){out.push(p);continue}
+    const r=await translateChunk(p);
+    if(isBadTranslation(r,p))return r;
+    out.push(r);
+  }
+  return out.join("");
+}
+async function flush(){
+  flushing=true;let changed=false;
+  while(pending.size&&trFailures<2){
+    const batch=[...pending].slice(0,3);
+    batch.forEach(x=>pending.delete(x));
+    await Promise.all(batch.map(async txt=>{
+      try{
+        const r=await translateOne(txt);
+        if(!isBadTranslation(r,txt)){
+          trCache[txt]=protectProperNames(r.replace(/\bComo\b/g,"Côme"));
+          changed=true;trFailures=0;
+        }else if(r&&r.toUpperCase().includes("MYMEMORY WARNING")){trFailures=2}
+      }catch(e){trFailures++}
+    }));
+  }
+  if(trFailures>=2)pending.clear();
+  flushing=false;
+  if(changed){ls.set("somun_tr",trCache);softRender()}
+}
+function softRender(){
+  const a=document.activeElement;
+  if((a&&(a.tagName==="INPUT"||a.tagName==="SELECT"||a.tagName==="TEXTAREA"))||$("#sheetbg").classList.contains("open")){
+    setTimeout(softRender,1200);return;
+  }
+  render(true);
+}
+
+/* ===== UTILITAIRES & DROITS ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sid=s=>String(s??"").replace(/[^\w-]/g,"");
+const idArg=id=>typeof id==="number"&&Number.isFinite(id)?String(id):`'${sid(id)}'`;
+const safeUrl=u=>{try{const x=new URL(u);return x.protocol==="https:"?x.href:null}catch(e){return null}};
+function normalizeUrl(raw,platform){
+  let s=String(raw||"").trim();
+  if(!s)return null;
+  if(s.startsWith("@")){
+    const handle=s.slice(1).replace(/^\/+|\/+$/g,"");
+    if(!handle)return null;
+    s=platform==="linkedin"?`https://www.linkedin.com/in/${handle}`:`https://www.instagram.com/${handle}`;
+  }else if(!/^https?:\/\//i.test(s)){
+    s="https://"+s.replace(/^\/+/,"");
+  }
+  return safeUrl(s);
+}
+const safeAsset=u=>{
+  const s=String(u||"").trim();if(!s)return null;
+  if(/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(s))return s;
+  if(/^[\w.-]+\.(jpg|jpeg|png|webp|gif)$/i.test(s))return s;
+  return safeUrl(s);
+};
+const normalizeSlug=v=>String(v||"").trim().replace(/^.*\/evenements\//i,"").replace(/[/?#].*$/,"").trim()||null;
+const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const currentSeason=()=>{const d=new Date();const y=d.getMonth()>=7?d.getFullYear():d.getFullYear()-1;return `${y}-${y+1}`};
+const academicYearEnd=()=>{const d=new Date();const y=d.getMonth()>=7?d.getFullYear()+1:d.getFullYear();return `${y}-08-31`};
+const hhmm=h=>h?String(h).slice(0,5):"";
+const isoDay=d=>String(d??"").slice(0,10);
+const dd=d=>new Date(isoDay(d)+"T12:00:00");
+const loc=()=>lang==="fr"?"fr-FR":"en-GB";
+const mon=d=>isNaN(dd(d))?"":dd(d).toLocaleDateString(loc(),{month:"short"});
+const long=d=>isNaN(dd(d))?isoDay(d):dd(d).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const daysTo=d=>{const t0=new Date(todayStr()+"T12:00:00");return Math.round((dd(d)-t0)/864e5)};
+
+const cfg=k=>{
+  const v=D.settings[k];
+  if(v!=null&&String(v).trim()!=="")return v;
+  return {hero_img:DEFAULT_HERO,contact_email:DEFAULT_CONTACT,instagram
