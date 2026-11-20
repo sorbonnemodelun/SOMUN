@@ -139,6 +139,14 @@ a{color:var(--bleu)}
 .news{border-left:4px solid var(--or)}
 .news h3{font-family:var(--f-titre);font-weight:700;font-size:19px;padding-top:2px}
 
+/* ---------- Bureau : fond transparent & portraits ---------- */
+.bureau-wrap{position:relative;border-radius:22px;padding:24px 16px;overflow:hidden;isolation:isolate;background:var(--soft);border:1px solid var(--line)}
+.bureau-wrap.has-bg::before{content:"";position:absolute;inset:0;background-image:var(--bg-img);background-size:cover;background-position:center 25%;opacity:.26;z-index:-1;pointer-events:none}
+.board-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-top:4px solid var(--or)}
+.board-photo{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:10px;box-shadow:0 6px 16px rgba(2,2,89,.14)}
+.photo-pick{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:4px 11px;border-radius:99px;border:1.5px dashed var(--bleu);background:var(--bleu-soft);color:var(--bleu);font-size:12px;font-weight:600;cursor:pointer}
+.photo-pick:hover{background:var(--bleu);color:#fff}
+
 /* ---------- Formulaires ---------- */
 .search,input,select,textarea{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:15px;color:var(--ink)}
 input[type=checkbox]{width:auto;accent-color:var(--bleu)}
@@ -172,19 +180,6 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .pole-pick button{text-align:left;border:1px solid var(--line);border-top:4px solid var(--bleu);background:#fff;color:var(--marine);padding:16px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:600}
 .pole-pick button:hover{border-top-color:var(--or);box-shadow:0 6px 20px rgba(2,2,89,.08)}
 .pole-pick small{display:block;color:var(--mute);font-weight:400;margin-top:2px;font-size:13px}
-.pole-pick small.sub-hint{color:var(--bleu);font-weight:500;margin-top:8px;font-size:12.5px}
-/* Sous-pôles (Relations externes) */
-.subpoles{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));margin:16px 0 0}
-.subpoles button{display:block;text-align:left;border:1px solid var(--line);border-top:4px solid var(--line);background:#fff;color:var(--marine);padding:12px 14px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:600;min-width:0;overflow-wrap:anywhere;line-height:1.25;transition:background .15s,border-color .15s}
-.subpoles button:hover{border-top-color:var(--or)}
-.subpoles button.on{background:var(--bleu);color:#fff;border-color:var(--bleu);border-top-color:var(--or)}
-.subpoles button.over{background:var(--or-soft);border-color:var(--or)}
-.subpoles small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:3px}
-.subpoles button.on small{color:rgba(255,255,255,.78)}
-@media(max-width:560px){.subpoles{gap:8px}.subpoles button{padding:10px;font-size:13.5px}}
-.task .sort{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:8px;font-size:12px;color:var(--mute)}
-.task .sort button{border:1px solid var(--line);background:#fff;color:var(--bleu);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600;cursor:pointer}
-.task .sort button:hover{border-color:var(--bleu);background:var(--bleu-soft)}
 
 /* ---------- Partenaires, menu Plus, membres ---------- */
 .partners{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
@@ -214,9 +209,8 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 
 /* ---------- Pied de page ---------- */
 footer{background:var(--marine);color:rgba(255,255,255,.75);text-align:center;font-size:12px;padding:30px 16px 26px;border-top:5px solid var(--or)}
-footer .f-brand{display:flex;width:fit-content;flex-direction:column;align-items:center;margin:14px auto 0;background:#ffffff;padding:6px 12px;border-radius:12px;border:2px solid var(--or);box-shadow:0 4px 12px rgba(0,0,0,.2)}
-footer .f-brand img{height:38px;width:auto;display:block}
-footer .f-brand .mark{height:38px;width:38px}
+footer .f-brand{display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;background:#ffffff;padding:12px 22px;border-radius:18px;border:2px solid var(--or);box-shadow:0 8px 24px rgba(0,0,0,.22)}
+footer .f-brand img{height:76px;width:auto;display:block}
 footer a{color:var(--or);text-decoration:none;font-weight:600;margin:0 8px;font-size:13px}
 footer a:hover{text-decoration:underline}
 
@@ -265,7 +259,15 @@ const HELLOASSO_MEMBERSHIP_SLUG="adhesion-somun-2026-2027";
 const DEFAULT_COTISATION=15;
 const LOGO_SRC="logo-somun.png";
 const DEFAULT_HERO="";
-const DEFAULT_CONTACT="";
+const DEFAULT_BUREAU_BG="photo_bureau.jpg";
+const BOARD_LOCAL_PHOTOS={
+  clara:"photo_bureau_clara.jpg",
+  pierre:"photo_pierre_bureau.jpg",
+  servan:"photo_bureau_servan.jpg",
+  emna:"photo_emna_bureau.jpg",
+  come:"photo_come_bureau.jpg"
+};
+const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
 const DEFAULT_INSTAGRAM="";
 const DEFAULT_LINKEDIN="";
 const MIN_PWD=12;
@@ -289,6 +291,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  pay:"Payer sur HelloAsso",need_acc:"Se connecter pour adhérer",secure:"Paiement sécurisé par HelloAsso, versé directement sur le compte de l'association.",
  ha_sync:"Important : utilise sur HelloAsso le même e-mail que ton compte ({e}). Ton adhésion sera reconnue automatiquement.",ha_verified:"Adhésion validée ✓",ha_unverified:"Adhésion non encore reconnue",paid_until:"valable jusqu'au {d}",refresh_status:"Actualiser mon statut",ha_soon:"Le paiement de la cotisation en ligne est en cours de configuration.",
  bureau_t:"Membres du Bureau",bureau_s:"L'équipe dirigeante de Sorbonne Model UN 2026-2027.",
+ choose_my_photo:"Choisir ma photo",change_bureau_bg:"Photo de fond du Bureau",uploading:"Envoi de la photo…",photo_saved:"Photo mise à jour ✓",
  admin_t:"Administration",admin_s:"Gère les membres, les pôles et le contenu du site.",admin_only:"Accès réservé au Bureau.",
  tab_members:"Membres",tab_content:"Contenu",tab_org:"Organisation & Site",search_member:"Rechercher un membre…",role_member:"Membre",role_bureau:"Bureau",no_members:"Aucun membre",
  filter_all:"Tous",filter_paid:"Adhérents ✓",filter_unpaid:"Non reconnus",filter_bureau:"Bureau",
@@ -302,9 +305,6 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  poles_t:"Espace pôles",poles_s:"Choisis ton espace de travail.",members:"Réservé aux membres connectés.",back:"← Tous les pôles",no_pole_yet:"Tu n'as pas encore été ajouté à un pôle. Le bureau doit t'y attribuer.",
  new_task:"Nouvelle tâche…",add:"Ajouter",todo:"À faire",doing:"En cours",done:"Terminé",docs:"Documents",open_docs:"Ouvrir le dossier partagé ↗",
  pole_team:"Équipe du pôle",pole_lead:"Responsable",pole_member:"Membre",add_member_pole:"Ajouter un membre au pôle…",edit_pole:"Modifier les infos du pôle",
- sp_culturel:"Culturel",sp_partenariats:"Partenariats",sp_alumni:"Alumni",sp_general:"Tâches non classées",sp_general_txt:"Ces tâches datent d'avant les sous-pôles. Range-les avec les boutons sous chaque tâche (ou glisse-les sur un sous-pôle).",
- sp_unsorted:"{n} tâche(s) non classée(s)",sp_move:"Ranger dans « {s} »",sp_sort:"Ranger dans :",task_one:"tâche",task_many:"tâches",new_task_in:"Nouvelle tâche · {s}…",
- e_subpole:"Les sous-pôles ne sont pas encore activés dans la base : le Bureau doit ajouter la colonne sub_pole à la table tasks.",
  part_t:"Partenaires",part_s:"Ils soutiennent SOMUN.",part_empty:"Aucun partenaire affiché pour le moment.",part_sp:"Devenir partenaire",part_txt:"Vous souhaitez soutenir Sorbonne Model UN ou recevoir notre plaquette partenariats ? Contactez le bureau.",part_contact:"Contacter le bureau",
  pay_note:"Le paiement de {p} € se fait via HelloAsso, versé sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
  t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
@@ -321,7 +321,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  edit:"Modifier",edit_ev:"Modifier l'événement",edit_news:"Modifier l'actualité",f_time:"Heure",f_desc:"Description",f_img:"Image (adresse https, facultatif)",
  rop_t:"Ressources & ROP",rop_s:"Règlements intérieurs (Rules of Procedure) et guides généraux accessibles à tous.",no_rop:"Aucune ressource publiée pour le moment.",add_rop:"Ajouter un ROP / guide",edit_rop:"Modifier la ressource",f_lang:"Langue",f_url:"Lien du document (https://…)",open_doc:"Ouvrir le document ↗",
  sg_box:"Study Guide du training",sg_open:"Télécharger / Ouvrir le Study Guide ↗",sg_edit:"Gérer le Study Guide",f_sg_title:"Titre du Study Guide",f_sg_url:"Lien du Study Guide (https://…)",
- site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
+ site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_bureau_bg:"Photo de fond onglet Bureau",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
  manage_board:"Membres du Bureau",add_board:"Ajouter un membre au Bureau",f_role_fr:"Poste (FR)",f_role_en:"Poste (EN)",f_bio:"Présentation",
  manage_poles:"Pôles de l'association",add_pole:"Ajouter un pôle",f_name_fr:"Nom (FR)",f_name_en:"Nom (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icône (emoji)",f_drive:"Lien dossier partagé (Drive)",
  manage_partners:"Partenaires",add_partner:"Ajouter un partenaire",f_site:"Site web (https://…)",
@@ -343,6 +343,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  pay:"Pay on HelloAsso",need_acc:"Log in to join",secure:"Secure payment through HelloAsso, paid directly to the association's account.",
  ha_sync:"Important: use the same email on HelloAsso as your account ({e}). Your membership will be recognised automatically.",ha_verified:"Membership verified ✓",ha_unverified:"Membership not recognised yet",paid_until:"valid until {d}",refresh_status:"Refresh status",ha_soon:"Online membership payment is currently being set up.",
  bureau_t:"Board members",bureau_s:"The executive team of Sorbonne Model UN 2026-2027.",
+ choose_my_photo:"Choose my photo",change_bureau_bg:"Board background photo",uploading:"Uploading photo…",photo_saved:"Photo updated ✓",
  admin_t:"Administration",admin_s:"Manage members, teams and site content.",admin_only:"Access reserved for the Board.",
  tab_members:"Members",tab_content:"Content",tab_org:"Organisation & Site",search_member:"Search a member…",role_member:"Member",role_bureau:"Board",no_members:"No members",
  filter_all:"All",filter_paid:"Members ✓",filter_unpaid:"Unverified",filter_bureau:"Board",
@@ -356,9 +357,6 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  poles_t:"Team spaces",poles_s:"Choose your workspace.",members:"Logged-in members only.",back:"← All teams",no_pole_yet:"You haven't been added to a team yet. The Board needs to assign you.",
  new_task:"New task…",add:"Add",todo:"To do",doing:"In progress",done:"Done",docs:"Documents",open_docs:"Open shared folder ↗",
  pole_team:"Team members",pole_lead:"Lead",pole_member:"Member",add_member_pole:"Add a member to this team…",edit_pole:"Edit team info",
- sp_culturel:"Cultural",sp_partenariats:"Partnerships",sp_alumni:"Alumni",sp_general:"Unsorted tasks",sp_general_txt:"These tasks were created before sub-teams existed. Sort them with the buttons under each task (or drag them onto a sub-team).",
- sp_unsorted:"{n} unsorted task(s)",sp_move:"Move to “{s}”",sp_sort:"Move to:",task_one:"task",task_many:"tasks",new_task_in:"New task · {s}…",
- e_subpole:"Sub-teams are not enabled in the database yet: the Board needs to add the sub_pole column to the tasks table.",
  part_t:"Partners",part_s:"They support SOMUN.",part_empty:"No partners listed yet.",part_sp:"Become a partner",part_txt:"Interested in supporting Sorbonne Model UN or receiving our partnership deck? Contact the Board.",part_contact:"Contact the Board",
  pay_note:"The €{p} payment is made through HelloAsso, paid to the association's account.",free_note:"Free registration.",go_pay:"Reserve my spot",confirm:"Confirm my registration",cancel:"Cancel",go_ha:"Continue to HelloAsso",ha_after:"Your spot is held for 2 days. It will be confirmed automatically after payment (use the same email as your account).",open_form:"Fill out the form ↗",
  t_welcome:"Welcome!",t_bye:"See you soon!",t_reg:"Registration saved ✓",t_need:"Log in to register",t_pub:"Published!",t_ok:"Saved ✓",
@@ -375,7 +373,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  edit:"Edit",edit_ev:"Edit event",edit_news:"Edit news",f_time:"Time",f_desc:"Description",f_img:"Image (https address, optional)",
  rop_t:"Resources & ROP",rop_s:"Rules of Procedure and general guides open to everyone.",no_rop:"No resources published yet.",add_rop:"Add an ROP / guide",edit_rop:"Edit resource",f_lang:"Language",f_url:"Document link (https://…)",open_doc:"Open document ↗",
  sg_box:"Training Study Guide",sg_open:"Download / Open Study Guide ↗",sg_edit:"Manage Study Guide",f_sg_title:"Study Guide title",f_sg_url:"Study Guide link (https://…)",
- site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
+ site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_bureau_bg:"Board background photo",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
  manage_board:"Board members",add_board:"Add a Board member",f_role_fr:"Role (FR)",f_role_en:"Role (EN)",f_bio:"Bio",
  manage_poles:"Association teams",add_pole:"Add a team",f_name_fr:"Name (FR)",f_name_en:"Name (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icon (emoji)",f_drive:"Shared folder link (Drive)",
  manage_partners:"Partners",add_partner:"Add a partner",f_site:"Website (https://…)",
@@ -396,7 +394,7 @@ const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")f
 let S={user:null,profile:null};
 let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
 let evSel=null,regList={event:null,rows:null};
-let route="accueil",poleSel=null,subSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
+let route="accueil",poleSel=null,authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
 
 /* ===== TRADUCTION AUTOMATIQUE ===== */
 let trCache=ls.get("somun_tr",{});
@@ -488,6 +486,11 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const sid=s=>String(s??"").replace(/[^\w-]/g,"");
 const idArg=id=>typeof id==="number"&&Number.isFinite(id)?String(id):`'${sid(id)}'`;
 const safeUrl=u=>{try{const x=new URL(u);return x.protocol==="https:"?x.href:null}catch(e){return null}};
+const safeAsset=u=>{
+  const s=String(u||"").trim();if(!s)return null;
+  if(/^[\w.-]+\.(jpg|jpeg|png|webp|gif)$/i.test(s))return s;
+  return safeUrl(s);
+};
 const normalizeSlug=v=>String(v||"").trim().replace(/^.*\/evenements\//i,"").replace(/[/?#].*$/,"").trim()||null;
 const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const currentSeason=()=>{const d=new Date();const y=d.getMonth()>=7?d.getFullYear():d.getFullYear()-1;return `${y}-${y+1}`};
@@ -500,7 +503,11 @@ const mon=d=>isNaN(dd(d))?"":dd(d).toLocaleDateString(loc(),{month:"short"});
 const long=d=>isNaN(dd(d))?isoDay(d):dd(d).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 const daysTo=d=>{const t0=new Date(todayStr()+"T12:00:00");return Math.round((dd(d)-t0)/864e5)};
 
-const cfg=k=>D.settings[k]??{hero_img:DEFAULT_HERO,contact_email:DEFAULT_CONTACT,instagram_url:DEFAULT_INSTAGRAM,linkedin_url:DEFAULT_LINKEDIN,cotisation:DEFAULT_COTISATION}[k];
+const cfg=k=>{
+  const v=D.settings[k];
+  if(v!=null&&String(v).trim()!=="")return v;
+  return {hero_img:DEFAULT_HERO,bureau_bg_img:DEFAULT_BUREAU_BG,contact_email:DEFAULT_CONTACT,instagram_url:DEFAULT_INSTAGRAM,linkedin_url:DEFAULT_LINKEDIN,cotisation:DEFAULT_COTISATION}[k];
+};
 const isStaff=()=>Boolean(S.profile&&S.profile.role==="bureau");
 const isPoleLead=pid=>isStaff()||D.myPoleRoles[pid]==="lead";
 const isTrainingLead=()=>{
@@ -542,17 +549,42 @@ const eventUrl=e=>helloassoReady&&e&&e.helloasso_slug?`https://www.helloasso.com
 const membershipUrl=()=>helloassoReady?`https://www.helloasso.com/associations/${encodeURIComponent(HELLOASSO_ORG)}/adhesions/${encodeURIComponent(HELLOASSO_MEMBERSHIP_SLUG)}`:null;
 const poleName=p=>lang==="fr"?p.name_fr:(p.name_en||p.name_fr);
 const poleDesc=p=>lang==="fr"?p.desc_fr:(p.desc_en||p.desc_fr);
-/* Sous-pôles du pôle Relations externes (reconnu par son nom ou son slug) */
-const RE_KEYS=["culturel","partenariats","alumni"];
-const isRelExt=p=>Boolean(p)&&/relations?[\s_-]*ext|external[\s_-]*relations/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`);
-const taskCount=n=>n+" "+((lang==="fr"?n>1:n!==1)?t("task_many"):t("task_one"));
-const subErr=e=>/sub_pole/i.test((e&&e.message)||"")?t("e_subpole"):errMsg(e);
 
 async function withBusy(btn,fn){
   if(btn)btn.disabled=true;
   try{return await fn()}finally{if(btn)btn.disabled=false}
 }
 const isMissingTableErr=err=>Boolean(err&&(err.code==="42P01"||err.code==="PGRST205"||String(err.message||"").includes("does not exist")));
+
+/* ===== COMPRESSION & UPLOAD PHOTO ===== */
+async function compressImage(file,maxDim=900,quality=0.82){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let {width:w,height:h}=img;
+      if(w>maxDim||h>maxDim){
+        if(w>h){h=Math.round(h*maxDim/w);w=maxDim}
+        else{w=Math.round(w*maxDim/h);h=maxDim}
+      }
+      const c=document.createElement("canvas");
+      c.width=w;c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      c.toBlob(b=>b?resolve(b):reject(new Error("Compression failed")),"image/jpeg",quality);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Invalid image"))};
+    img.src=url;
+  });
+}
+async function uploadSomunPhoto(file,folder,maxDim=900){
+  const blob=await compressImage(file,maxDim,0.82);
+  const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+  const {error}=await sb.storage.from("somun-media").upload(path,blob,{contentType:"image/jpeg",upsert:true});
+  if(error)throw error;
+  const {data}=sb.storage.from("somun-media").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 /* ===== CHARGEMENT DES DONNÉES ===== */
 async function loadTaken(){
@@ -653,11 +685,11 @@ window.addEventListener("popstate",()=>{
 function render(keep){
   document.documentElement.lang=lang;
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
-  const fl=[],cMail=cfg("contact_email"),ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url"));
+  const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url"));
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
-  $("#foot").innerHTML=(fl.length?`<div style="margin-bottom:6px">${fl.join("")}</div>`:"")+esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))+`<div class="f-brand">${logoImg()}</div>`;
+  $("#foot").innerHTML=`<div class="f-brand">${logoImg()}</div>`+(fl.length?`<div style="margin-bottom:6px">${fl.join("")}</div>`:"")+esc(t("foot")+(lang==="en"?" · "+t("autotr"):""));
   const staff=isStaff(),cur=route==="event"?"activites":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
@@ -723,7 +755,7 @@ const errBox=()=>D.err?`<div class="info" style="background:#fde8e8;color:#9b1c1
 
 /* ===== VUES ===== */
 function socialLinks(){
-  const l=[],ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url")),cMail=cfg("contact_email");
+  const l=[],ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url")),cMail=cfg("contact_email")||DEFAULT_CONTACT;
   if(ig)l.push(`<a class="btn ghost sm" href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)l.push(`<a class="btn ghost sm" href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
   if(cMail)l.push(`<a class="btn ghost sm" href="mailto:${esc(cMail)}">✉️ ${t("contact")}</a>`);
@@ -740,8 +772,8 @@ function vAccueil(){
   const next=D.events.filter(e=>isoDay(e.date)>=todayStr()).sort((a,b)=>isoDay(a.date).localeCompare(isoDay(b.date))).slice(0,3);
   const myRegCount=Object.values(D.myRegs).filter(s=>s==="confirmed").length;
   const totalRegs=Object.values(D.taken).reduce((a,b)=>a+b,0);
-  const name=S.profile&&S.profile.prenom,hImg=cfg("hero_img");
-  const heroBg=hImg?`background-image:url('${String(hImg).replace(/['"\\()]/g,"")}')`:"";
+  const name=S.profile&&S.profile.prenom,hImg=safeAsset(cfg("hero_img"));
+  const heroBg=hImg?`background-image:url('${hImg.replace(/['"\\()]/g,"")}')`:"";
   return `<section class="hero">
    <div class="hero-visual ${hImg?"has-photo":""}" style="${heroBg}">
      <div class="hero-crest">${logoImg()}</div>
@@ -842,15 +874,68 @@ function vAdherer(){
    <ul>${I18N[lang].perks.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><br>${action}
    <p class="mute" style="font-size:12px;margin:14px 0 0">${S.user&&!hasPaid()&&u?esc(t("ha_sync",{e:S.user.email}))+"<br>":""}${t("secure")}</p></div>`;
 }
-const vBureau=()=>D.loading?loadingBox():`<h1>${t("bureau_t")}</h1><p class="mute">${t("bureau_s")}</p>
-  <div class="grid" style="margin-top:14px">${D.board.map(m=>`<div class="card reveal">
-    <span class="tag">${esc(lang==="fr"?m.role_fr:(m.role_en||m.role_fr))}</span>
-    <h3 style="margin-top:8px">${esc(m.name)}</h3>${m.email?`<a class="mute" href="mailto:${esc(m.email)}" style="text-decoration:none">${esc(m.email)}</a>`:""}
-    ${m.bio?`<p style="font-size:14px;margin-top:8px;margin-bottom:0">${esc(T(m.bio))}</p>`:""}</div>`).join("")}</div>`;
+
+/* --- Onglet Bureau (Photo de fond semi-transparente + Portraits) --- */
+function canEditBoardMember(m){
+  if(isStaff())return true;
+  if(!S.profile)return false;
+  const full=`${S.profile.prenom||""} ${S.profile.nom||""}`.trim().toLowerCase();
+  return Boolean(full)&&String(m.name||"").trim().toLowerCase()===full;
+}
+function boardMemberPhoto(m){
+  const dbUrl=safeAsset(m.photo_url);
+  if(dbUrl)return dbUrl;
+  const first=String(m.name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  return BOARD_LOCAL_PHOTOS[first]||null;
+}
+function vBureau(){
+  if(D.loading)return loadingBox();
+  const bgUrl=safeAsset(cfg("bureau_bg_img"))||DEFAULT_BUREAU_BG;
+  const bgStyle=bgUrl?`--bg-img:url('${bgUrl.replace(/['"\\()]/g,"")}')`:"";
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap">
+    <div><h1>${t("bureau_t")}</h1><p class="mute" style="margin:0">${t("bureau_s")}</p></div>
+    ${isStaff()?`<label class="btn ghost sm" style="margin:0;cursor:pointer">🖼️ ${t("change_bureau_bg")}<input type="file" accept="image/*" style="display:none" onchange="uploadBureauBg(this)"></label>`:""}
+  </div>
+  <div class="bureau-wrap ${bgUrl?"has-bg":""}" style="${bgStyle};margin-top:16px">
+    <div class="grid">${D.board.map(m=>{
+      const pUrl=boardMemberPhoto(m);
+      const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+      const canPhoto=canEditBoardMember(m);
+      return `<div class="card board-card reveal">
+        ${pUrl?`<img class="board-photo" src="${esc(pUrl)}" alt="${esc(m.name)}" loading="lazy" onerror="if(!this.dataset.f&&this.src.endsWith('.jpg')){this.dataset.f=1;this.src=this.src.replace(/\\.jpg$/,'.jpeg')}else{this.outerHTML='<div class=\\'board-photo\\'>${esc(init)}</div>'}">`:`<div class="board-photo">${esc(init)}</div>`}
+        <span class="tag">${esc(lang==="fr"?m.role_fr:(m.role_en||m.role_fr))}</span>
+        <h3 style="margin-top:8px">${esc(m.name)}</h3>
+        <a class="mute" href="mailto:${esc(DEFAULT_CONTACT)}" style="text-decoration:none">${esc(DEFAULT_CONTACT)}</a>
+        ${m.bio?`<p style="font-size:14px;margin-top:8px;margin-bottom:0">${esc(T(m.bio))}</p>`:""}
+        ${canPhoto?`<label class="photo-pick">📷 ${t("choose_my_photo")}<input type="file" accept="image/*" style="display:none" onchange="uploadBoardMemberPhoto(${idArg(m.id)},this)"></label>`:""}
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+async function uploadBureauBg(input){
+  const file=input.files&&input.files[0];input.value="";if(!file)return;
+  toast(t("uploading"));
+  try{
+    const url=await uploadSomunPhoto(file,"bureau-bg",1400);
+    const {error}=await sb.from("site_settings").upsert({key:"bureau_bg_img",value:url});
+    if(error)return toast(errMsg(error));
+    await loadPublic();render(true);toast(t("photo_saved"));
+  }catch(e){toast(errMsg(e))}
+}
+async function uploadBoardMemberPhoto(id,input){
+  const file=input.files&&input.files[0];input.value="";if(!file)return;
+  toast(t("uploading"));
+  try{
+    const url=await uploadSomunPhoto(file,"board-portraits",600);
+    const {error}=await sb.from("board_members").update({photo_url:url}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();render(true);toast(t("photo_saved"));
+  }catch(e){toast(errMsg(e))}
+}
 
 function vPartenaires(){
   if(D.loading)return loadingBox();
-  const contact=cfg("contact_email")||(D.board.find(m=>m.email)||{}).email;
+  const contact=cfg("contact_email")||DEFAULT_CONTACT;
   return `<h1>${t("part_t")}</h1><p class="mute">${t("part_s")}</p>
   ${D.partners.length?`<div class="partners">${D.partners.map(p=>{
     const href=safeUrl(p.url||p.website);
@@ -1134,27 +1219,14 @@ function vPole(){
   if(!poleSel){
     if(!visible.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
     return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p>
-     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small>${isRelExt(p)?`<small class="sub-hint">${RE_KEYS.map(k=>t("sp_"+k)).join(" · ")}</small>`:""}</button>`).join("")}</div>`;
+     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
   }
   const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p){poleSel=null;return vPole()}
-  const docUrl=safeUrl(p.drive_url||p.doc_url),lead=isPoleLead(p.id),re=isRelExt(p);
-
-  // Relations externes : 3 sous-pôles, chacun avec son propre tableau de tâches
-  let tasks=D.tasks,subBar="";
-  if(re){
-    const bySub=k=>D.tasks.filter(x=>k==="general"?!RE_KEYS.includes(x.sub_pole):x.sub_pole===k);
-    const unsorted=bySub("general");
-    if(!RE_KEYS.includes(subSel)&&!(subSel==="general"&&unsorted.length))subSel=RE_KEYS[0];
-    tasks=bySub(subSel);
-    subBar=`<div class="subpoles" role="tablist">${RE_KEYS.map(k=>`<button role="tab" aria-selected="${subSel===k}" class="${subSel===k?"on":""}" onclick="subSel='${k}';render(true)" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropSub(event,'${k}')">${t("sp_"+k)}<small>${taskCount(bySub(k).length)}</small></button>`).join("")}</div>
-    ${unsorted.length&&subSel!=="general"?`<button class="chip sm" style="margin-top:10px" onclick="subSel='general';render(true)">${t("sp_unsorted",{n:unsorted.length})}</button>`:""}
-    ${subSel==="general"?`<div class="info" style="margin:12px 0 0"><b>${t("sp_general")}</b> — ${t("sp_general_txt")}</div>`:""}`;
-  }
-  const sortBtns=tid=>re&&subSel==="general"?`<div class="sort">${t("sp_sort")}${RE_KEYS.map(k=>`<button onclick="setTaskSub(${tid},'${k}',this)" title="${esc(t("sp_move",{s:t("sp_"+k)}))}">${t("sp_"+k)}</button>`).join("")}</div>`:"";
-  const col=(k,l)=>{const items=tasks.filter(x=>x.status===k);
+  const docUrl=safeUrl(p.drive_url||p.doc_url),lead=isPoleLead(p.id);
+  const col=(k,l)=>{const items=D.tasks.filter(x=>x.status===k);
     return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')">
      <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id);return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(x.title)}
-      ${sortBtns(tid)}<div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
+      <div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
 
   let leadPanel="";
   if(lead){
@@ -1178,8 +1250,7 @@ function vPole(){
 
   return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="chip" onclick="poleSel=null;go('pole')">${t("back")}</button>${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
   <h1 style="margin-top:12px">${esc(p.icon||"")} ${esc(poleName(p))}</h1><div class="mute">${esc(poleDesc(p))}</div>
-  ${subBar}
-  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(re&&subSel!=="general"?t("new_task_in",{s:t("sp_"+subSel)}):t("new_task"))}" required><button class="btn" type="submit">${t("add")}</button></form>
+  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}" required><button class="btn" type="submit">${t("add")}</button></form>
   <div class="cols">${col("todo",t("todo"))}${col("doing",t("doing"))}${col("done",t("done"))}</div>
   ${docUrl?`<h2>${t("docs")}</h2><a class="btn ghost sm" href="${esc(docUrl)}" target="_blank" rel="noopener">${t("open_docs")}</a>`:""}
   ${leadPanel}`;
@@ -1190,24 +1261,12 @@ async function addTask(ev){
   const input=ev.target.elements.t,title=input.value.trim();if(!title)return;
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const row={pole_id:poleSel,title,created_by:S.user.id};
-    if(isRelExt(D.poles.find(x=>String(x.id)===String(poleSel)))&&RE_KEYS.includes(subSel))row.sub_pole=subSel;
-    const {error}=await sb.from("tasks").insert(row);
-    if(error)return toast(subErr(error));
+    const {error}=await sb.from("tasks").insert({pole_id:poleSel,title,created_by:S.user.id});
+    if(error)return toast(errMsg(error));
     input.value="";
     await loadTasks();render(true);
   });
 }
-async function setTaskSub(id,sp,btn){
-  const cur=D.tasks.find(z=>String(z.id)===String(id));
-  if(!cur||cur.sub_pole===sp||!RE_KEYS.includes(sp))return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("tasks").update({sub_pole:sp}).eq("id",cur.id);
-    if(error)return toast(subErr(error));
-    await loadTasks();render(true);toast(t("t_ok"));
-  });
-}
-function dropSub(ev,sp){ev.preventDefault();ev.currentTarget.classList.remove("over");if(dragId!==null){const id=dragId;dragId=null;setTaskSub(id,sp)}}
 const ORDER=["todo","doing","done"];
 async function setTaskStatus(id,status,btn){
   const cur=D.tasks.find(z=>String(z.id)===String(id));
@@ -1347,7 +1406,7 @@ async function runPassation(btn){
   });
 }
 
-/* --- Import CSV & Sync API HelloAsso (Option A) --- */
+/* --- Import CSV & Sync API HelloAsso --- */
 async function importHelloAssoCSV(input){
   const file=input.files&&input.files[0];input.value="";if(!file)return;
   const buf=await file.arrayBuffer();
@@ -1503,14 +1562,15 @@ async function delRow(table,id,btn){
 function adminOrg(){
   return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSiteSettings(event)">
     <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}">
-    <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||"")}"></div>
+    <label>${t("f_bureau_bg")}</label><input name="bureau_bg_img" value="${esc(cfg("bureau_bg_img")||"")}">
+    <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
     <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div></div>
     <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="url" value="${esc(cfg("instagram_url")||"")}"></div>
     <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" value="${esc(cfg("linkedin_url")||"")}"></div></div>
     <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
 
   <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
-  ${D.board.map(m=>`<div class="card member"><div class="top"><div><h3>${esc(m.name)}</h3><div class="mute">${esc(m.role_fr)} · ${esc(m.email||"")}</div></div>
+  ${D.board.map(m=>`<div class="card member"><div class="top"><div><h3>${esc(m.name)}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
     <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`).join("")}
 
   <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
@@ -1539,7 +1599,7 @@ function editBoard(id){
     <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(m.name||"")}">
     <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
     <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div></div>
-    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||"")}">
+    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||DEFAULT_CONTACT)}">
     <label>${t("f_bio")}</label><textarea name="bio" rows="3" maxlength="500">${esc(m.bio||"")}</textarea>
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
@@ -1549,7 +1609,7 @@ async function saveBoard(ev,id){
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target);
-    const row={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||null,bio:(f.get("bio")||"").trim()||null};
+    const row={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
     const {error}=id==null?await sb.from("board_members").insert(row):await sb.from("board_members").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
