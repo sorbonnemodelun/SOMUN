@@ -139,9 +139,10 @@ a{color:var(--bleu)}
 .news{border-left:4px solid var(--or)}
 .news h3{font-family:var(--f-titre);font-weight:700;font-size:19px;padding-top:2px}
 
-/* ---------- Bureau : fond transparent & portraits ---------- */
-.bureau-wrap{position:relative;border-radius:22px;padding:24px 16px;overflow:hidden;isolation:isolate;background:var(--soft);border:1px solid var(--line)}
-.bureau-wrap::before{content:"";position:absolute;inset:0;background-image:url('photo_bureau.jpeg');background-size:cover;background-position:center 25%;opacity:.26;z-index:-1;pointer-events:none}
+/* ---------- Bureau : fond pleine page & portraits ---------- */
+body:has(.bureau-wrap){position:relative}
+body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url('photo_bureau.jpeg') center 22%/cover no-repeat;opacity:.22;z-index:-1;pointer-events:none}
+.bureau-wrap{padding:6px 0}
 .board-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-top:4px solid var(--or)}
 .board-photo{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:10px;box-shadow:0 6px 16px rgba(2,2,89,.14)}
 
