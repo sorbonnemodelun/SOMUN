@@ -172,6 +172,19 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .pole-pick button{text-align:left;border:1px solid var(--line);border-top:4px solid var(--bleu);background:#fff;color:var(--marine);padding:16px;border-radius:14px;cursor:pointer;font-size:16px;font-weight:600}
 .pole-pick button:hover{border-top-color:var(--or);box-shadow:0 6px 20px rgba(2,2,89,.08)}
 .pole-pick small{display:block;color:var(--mute);font-weight:400;margin-top:2px;font-size:13px}
+.pole-pick small.sub-hint{color:var(--bleu);font-weight:500;margin-top:8px;font-size:12.5px}
+/* Sous-pôles (Relations externes) */
+.subpoles{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));margin:16px 0 0}
+.subpoles button{display:block;text-align:left;border:1px solid var(--line);border-top:4px solid var(--line);background:#fff;color:var(--marine);padding:12px 14px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:600;min-width:0;overflow-wrap:anywhere;line-height:1.25;transition:background .15s,border-color .15s}
+.subpoles button:hover{border-top-color:var(--or)}
+.subpoles button.on{background:var(--bleu);color:#fff;border-color:var(--bleu);border-top-color:var(--or)}
+.subpoles button.over{background:var(--or-soft);border-color:var(--or)}
+.subpoles small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:3px}
+.subpoles button.on small{color:rgba(255,255,255,.78)}
+@media(max-width:560px){.subpoles{gap:8px}.subpoles button{padding:10px;font-size:13.5px}}
+.task .sort{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:8px;font-size:12px;color:var(--mute)}
+.task .sort button{border:1px solid var(--line);background:#fff;color:var(--bleu);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600;cursor:pointer}
+.task .sort button:hover{border-color:var(--bleu);background:var(--bleu-soft)}
 
 /* ---------- Partenaires, menu Plus, membres ---------- */
 .partners{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
@@ -201,8 +214,9 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 
 /* ---------- Pied de page ---------- */
 footer{background:var(--marine);color:rgba(255,255,255,.75);text-align:center;font-size:12px;padding:30px 16px 26px;border-top:5px solid var(--or)}
-footer .f-brand{display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;background:#ffffff;padding:12px 22px;border-radius:18px;border:2px solid var(--or);box-shadow:0 8px 24px rgba(0,0,0,.22)}
-footer .f-brand img{height:76px;width:auto;display:block}
+footer .f-brand{display:flex;width:fit-content;flex-direction:column;align-items:center;margin:14px auto 0;background:#ffffff;padding:6px 12px;border-radius:12px;border:2px solid var(--or);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+footer .f-brand img{height:38px;width:auto;display:block}
+footer .f-brand .mark{height:38px;width:38px}
 footer a{color:var(--or);text-decoration:none;font-weight:600;margin:0 8px;font-size:13px}
 footer a:hover{text-decoration:underline}
 
@@ -288,6 +302,9 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  poles_t:"Espace pôles",poles_s:"Choisis ton espace de travail.",members:"Réservé aux membres connectés.",back:"← Tous les pôles",no_pole_yet:"Tu n'as pas encore été ajouté à un pôle. Le bureau doit t'y attribuer.",
  new_task:"Nouvelle tâche…",add:"Ajouter",todo:"À faire",doing:"En cours",done:"Terminé",docs:"Documents",open_docs:"Ouvrir le dossier partagé ↗",
  pole_team:"Équipe du pôle",pole_lead:"Responsable",pole_member:"Membre",add_member_pole:"Ajouter un membre au pôle…",edit_pole:"Modifier les infos du pôle",
+ sp_culturel:"Culturel",sp_partenariats:"Partenariats",sp_alumni:"Alumni",sp_general:"Tâches non classées",sp_general_txt:"Ces tâches datent d'avant les sous-pôles. Range-les avec les boutons sous chaque tâche (ou glisse-les sur un sous-pôle).",
+ sp_unsorted:"{n} tâche(s) non classée(s)",sp_move:"Ranger dans « {s} »",sp_sort:"Ranger dans :",task_one:"tâche",task_many:"tâches",new_task_in:"Nouvelle tâche · {s}…",
+ e_subpole:"Les sous-pôles ne sont pas encore activés dans la base : le Bureau doit ajouter la colonne sub_pole à la table tasks.",
  part_t:"Partenaires",part_s:"Ils soutiennent SOMUN.",part_empty:"Aucun partenaire affiché pour le moment.",part_sp:"Devenir partenaire",part_txt:"Vous souhaitez soutenir Sorbonne Model UN ou recevoir notre plaquette partenariats ? Contactez le bureau.",part_contact:"Contacter le bureau",
  pay_note:"Le paiement de {p} € se fait via HelloAsso, versé sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
  t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
@@ -339,6 +356,9 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  poles_t:"Team spaces",poles_s:"Choose your workspace.",members:"Logged-in members only.",back:"← All teams",no_pole_yet:"You haven't been added to a team yet. The Board needs to assign you.",
  new_task:"New task…",add:"Add",todo:"To do",doing:"In progress",done:"Done",docs:"Documents",open_docs:"Open shared folder ↗",
  pole_team:"Team members",pole_lead:"Lead",pole_member:"Member",add_member_pole:"Add a member to this team…",edit_pole:"Edit team info",
+ sp_culturel:"Cultural",sp_partenariats:"Partnerships",sp_alumni:"Alumni",sp_general:"Unsorted tasks",sp_general_txt:"These tasks were created before sub-teams existed. Sort them with the buttons under each task (or drag them onto a sub-team).",
+ sp_unsorted:"{n} unsorted task(s)",sp_move:"Move to “{s}”",sp_sort:"Move to:",task_one:"task",task_many:"tasks",new_task_in:"New task · {s}…",
+ e_subpole:"Sub-teams are not enabled in the database yet: the Board needs to add the sub_pole column to the tasks table.",
  part_t:"Partners",part_s:"They support SOMUN.",part_empty:"No partners listed yet.",part_sp:"Become a partner",part_txt:"Interested in supporting Sorbonne Model UN or receiving our partnership deck? Contact the Board.",part_contact:"Contact the Board",
  pay_note:"The €{p} payment is made through HelloAsso, paid to the association's account.",free_note:"Free registration.",go_pay:"Reserve my spot",confirm:"Confirm my registration",cancel:"Cancel",go_ha:"Continue to HelloAsso",ha_after:"Your spot is held for 2 days. It will be confirmed automatically after payment (use the same email as your account).",open_form:"Fill out the form ↗",
  t_welcome:"Welcome!",t_bye:"See you soon!",t_reg:"Registration saved ✓",t_need:"Log in to register",t_pub:"Published!",t_ok:"Saved ✓",
@@ -376,7 +396,7 @@ const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")f
 let S={user:null,profile:null};
 let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
 let evSel=null,regList={event:null,rows:null};
-let route="accueil",poleSel=null,authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
+let route="accueil",poleSel=null,subSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0;
 
 /* ===== TRADUCTION AUTOMATIQUE ===== */
 let trCache=ls.get("somun_tr",{});
@@ -522,6 +542,11 @@ const eventUrl=e=>helloassoReady&&e&&e.helloasso_slug?`https://www.helloasso.com
 const membershipUrl=()=>helloassoReady?`https://www.helloasso.com/associations/${encodeURIComponent(HELLOASSO_ORG)}/adhesions/${encodeURIComponent(HELLOASSO_MEMBERSHIP_SLUG)}`:null;
 const poleName=p=>lang==="fr"?p.name_fr:(p.name_en||p.name_fr);
 const poleDesc=p=>lang==="fr"?p.desc_fr:(p.desc_en||p.desc_fr);
+/* Sous-pôles du pôle Relations externes (reconnu par son nom ou son slug) */
+const RE_KEYS=["culturel","partenariats","alumni"];
+const isRelExt=p=>Boolean(p)&&/relations?[\s_-]*ext|external[\s_-]*relations/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`);
+const taskCount=n=>n+" "+((lang==="fr"?n>1:n!==1)?t("task_many"):t("task_one"));
+const subErr=e=>/sub_pole/i.test((e&&e.message)||"")?t("e_subpole"):errMsg(e);
 
 async function withBusy(btn,fn){
   if(btn)btn.disabled=true;
@@ -632,7 +657,7 @@ function render(keep){
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
-  $("#foot").innerHTML=`<div class="f-brand">${logoImg()}</div>`+(fl.length?`<div style="margin-bottom:6px">${fl.join("")}</div>`:"")+esc(t("foot")+(lang==="en"?" · "+t("autotr"):""));
+  $("#foot").innerHTML=(fl.length?`<div style="margin-bottom:6px">${fl.join("")}</div>`:"")+esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))+`<div class="f-brand">${logoImg()}</div>`;
   const staff=isStaff(),cur=route==="event"?"activites":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
@@ -1109,14 +1134,27 @@ function vPole(){
   if(!poleSel){
     if(!visible.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
     return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p>
-     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
+     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small>${isRelExt(p)?`<small class="sub-hint">${RE_KEYS.map(k=>t("sp_"+k)).join(" · ")}</small>`:""}</button>`).join("")}</div>`;
   }
   const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p){poleSel=null;return vPole()}
-  const docUrl=safeUrl(p.drive_url||p.doc_url),lead=isPoleLead(p.id);
-  const col=(k,l)=>{const items=D.tasks.filter(x=>x.status===k);
+  const docUrl=safeUrl(p.drive_url||p.doc_url),lead=isPoleLead(p.id),re=isRelExt(p);
+
+  // Relations externes : 3 sous-pôles, chacun avec son propre tableau de tâches
+  let tasks=D.tasks,subBar="";
+  if(re){
+    const bySub=k=>D.tasks.filter(x=>k==="general"?!RE_KEYS.includes(x.sub_pole):x.sub_pole===k);
+    const unsorted=bySub("general");
+    if(!RE_KEYS.includes(subSel)&&!(subSel==="general"&&unsorted.length))subSel=RE_KEYS[0];
+    tasks=bySub(subSel);
+    subBar=`<div class="subpoles" role="tablist">${RE_KEYS.map(k=>`<button role="tab" aria-selected="${subSel===k}" class="${subSel===k?"on":""}" onclick="subSel='${k}';render(true)" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropSub(event,'${k}')">${t("sp_"+k)}<small>${taskCount(bySub(k).length)}</small></button>`).join("")}</div>
+    ${unsorted.length&&subSel!=="general"?`<button class="chip sm" style="margin-top:10px" onclick="subSel='general';render(true)">${t("sp_unsorted",{n:unsorted.length})}</button>`:""}
+    ${subSel==="general"?`<div class="info" style="margin:12px 0 0"><b>${t("sp_general")}</b> — ${t("sp_general_txt")}</div>`:""}`;
+  }
+  const sortBtns=tid=>re&&subSel==="general"?`<div class="sort">${t("sp_sort")}${RE_KEYS.map(k=>`<button onclick="setTaskSub(${tid},'${k}',this)" title="${esc(t("sp_move",{s:t("sp_"+k)}))}">${t("sp_"+k)}</button>`).join("")}</div>`:"";
+  const col=(k,l)=>{const items=tasks.filter(x=>x.status===k);
     return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')">
      <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id);return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(x.title)}
-      <div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
+      ${sortBtns(tid)}<div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
 
   let leadPanel="";
   if(lead){
@@ -1140,7 +1178,8 @@ function vPole(){
 
   return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="chip" onclick="poleSel=null;go('pole')">${t("back")}</button>${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
   <h1 style="margin-top:12px">${esc(p.icon||"")} ${esc(poleName(p))}</h1><div class="mute">${esc(poleDesc(p))}</div>
-  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}" required><button class="btn" type="submit">${t("add")}</button></form>
+  ${subBar}
+  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(re&&subSel!=="general"?t("new_task_in",{s:t("sp_"+subSel)}):t("new_task"))}" required><button class="btn" type="submit">${t("add")}</button></form>
   <div class="cols">${col("todo",t("todo"))}${col("doing",t("doing"))}${col("done",t("done"))}</div>
   ${docUrl?`<h2>${t("docs")}</h2><a class="btn ghost sm" href="${esc(docUrl)}" target="_blank" rel="noopener">${t("open_docs")}</a>`:""}
   ${leadPanel}`;
@@ -1151,12 +1190,24 @@ async function addTask(ev){
   const input=ev.target.elements.t,title=input.value.trim();if(!title)return;
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const {error}=await sb.from("tasks").insert({pole_id:poleSel,title,created_by:S.user.id});
-    if(error)return toast(errMsg(error));
+    const row={pole_id:poleSel,title,created_by:S.user.id};
+    if(isRelExt(D.poles.find(x=>String(x.id)===String(poleSel)))&&RE_KEYS.includes(subSel))row.sub_pole=subSel;
+    const {error}=await sb.from("tasks").insert(row);
+    if(error)return toast(subErr(error));
     input.value="";
     await loadTasks();render(true);
   });
 }
+async function setTaskSub(id,sp,btn){
+  const cur=D.tasks.find(z=>String(z.id)===String(id));
+  if(!cur||cur.sub_pole===sp||!RE_KEYS.includes(sp))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("tasks").update({sub_pole:sp}).eq("id",cur.id);
+    if(error)return toast(subErr(error));
+    await loadTasks();render(true);toast(t("t_ok"));
+  });
+}
+function dropSub(ev,sp){ev.preventDefault();ev.currentTarget.classList.remove("over");if(dragId!==null){const id=dragId;dragId=null;setTaskSub(id,sp)}}
 const ORDER=["todo","doing","done"];
 async function setTaskStatus(id,status,btn){
   const cur=D.tasks.find(z=>String(z.id)===String(id));
@@ -1601,4 +1652,3 @@ init();
 </script>
 </body>
 </html>
-
