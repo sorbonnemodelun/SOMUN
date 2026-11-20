@@ -82,16 +82,23 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 /* ---------- Mise en page & glissement bidirectionnel ---------- */
 main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;position:relative}
 .view{will-change:transform,opacity}
-.view.anim-right{animation:goRight .34s var(--ios-ease) forwards}
-.view.anim-left{animation:goLeft .34s var(--ios-ease) forwards}
+.view.anim-right{animation:goRight .42s var(--ios-ease) forwards}
+.view.anim-left{animation:goLeft .42s var(--ios-ease) forwards}
 @keyframes goRight{
-  from{opacity:0;transform:translateX(42px)}
+  from{opacity:0;transform:translateX(72px)}
   to{opacity:1;transform:translateX(0)}
 }
 @keyframes goLeft{
-  from{opacity:0;transform:translateX(-42px)}
+  from{opacity:0;transform:translateX(-72px)}
   to{opacity:1;transform:translateX(0)}
 }
+/* ancienne page qui sort pendant que la nouvelle entre */
+.view-ghost{position:absolute;left:18px;right:18px;z-index:0;pointer-events:none;will-change:transform,opacity}
+.view-ghost.out-left{animation:outLeft .34s var(--ios-ease) forwards}
+.view-ghost.out-right{animation:outRight .34s var(--ios-ease) forwards}
+@keyframes outLeft{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-72px)}}
+@keyframes outRight{from{opacity:1;transform:none}to{opacity:0;transform:translateX(72px)}}
+.view-ghost .reveal{opacity:1;filter:none;transform:none}
 h1{font-family:var(--f-titre);font-weight:800;font-size:clamp(30px,4.5vw,42px);line-height:1.06;margin:6px 0 8px;color:var(--bleu);letter-spacing:-.4px}
 h2{font-family:var(--f-titre);font-weight:700;font-size:clamp(20px,2.6vw,24px);color:var(--marine);margin:40px 0 16px;display:flex;justify-content:flex-start;align-items:center;gap:10px}
 h2::before{content:"";width:6px;height:22px;background:linear-gradient(180deg,var(--or),#d4ab00);border-radius:4px;margin-right:2px;flex:none;margin-top:-2px}
@@ -896,7 +903,19 @@ function render(keep,instantThumb){
   const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
+  /* glissement "poussé" : l'ancienne page part dans le sens opposé à la nouvelle */
+  let ghost=null;
+  const prev=appEl.firstElementChild;
+  if(animCls&&prev&&prev.classList.contains("view")&&!reduceMotionGlobe()){
+    ghost=prev.cloneNode(true);
+    ghost.className="view view-ghost "+(navDir==="left"?"out-right":"out-left");
+    ghost.removeAttribute("id");ghost.setAttribute("aria-hidden","true");
+    ghost.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));
+    ghost.querySelectorAll("a,button,input,select,textarea").forEach(e=>e.setAttribute("tabindex","-1"));
+    ghost.style.top=(prev.getBoundingClientRect().top-appEl.getBoundingClientRect().top)+"px";
+  }
   appEl.innerHTML=`<div class="view ${animCls}">${configured?errBox()+(V[route]||vAccueil)():vSetup()}</div>`;
+  if(ghost){appEl.appendChild(ghost);const kill=()=>ghost.remove();ghost.addEventListener("animationend",kill);setTimeout(kill,600)}
   requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
   if(!keep)window.scrollTo(0,0);
   observe(keep);if(!keep)stagger();animateStats();
