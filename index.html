@@ -79,18 +79,20 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 .tabbar button.on .ico{filter:none;transform:translateY(-2px) scale(1.08)}
 @media(min-width:860px){.dnav{display:flex}.tabbar{display:none}body{padding-bottom:0}}
 
-/* ---------- Mise en page & transitions de vues bidirectionnelles ---------- */
+/* ---------- Mise en page & transitions latérales bidirectionnelles ---------- */
 main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;position:relative}
-.view{animation:pageSlideFwd .32s var(--ios-ease) both;will-change:transform,opacity}
-.view.back{animation-name:pageSlideBack}
+.view{animation:slideFromRight .34s var(--ios-ease) both;will-change:transform,opacity}
+.view.dir-left{animation-name:slideFromLeft}
 .view.noanim{animation:none}
-@keyframes pageSlideFwd{
-  0%{opacity:0;transform:translate3d(22px,0,0) scale(.992)}
-  100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+/* Aller vers un onglet à droite (ex: Accueil -> Adhérer) : arrive depuis la droite vers la gauche */
+@keyframes slideFromRight{
+  0%{opacity:0;transform:translate3d(28px,0,0)}
+  100%{opacity:1;transform:translate3d(0,0,0)}
 }
-@keyframes pageSlideBack{
-  0%{opacity:0;transform:translate3d(-22px,0,0) scale(.992)}
-  100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+/* Aller vers un onglet à gauche (ex: Adhérer -> Accueil) : arrive depuis la gauche vers la droite */
+@keyframes slideFromLeft{
+  0%{opacity:0;transform:translate3d(-28px,0,0)}
+  100%{opacity:1;transform:translate3d(0,0,0)}
 }
 h1{font-family:var(--f-titre);font-weight:800;font-size:clamp(30px,4.5vw,42px);line-height:1.06;margin:6px 0 8px;color:var(--bleu);letter-spacing:-.4px}
 h2{font-family:var(--f-titre);font-weight:700;font-size:clamp(20px,2.6vw,24px);color:var(--marine);margin:40px 0 16px;display:flex;justify-content:flex-start;align-items:center;gap:10px}
@@ -171,6 +173,7 @@ a{color:var(--bleu);transition:color .2s var(--ease)}
 .news{border-left:4px solid var(--or)}
 .news:hover{border-color:#c6c9e8;border-left-color:var(--or);box-shadow:var(--shadow-md);transform:translateY(-3px)}
 .news h3{font-family:var(--f-titre);font-weight:700;font-size:19.5px;padding-top:2px}
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
 
 /* ---------- Bureau : fond pleine page & portraits ---------- */
 body:has(.bureau-wrap){position:relative}
@@ -700,14 +703,14 @@ function readHash(){
   else if((m=h.match(/^pole-([\w-]+)$/))){route="pole";poleSel=m[1]}
   else{route=ROUTES.includes(h)?h:"accueil";poleSel=null;evSel=null}
   const nextIdx=tabIndexFor(route);
-  navDir=nextIdx<prevIdx?"back":"fwd";
+  navDir=nextIdx<prevIdx?"left":"right";
   return true;
 }
 function go(r,replace){
   const prevIdx=tabIndexFor(route);
   closeSheet();route=r;if(r!=="pole")poleSel=null;if(r!=="event")evSel=null;
   const nextIdx=tabIndexFor(route);
-  navDir=nextIdx<prevIdx?"back":"fwd";
+  navDir=nextIdx<prevIdx?"left":"right";
   syncHash(replace);render();
   if(r==="pole"&&poleSel)loadTasks().then(()=>render(true));
   if(r==="event")loadRegistrants();
@@ -761,8 +764,13 @@ function render(keep,instantThumb){
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
   const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
-  const cls=["view",navDir==="back"?"back":"",keep?"noanim":""].filter(Boolean).join(" ");
-  $("#app").innerHTML=`<div class="${cls}">${configured?errBox()+(V[route]||vAccueil)():vSetup()}</div>`;
+  const cls=["view",navDir==="left"?"dir-left":"",keep?"noanim":""].filter(Boolean).join(" ");
+  const appEl=$("#app");
+  appEl.innerHTML="";
+  const wrap=document.createElement("div");
+  wrap.className=cls;
+  wrap.innerHTML=configured?errBox()+(V[route]||vAccueil)():vSetup();
+  appEl.appendChild(wrap);
   requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
   if(!keep)window.scrollTo(0,0);
   observe(keep);
@@ -801,6 +809,7 @@ function evCard(e){
   else if(formHref)action=`<button class="btn sm" onclick="openFormEvent(${id})">${t("open_form")}</button>`;
   else if(left<=0)action="";
   else action=`<button class="btn sm" onclick="openReg(${id})">${t("reg")}${e.prix?" · "+e.prix+" €":""}</button>`;
+  const staffBtns=isStaff()?`<div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);justify-content:flex-end"><button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${id},this)">🗑️ ${t("del")}</button></div>`:"";
   return `<div class="card ev ${past?"past":""} reveal">
    <div class="date"><b>${dd(e.date).getDate()||"—"}</b><span>${mon(e.date)}</span></div>
    <div class="body">
@@ -809,6 +818,7 @@ function evCard(e){
     <div class="mute">📍 ${esc(T(e.lieu))} · ${when}${hhmm(e.heure)?" · "+hhmm(e.heure):""}</div>
     <div class="bar-p"><span style="width:${pct}%"></span></div>
     <div class="foot"><span class="left">${past?`${taken}/${cap}`:left>0?left+" "+t("places"):t("full")}</span>${action}</div>
+    ${staffBtns}
    </div></div>`;
 }
 const newsCard=n=>`<div class="card news reveal"><h3>${esc(T(n.title))}</h3><div class="mute">${long(n.created_at)}</div><p style="margin:8px 0 0">${esc(T(n.body))}</p></div>`;
@@ -849,7 +859,7 @@ function vAccueil(){
    <div class="stats"><div class="stat"><b>${D.events.length}</b><span>${t("st_events")}</span></div><div class="stat"><b>${D.poles.length}</b><span>${t("st_poles")}</span></div><div class="stat"><b>${S.user?myRegCount:totalRegs}</b><span>${S.user?t("st_my_regs"):t("st_regs")}</span></div></div>
   </div></section>
   ${S.user?"":aboutBlock()}
-  <h2>${t("next")} <button onclick="go('activites')">${t("see_all")}</button></h2>
+  <h2>${t("next")} ${isStaff()?`<button onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}<button onclick="go('activites')">${t("see_all")}</button></h2>
   ${next.length?`<div class="grid">${next.map(evCard).join("")}</div>`:`<div class="card empty">${t("no_events")}</div>`}
   <h2>${t("news")} <button onclick="go('actus')">${t("see_all")}</button></h2>
   ${D.news.length?`<div class="grid">${D.news.slice(0,3).map(newsCard).join("")}</div>`:`<div class="card empty">${t("no_news")}</div>`}`;
@@ -859,7 +869,8 @@ function vActivites(){
   const base=S.user?["all","mine"]:["all"];
   if(!S.user&&filt==="mine")filt="all";
   const types=[...base,...new Set(D.events.map(e=>e.type).filter(Boolean))];
-  return `<h1>${t("activities")}</h1><input class="search" id="q" placeholder="🔍  ${esc(t("search"))}" value="${esc(q)}" oninput="q=this.value;list()" style="margin:8px 0">
+  return `<div class="page-head"><h1 style="margin:6px 0 8px">${t("activities")}</h1>${isStaff()?`<button class="btn sm" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}</div>
+  <input class="search" id="q" placeholder="🔍  ${esc(t("search"))}" value="${esc(q)}" oninput="q=this.value;list()" style="margin:8px 0">
   <div class="chips">${types.map(k=>`<button class="chip ${k===filt?"on":""}" onclick="filt='${sid(k)}';render(false,true)">${esc(k==="all"?t("all"):k==="mine"?t("mine"):(I18N[lang][k]||k))}</button>`).join("")}</div>
   <div class="grid" id="list">${listHTML()}</div>`;
 }
@@ -993,7 +1004,7 @@ function vEvent(){
   else if(formHref)action=`<button class="btn" onclick="openFormEvent(${id})">${t("open_form")}</button>`;
   else if(left<=0)action=`<span class="tag gray">${t("full")}</span>`;
   else action=`<button class="btn" onclick="openReg(${id})">${t("reg")}${e.prix?" · "+e.prix+" €":""}</button>`;
-  if(isStaff())action+=`<button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button>`;
+  if(isStaff())action+=`<button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">🗑️ ${t("del")}</button>`;
   if(canEditSG)action+=`<button class="btn ghost sm" onclick="editStudyGuide(${id})">📘 ${t("sg_edit")}</button>`;
 
   const sgBlock=(canSeeSG||canEditSG)?`<div class="sg-box">
@@ -1544,6 +1555,10 @@ function eventForm(e){
     <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
     <br><button class="btn" type="submit">${isNew?t("publish"):t("save")}</button></form>`;
 }
+function openNewEvent(){
+  if(!isStaff())return toast(t("admin_only"));
+  openSheet(`<h3>${t("add_ev")}</h3>${eventForm()}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
 function newsForm(n){
   n=n||{};const isNew=n.id==null;
   return `<form onsubmit="saveNews(event,${isNew?"null":idArg(n.id)})">
@@ -1561,15 +1576,18 @@ function adminContent(){
     <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></div></div></div>`).join("")}`;
 }
 function editEvent(id){
+  if(!isStaff())return toast(t("admin_only"));
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
   openSheet(`<h3>${t("edit_ev")}</h3>${eventForm(e)}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
 function editNews(id){
+  if(!isStaff())return toast(t("admin_only"));
   const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
   openSheet(`<h3>${t("edit_news")}</h3>${newsForm(n)}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
 async function saveEvent(ev,id){
   ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target);
@@ -1587,11 +1605,12 @@ async function saveEvent(ev,id){
     if(error)return toast(errMsg(error));
     toast(prix>0&&!slug&&!formUrl?t("slug_warn"):id==null?t("t_pub"):t("t_ok"));
     closeSheet();await loadPublic();
-    if(id==null)go("activites");else render(true);
+    if(id==null&&route!=="activites")go("activites");else render(true);
   });
 }
 async function saveNews(ev,id){
   ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target),row={title:f.get("title").trim(),body:f.get("body").trim()};
@@ -1602,12 +1621,24 @@ async function saveNews(ev,id){
     if(id==null)go("actus");else render(true);
   });
 }
+async function delEventFromView(id,btn){
+  if(!isStaff())return toast(t("admin_only"));
+  if(!confirm(t("confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("events").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();
+    toast(t("t_ok"));
+    go("activites");
+  });
+}
 async function delRow(table,id,btn){
+  if(table==="events"&&!isStaff())return toast(t("admin_only"));
   if(!confirm(t("confirm_del")))return;
   await withBusy(btn,async()=>{
     const {error}=await sb.from(table).delete().eq("id",id);
     if(error)return toast(errMsg(error));
-    await loadPublic();render(true);
+    await loadPublic();render(true);toast(t("t_ok"));
   });
 }
 
