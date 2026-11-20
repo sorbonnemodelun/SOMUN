@@ -246,8 +246,8 @@ footer a:hover{text-decoration:underline}
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_qbTr9jyjy7pXDiz81KDjEg_jHqKR9br";
-const HELLOASSO_ORG="VOTRE-ASSO";                    // à remplacer par le slug HelloAsso de l'association
-const HELLOASSO_MEMBERSHIP_SLUG="adhesion";          // identifiant du formulaire d'adhésion
+const HELLOASSO_ORG="sorbonne-model-united-nations-somun";
+const HELLOASSO_MEMBERSHIP_SLUG="adhesion-somun-2026-2027";
 const DEFAULT_COTISATION=15;
 const LOGO_SRC="logo-somun.png";
 const DEFAULT_HERO="";
@@ -1129,11 +1129,11 @@ function vPole(){
       ${teamLinks.map(link=>{const m=byId[link.user_id]||{};const uid=sid(link.user_id);return `<div class="foot" style="border-bottom:1px solid var(--line);padding:8px 0;margin:0">
         <span><b>${esc(m.prenom||"")} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")})</span></span>
         <div style="display:flex;gap:6px;align-items:center">
-          <select style="width:auto;padding:4px 8px;font-size:12px" onchange="setPoleMemberRole('${uid}',${idArg(p.id)},this.value,this)">
+          ${isStaff()?`<select style="width:auto;padding:4px 8px;font-size:12px" onchange="setPoleMemberRole('${uid}',${idArg(p.id)},this.value,this)">
             <option value="member" ${(link.role||"member")==="member"?"selected":""}>${t("pole_member")}</option>
             <option value="lead" ${link.role==="lead"?"selected":""}>${t("pole_lead")}</option>
-          </select>
-          <button class="btn danger sm" onclick="removePoleMember('${uid}',${idArg(p.id)},this)">×</button>
+          </select>`:`<span class="tag ${link.role==="lead"?"paid":"gray"}">${link.role==="lead"?t("pole_lead"):t("pole_member")}</span>`}
+          ${(isStaff()||link.role!=="lead")?`<button class="btn danger sm" onclick="removePoleMember('${uid}',${idArg(p.id)},this)">×</button>`:""}
         </div></div>`}).join("")||`<div class="mute">${t("no_members")}</div>`}
     </div>`;
   }
@@ -1562,4 +1562,3 @@ init();
 </script>
 </body>
 </html>
-
