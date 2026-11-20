@@ -186,6 +186,7 @@ body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url(
 body:has(.bureau-wrap) header{background:rgba(255,255,255,.56);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-bottom-color:rgba(226,228,242,.7)}
 .bureau-wrap{padding:6px 0}
 .board-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+@media(max-width:859px){.board-card{order:var(--om,99)}}
 .board-card{flex:1 1 280px;max-width:340px;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:4px solid var(--or);border-radius:20px;cursor:pointer}
 .board-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);background:rgba(255,255,255,.98);border-color:#c6c9e8;border-top-color:var(--or)}
 .board-photo{width:106px;height:106px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:12px;box-shadow:0 8px 20px rgba(2,2,89,.15);transition:transform .3s var(--ease)}
@@ -421,6 +422,7 @@ const BOARD_BIO_PHOTOS={
   come:"photo_bio_come.jpeg"
 };
 const BOARD_ORDER=["come","servan","pierre","emna","clara"];
+const BOARD_ORDER_MOBILE=["servan","pierre","come","emna","clara"]; /* ordre de haut en bas sur téléphone */
 const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
 const DEFAULT_INSTAGRAM="";
 const DEFAULT_LINKEDIN="";
@@ -1153,7 +1155,8 @@ function vBureau(){
     <div class="board-grid">${ordered.map(m=>{
       const pUrl=boardMemberPhoto(m);
       const init=((m.name||"?").trim()[0]||"?").toUpperCase();
-      return `<div class="card board-card reveal" role="button" tabindex="0" onclick="openBoardBio(${idArg(m.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBoardBio(${idArg(m.id)})}">
+      const om=(i=>i===-1?99:i)(BOARD_ORDER_MOBILE.indexOf(firstKey(m.name)));
+      return `<div class="card board-card reveal" style="--om:${om}" role="button" tabindex="0" onclick="openBoardBio(${idArg(m.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBoardBio(${idArg(m.id)})}">
         ${avatarMarkup(pUrl,init,"board-photo")}
         <span class="tag">${esc(T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr)))}</span>
         <h3 style="margin-top:8px">${esc(protectProperNames(m.name))}</h3>
