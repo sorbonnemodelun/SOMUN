@@ -334,30 +334,7 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 <div class="sheet-bg" id="sheetbg" role="dialog" aria-modal="true" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script>
-window.__supabaseReady=(async()=>{
-  const urls=[
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
-    "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js",
-    "https://esm.sh/@supabase/supabase-js@2?bundle"
-  ];
-  for(const src of urls){
-    if(typeof window.supabase!=="undefined")return true;
-    try{
-      await new Promise((resolve,reject)=>{
-        const s=document.createElement("script");
-        s.src=src;s.async=true;
-        const timer=setTimeout(()=>{s.remove();reject(new Error("timeout"))},3800);
-        s.onload=()=>{clearTimeout(timer);resolve(true)};
-        s.onerror=()=>{clearTimeout(timer);s.remove();reject(new Error("load error"))};
-        document.head.appendChild(s);
-      });
-      if(typeof window.supabase!=="undefined")return true;
-    }catch(e){}
-  }
-  return typeof window.supabase!=="undefined";
-})();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
@@ -384,20 +361,10 @@ const DEFAULT_LINKEDIN="";
 const MIN_PWD=12;
 
 const keysConfigured=!SUPABASE_URL.includes("VOTRE-")&&!SUPABASE_ANON_KEY.includes("VOTRE-");
-let sdkLoaded=typeof window.supabase!=="undefined";
-let configured=keysConfigured&&sdkLoaded;
+const sdkLoaded=typeof supabase!=="undefined";
+const configured=keysConfigured&&sdkLoaded;
 const helloassoReady=Boolean(HELLOASSO_ORG)&&!HELLOASSO_ORG.includes("VOTRE-");
-let sb=null;
-
-function ensureSupabaseClient(){
-  sdkLoaded=typeof window.supabase!=="undefined"&&typeof window.supabase.createClient==="function";
-  configured=keysConfigured&&sdkLoaded;
-  if(configured&&!sb){
-    try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)}
-    catch(e){console.error(e);sb=null;configured=false}
-  }
-  return sb;
-}
+const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 
 /* ===== TEXTES FR / EN ===== */
 const I18N={
@@ -659,4 +626,2382 @@ const daysTo=d=>{const t0=new Date(todayStr()+"T12:00:00");return Math.round((dd
 const cfg=k=>{
   const v=D.settings[k];
   if(v!=null&&String(v).trim()!=="")return v;
-  return {hero_img:DEFAULT_HERO,contact_email:DEFAULT_CONTACT,instagram
+  return {hero_img:DEFAULT_HERO,contact_email:DEFAULT_CONTACT,instagram_url:DEFAULT_INSTAGRAM,linkedin_url:DEFAULT_LINKEDIN,cotisation:DEFAULT_COTISATION}[k];
+};
+const isStaff=()=>Boolean(S.profile&&S.profile.role==="bureau");
+const isPoleLead=pid=>isStaff()||D.myPoleRoles[pid]==="lead";
+const isTrainingLead=()=>{
+  if(isStaff())return true;
+  return D.poles.some(p=>D.myPoleRoles[p.id]==="lead"&&/training/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`));
+};
+const hasPaid=()=>{const p=S.profile;return Boolean(p&&p.paid&&(!p.paid_until||isoDay(p.paid_until)>=todayStr()))};
+
+function logoImg(cls=""){
+  return `<img class="${cls}" src="${LOGO_SRC}" alt="SOMUN" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='logo-somun.jpg'}else{this.outerHTML='<span class=\\'mark\\'>SO</span>'}">`;
+}
+$("#logo").innerHTML=logoImg();
+
+function toast(m){const e=$("#toast");e.textContent=m;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),3400)}
+function errMsg(e){
+  const m=(e&&e.message)||"";
+  if(m.includes("members_only"))return t("t_err_members");
+  if(m.includes("paid_contact_bureau"))return t("paid_cancel");
+  if(m.includes("event_past"))return t("e_cancel_past");
+  if(m.includes("full"))return t("t_err_full");
+  return authErr(e);
+}
+function authErr(e){
+  const m=((e&&e.message)||"").toLowerCase(),c=String((e&&e.code)||"");
+  if(c==="invalid_credentials"||m.includes("invalid login credentials"))return t("e_creds");
+  if(c==="email_not_confirmed"||m.includes("email not confirmed"))return t("e_unconfirmed");
+  if(c==="user_already_exists"||c==="email_exists"||m.includes("already registered"))return t("e_exists");
+  if(c==="same_password"||m.includes("should be different"))return t("e_same");
+  if(c==="weak_password"||m.includes("password should")||m.includes("weak"))return t("e_weak");
+  if(c==="email_address_invalid"||m.includes("invalid format")||m.includes("email address"))return t("e_email");
+  if(c.startsWith("over_")||m.includes("rate limit")||m.includes("security purposes"))return t("e_rate");
+  if(c==="session_expired"||c==="session_not_found"||m.includes("jwt expired")||m.includes("session missing"))return t("e_session");
+  if(m.includes("failed to fetch")||m.includes("networkerror")||m.includes("load failed"))return t("e_net");
+  console.error(e);
+  return isStaff()&&e&&e.message?e.message:t("e_generic");
+}
+function toggleLang(){lang=lang==="fr"?"en":"fr";ls.set("somun_lang",lang);render(false,true)}
+const eventUrl=e=>helloassoReady&&e&&e.helloasso_slug?`https://www.helloasso.com/associations/${encodeURIComponent(HELLOASSO_ORG)}/evenements/${encodeURIComponent(e.helloasso_slug)}`:null;
+const membershipUrl=()=>helloassoReady?`https://www.helloasso.com/associations/${encodeURIComponent(HELLOASSO_ORG)}/adhesions/${encodeURIComponent(HELLOASSO_MEMBERSHIP_SLUG)}`:null;
+const poleName=p=>lang==="fr"?T(p.name_fr):(p.name_en?T(p.name_en):T(p.name_fr));
+const poleDesc=p=>lang==="fr"?T(p.desc_fr):(p.desc_en?T(p.desc_en):T(p.desc_fr));
+
+async function withBusy(btn,fn){
+  if(btn)btn.disabled=true;
+  try{return await fn()}finally{if(btn)btn.disabled=false}
+}
+const isMissingTableErr=err=>Boolean(err&&(err.code==="42P01"||err.code==="PGRST205"||String(err.message||"").includes("does not exist")));
+
+/* ===== CHARGEMENT DES DONNÉES ===== */
+async function loadTaken(){
+  const r=await sb.from("event_stats").select("*");
+  if(!r.error)D.taken=Object.fromEntries((r.data||[]).map(x=>[x.event_id,Number(x.taken)||0]));
+}
+async function loadPublic(){
+  const [ev,ne,po,bo,pa,st,re,se]=await Promise.all([
+    sb.from("events").select("*").order("date"),
+    sb.from("news").select("*").order("created_at",{ascending:false}),
+    sb.from("poles").select("*").order("sort"),
+    sb.from("board_members").select("*").order("sort"),
+    sb.from("partners").select("*").order("sort"),
+    sb.from("event_stats").select("*"),
+    sb.from("resources").select("*").order("sort"),
+    sb.from("site_settings").select("*")
+  ]);
+  const bad=[ev,ne,po,bo,pa].find(r=>r.error);
+  D.err=bad?bad.error.message+(bad.error.hint?" — "+bad.error.hint:""):"";
+  if(bad)console.error(bad.error);
+  D.events=ev.data||[];D.news=ne.data||[];D.poles=po.data||[];D.board=bo.data||[];D.partners=pa.data||[];
+  if(!st.error)D.taken=Object.fromEntries((st.data||[]).map(x=>[x.event_id,Number(x.taken)||0]));
+  if(!re.error)D.resources=re.data||[];else if(!isMissingTableErr(re.error))console.error(re.error);
+  if(!se.error&&se.data)D.settings=Object.fromEntries(se.data.map(x=>[x.key,x.value]));
+  else if(se.error&&!isMissingTableErr(se.error))console.error(se.error);
+  lastSync=Date.now();
+}
+async function loadPrivate(){
+  if(!S.user){S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];return}
+  const [pr,mp,rg,hi]=await Promise.all([
+    sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle(),
+    sb.from("pole_members").select("*").eq("user_id",S.user.id),
+    sb.from("registrations").select("event_id,status").eq("user_id",S.user.id),
+    sb.from("membership_history").select("*").eq("user_id",S.user.id).order("created_at",{ascending:false})
+  ]);
+  S.profile=pr.data||null;
+  D.myPoles=(mp.data||[]).map(x=>x.pole_id);
+  D.myPoleRoles=Object.fromEntries((mp.data||[]).map(x=>[x.pole_id,x.role||"member"]));
+  D.myRegs=Object.fromEntries((rg.data||[]).map(x=>[x.event_id,x.status]));
+  D.myHistory=!hi.error?(hi.data||[]):[];
+  if(isStaff()||Object.values(D.myPoleRoles).includes("lead"))await loadAdmin();
+  else{D.members=[];D.memberPoles=[]}
+}
+async function loadAdmin(){
+  const [m,pm]=await Promise.all([
+    sb.from("profiles").select("*").order("created_at",{ascending:false}),
+    sb.from("pole_members").select("*")
+  ]);
+  if(!m.error)D.members=m.data||[];
+  if(!pm.error)D.memberPoles=pm.data||[];
+}
+async function loadTasks(){
+  if(!poleSel)return;
+  const r=await sb.from("tasks").select("*").eq("pole_id",poleSel).order("created_at");
+  if(!r.error)D.tasks=r.data||[];
+}
+async function refreshAll(){
+  await Promise.all([loadPublic(),loadPrivate()]);
+  if(poleSel)await loadTasks();
+  if(route==="event")await loadRegistrants();
+  softRender();
+}
+
+/* ===== BANQUE DE 100 QUESTIONS ROP (ROPs SOMUN.pdf) ===== */
+const ROP_QUIZ=[
+  // --- Catégorie 1 : I–II Bureau & Décorum (16 questions) ---
+  {id:1,cat:"gen",ref:"I.a",
+   qFr:"Quelle est la langue officielle et de travail de la conférence selon les ROP SOMUN ?",
+   qEn:"What is the official and working language of the conference according to the SOMUN ROP?",
+   oFr:["L'anglais uniquement","Le français uniquement","L'anglais et le français à égalité","Le luxembourgeois et l'anglais"],
+   oEn:["English only","French only","English and French equally","Luxembourgish and English"],
+   ans:0,
+   expFr:"L'article I.a prévoit que l'anglais est à la fois la langue officielle et la langue de travail de la conférence.",
+   expEn:"Rule I.a states that English shall be both the official and working language of the conference."},
+  {id:2,cat:"gen",ref:"I.b",
+   qFr:"Comment les délégués doivent-ils s'adresser aux autres membres et aux membres du Bureau pendant les séances ?",
+   qEn:"How must delegates address fellow members and Council officers during sessions?",
+   oFr:["En utilisant la deuxième personne du singulier (« tu »)","En utilisant la troisième personne du singulier ou du pluriel","En s'appelant par les prénoms","En s'adressant directement au Secrétaire général"],
+   oEn:["Using the second person singular ('you' directly)","Using the third person singular or plural","Calling each other by first names","Addressing the Secretary-General directly"],
+   ans:1,
+   expFr:"Selon la règle I.b (Diplomatic Courtesy), les délégués doivent s'adresser aux autres et au Bureau à la troisième personne du singulier ou du pluriel.",
+   expEn:"Under Rule I.b (Diplomatic Courtesy), delegates must address each other and Council officers using the third person singular or plural."},
+  {id:3,cat:"gen",ref:"II",
+   qFr:"Qui préside les séances du Conseil selon l'article II des ROP SOMUN ?",
+   qEn:"Who serves as chairperson at Council sessions under Section II of the SOMUN ROP?",
+   oFr:["Les présidents de l'Assemblée générale des Nations unies","Le représentant du Luxembourg","Le doyen des délégations","Un vote majoritaire des délégués en début de séance"],
+   oEn:["The United Nations General Assembly presidents","The representative of Luxembourg","The dean of delegations","A majority vote of delegates at the start of the session"],
+   ans:0,
+   expFr:"L'article II indique que les présidents de l'Assemblée générale des Nations unies assurent la présidence de toutes les séances du Conseil.",
+   expEn:"Section II states that the United Nations General Assembly presidents are the chairpersons at all Council sessions."},
+  {id:4,cat:"gen",ref:"II",
+   qFr:"Qui est seul habilité à prononcer des suspensions (recesses), des ajournements ou la suspension des règles ?",
+   qEn:"Who alone is empowered to call recesses, adjournments, or suspend the rules?",
+   oFr:["Tout délégué ayant obtenu la parole","Un membre du Bureau ayant recueilli trois soutiens","Uniquement les présidents (chairs)","Le rapporteur de la résolution"],
+   oEn:["Any delegate holding the floor","A chair with three seconds","Only the chairs","The rapporteur of the resolution"],
+   ans:2,
+   expFr:"L'article II précise que seuls les présidents sont habilités à prononcer des suspensions, ajournements ou suspensions du règlement.",
+   expEn:"Section II states that only the chairs are empowered to call recesses or adjournments or to suspend the rules."},
+  {id:5,cat:"gen",ref:"II",
+   qFr:"Les présidents peuvent-ils appeler une délégation à prendre la parole même si elle ne l'a pas demandée ?",
+   qEn:"May the chairs call upon a specific delegation to speak even if it has not requested the floor?",
+   oFr:["Non, jamais sans pancarte levée","Oui, dans l'intérêt du débat ou pour favoriser le consensus","Uniquement lors d'un vote par appel nominal","Seulement après accord du Vice-président"],
+   oEn:["No, never without a raised placard","Yes, in the interest of debate or to work towards consensus","Only during a roll call vote","Only with the Vice-Chair's approval"],
+   ans:1,
+   expFr:"L'article II permet aux présidents d'appeler une délégation à s'exprimer dans l'intérêt du débat ou pour rechercher le consensus.",
+   expEn:"Section II allows chairs to call upon a delegation to speak in the interest of debate or to work towards consensus."},
+  {id:6,cat:"gen",ref:"II",
+   qFr:"Dans quel but les présidents peuvent-ils restreindre le temps de parole individuel d'un délégué ?",
+   qEn:"For what purposes may the chairs restrict an individual delegate's speaking time?",
+   oFr:["Pour punir une absence à l'appel initial","Dans l'intérêt du débat ou pour favoriser le consensus","Uniquement si le délégué a déjà parlé deux fois","Jamais, seul un vote des deux tiers le permet"],
+   oEn:["To punish missing initial roll call","In the interest of debate or to work towards consensus","Only if the delegate has already spoken twice","Never, only a two-thirds vote allows it"],
+   ans:1,
+   expFr:"L'article II prévoit que les présidents peuvent restreindre le temps de parole individuel dans l'intérêt du débat ou pour tendre vers le consensus.",
+   expEn:"Section II provides that chairs may restrict individual speaking time in the interest of debate or to work towards consensus."},
+  {id:7,cat:"gen",ref:"II",
+   qFr:"Quelle prérogative appartient aux présidents concernant l'ordre des résolutions débattues ?",
+   qEn:"What authority do chairs hold regarding the order in which resolutions are debated?",
+   oFr:["Ils décident de l'ordre dans lequel les résolutions sont débattues","L'ordre est tiré au sort par les rapporteurs","Les sponsors choisissent librement l'ordre","Les amendements passent toujours après le vote final"],
+   oEn:["They decide the order in which resolutions are debated","Order is drawn by lot by rapporteurs","Sponsors freely choose the order","Amendments always follow the final vote"],
+   ans:0,
+   expFr:"L'article II confère aux présidents le pouvoir de décider de l'ordre dans lequel les résolutions sont débattues et de diriger les discussions.",
+   expEn:"Section II gives chairs the power to decide the order in which resolutions are debated and direct discussions."},
+  {id:8,cat:"gen",ref:"II",
+   qFr:"Quel pouvoir les présidents exercent-ils sur le déroulement des séances formelles ?",
+   qEn:"What control do chairs exercise over formal meetings?",
+   oFr:["Un contrôle consultatif uniquement","Le contrôle complet des débats et du maintien de l'ordre en séance formelle","Aucun contrôle pendant les discours des sponsors","Le contrôle uniquement pendant les pauses"],
+   oEn:["Advisory control only","Complete control over proceedings and order maintenance at formal meetings","No control during sponsors' speeches","Control only during recesses"],
+   ans:1,
+   expFr:"L'article II stipule que les présidents ont le contrôle complet des débats à toute séance et du maintien de l'ordre en séance formelle.",
+   expEn:"Section II states that chairs have complete control over proceedings at any meeting and order maintenance at formal meetings."},
+  {id:9,cat:"gen",ref:"II",
+   qFr:"Sur quels points les présidents peuvent-ils proposer des limitations ?",
+   qEn:"On which matters may chairs propose limitations?",
+   oFr:["La durée des débats, le nombre d'interventions par délégué sur une question et la clôture du débat","Uniquement la durée des pauses café","Le nombre d'États membres présents","Le montant des amendements"],
+   oEn:["Debate time, number of times each delegate may speak on a question, and closure of debate","Only break duration","Number of member states present","Amendment word count"],
+   ans:0,
+   expFr:"L'article II autorise les présidents à proposer des limitations sur la durée des débats, le nombre d'interventions par question et la clôture du débat.",
+   expEn:"Section II lets chairs propose limits on debate time, number of speeches per question, and closure of debate."},
+  {id:10,cat:"gen",ref:"II",
+   qFr:"À quel moment les présidents déclarent-ils l'ouverture et la clôture de chaque séance ?",
+   qEn:"When do the chairs declare the opening and closing of each meeting?",
+   oFr:["À l'heure prévue ou selon leurs pouvoirs statutaires de présidence","Uniquement sur motion à la majorité des trois quarts","Dès que la première résolution est adoptée","Jamais, la séance commence automatiquement"],
+   oEn:["In exercising their chairing powers for each meeting","Only by three-quarters motion","As soon as the first resolution passes","Never, meetings start automatically"],
+   ans:0,
+   expFr:"L'article II mentionne explicitement que les présidents déclarent l'ouverture et la clôture de chaque séance.",
+   expEn:"Section II explicitly states that chairs declare the opening and closing of each meeting."},
+  {id:11,cat:"gen",ref:"I.b",
+   qFr:"Pourquoi la courtoisie diplomatique est-elle exigée pendant les séances du Conseil ?",
+   qEn:"Why is diplomatic courtesy expected during Council sessions?",
+   oFr:["Pour maintenir un cadre formel et respectueux entre délégations et Bureau","Pour accélérer les votes par appel nominal","Uniquement lors des caucus informels","Pour réduire la liste des orateurs"],
+   oEn:["To maintain a formal, respectful setting among delegations and chairs","To speed up roll call votes","Only during unmoderated caucuses","To shorten the speakers' list"],
+   ans:0,
+   expFr:"La règle I.b demande aux délégués de faire preuve de courtoisie diplomatique lorsqu'ils s'adressent aux membres du Conseil et au Bureau.",
+   expEn:"Rule I.b expects delegates to exercise diplomatic courtesy when addressing Council members and officers."},
+  {id:12,cat:"gen",ref:"II",
+   qFr:"Comment le Bureau statue-t-il sur un rappel au règlement (Point of Order) ?",
+   qEn:"How do the chairs rule on a Point of Order?",
+   oFr:["Immédiatement, conformément au règlement intérieur","Après un vote des deux tiers","À la fin de la séance suivante","En demandant l'avis des signataires"],
+   oEn:["Immediately, in accordance with the Rules of Procedure","After a two-thirds vote","At the end of the next session","By asking signatories' opinion"],
+   ans:0,
+   expFr:"Selon l'article II et la règle V.a, le Bureau statue immédiatement sur un Point of Order conformément aux règles de procédure.",
+   expEn:"Under Section II and Rule V.a, chairs rule immediately on a Point of Order in accordance with the Rules of Procedure."},
+  {id:13,cat:"gen",ref:"I.a",
+   qFr:"Un délégué peut-il s'exprimer dans une autre langue que l'anglais pendant les débats ?",
+   qEn:"May a delegate speak in a language other than English during debate?",
+   oFr:["Non, l'anglais est la langue officielle et de travail de la conférence","Oui, sans restriction","Uniquement pendant les unmoderated caucuses","Oui, s'il a un traducteur personnel"],
+   oEn:["No, English is the official and working language of the conference","Yes, without restriction","Only during unmoderated caucuses","Yes, with a personal interpreter"],
+   ans:0,
+   expFr:"La règle I.a établit l'anglais comme langue officielle et de travail de la conférence.",
+   expEn:"Rule I.a establishes English as both the official and working language of the conference."},
+  {id:14,cat:"gen",ref:"II",
+   qFr:"Quel rôle joue le Bureau si des délégués ont besoin d'orientation sur la suite des débats ?",
+   qEn:"What role do chairs play if delegates need guidance on how debate may proceed?",
+   oFr:["Ils peuvent conseiller les délégués sur le déroulement possible du débat","Ils doivent interrompre le débat pendant 15 minutes","Ils ne peuvent pas intervenir sur la procédure","Ils transfèrent la présidence au sponsor"],
+   oEn:["They may advise delegates on the possible course of debate","They must pause debate for 15 minutes","They cannot advise on procedure","They hand the chair to a sponsor"],
+   ans:0,
+   expFr:"L'article II prévoit que les présidents conseillent les délégués sur le déroulement possible du débat si nécessaire.",
+   expEn:"Section II states that chairs advise delegates on the possible course of debate if needed."},
+  {id:15,cat:"gen",ref:"II",
+   qFr:"Qui accorde le droit de parole et met les questions aux voix ?",
+   qEn:"Who accords the right to speak and puts questions to a vote?",
+   oFr:["Les présidents (chairs)","Le premier orateur de la liste","Le délégué le plus âgé","Les signataires du projet de résolution"],
+   oEn:["The chairs","The first speaker on the list","The oldest delegate","The draft resolution's signatories"],
+   ans:0,
+   expFr:"L'article II précise que les présidents veillent au respect des règles, accordent le droit de parole, mettent aux voix et annoncent les décisions.",
+   expEn:"Section II notes that chairs ensure observance of rules, accord the right to speak, put questions to vote, and announce decisions."},
+  {id:16,cat:"gen",ref:"I.b",
+   qFr:"À qui s'applique l'obligation de courtoisie diplomatique de la règle I.b ?",
+   qEn:"To whom does the diplomatic courtesy rule (Rule I.b) apply?",
+   oFr:["Aux échanges entre délégués et envers les membres du Bureau","Uniquement aux discours d'ouverture","Uniquement aux amendements inamicaux","Uniquement aux votes par appel nominal"],
+   oEn:["Both among delegates and towards Council officers","Only to opening speeches","Only to unfriendly amendments","Only to roll call votes"],
+   ans:0,
+   expFr:"La règle I.b s'applique lorsque les délégués s'adressent aux membres du Conseil ainsi qu'aux officiers du Conseil (Bureau).",
+   expEn:"Rule I.b applies when delegates address members of the Council as well as Council officers."},
+
+  // --- Catégorie 2 : III Quorum, Appel & Votes (18 questions) ---
+  {id:17,cat:"par",ref:"III.a",
+   qFr:"Dans quel ordre le Bureau appelle-t-il les États lors du Roll Call initial ?",
+   qEn:"In what order do chairs call nations during the initial Roll Call?",
+   oFr:["Par ordre alphabétique","Par ordre d'arrivée dans la salle","Par ordre tiré au sort","Par ordre d'ancienneté à l'ONU"],
+   oEn:["In alphabetical order","In order of arrival in the room","By random draw","By UN seniority"],
+   ans:0,
+   expFr:"Selon la règle III.a, après l'ouverture de la séance, les présidents appellent tous les États par ordre alphabétique.",
+   expEn:"Under Rule III.a, after opening the session, chairs call all nations in alphabetical order."},
+  {id:18,cat:"par",ref:"III.a",
+   qFr:"Quelles sont les deux mentions qu'un État peut déclarer lors du Roll Call ?",
+   qEn:"What are the two statuses a Member State may state during Roll Call?",
+   oFr:["« Present » ou « Present and Voting »","« Present » ou « Abstain »","« In favor » ou « Against »","« Present » ou « Passing »"],
+   oEn:["'Present' or 'Present and Voting'","'Present' or 'Abstain'","'In favor' or 'Against'","'Present' or 'Passing'"],
+   ans:0,
+   expFr:"La règle III.a précise que les États membres peuvent se lever et déclarer « Present » ou « Present and Voting ».",
+   expEn:"Rule III.a specifies that Member States may stand up and state they are 'Present' or 'Present and Voting'."},
+  {id:19,cat:"par",ref:"III.a",
+   qFr:"Quelle règle s'applique aux États qui se déclarent « Present and Voting » lors des votes de fond ?",
+   qEn:"What rule applies to states declaring themselves 'Present and Voting' during substantive votes?",
+   oFr:["Ils ne peuvent pas s'abstenir lors des votes de fond","Ils doivent voter « Yes with rights »","Ils n'ont pas le droit de voter sur les amendements","Leur voix compte double"],
+   oEn:["They may not abstain during substantive votes","They must vote 'Yes with rights'","They cannot vote on amendments","Their vote counts double"],
+   ans:0,
+   expFr:"La règle III.a dispose que tous les membres déclarés « present and voting » ne peuvent pas s'abstenir lors des votes de fond.",
+   expEn:"Rule III.a states that members who declare themselves 'present and voting' may not abstain during substantive votes."},
+  {id:20,cat:"par",ref:"III.b",
+   qFr:"Quel quorum minimal est requis pour ouvrir une séance du Conseil ?",
+   qEn:"What minimum quorum is required to begin a Council session?",
+   oFr:["Au moins un tiers du nombre total de représentants","Au moins la moitié plus un des représentants","Au moins deux tiers des représentants","Tous les sponsors doivent être présents"],
+   oEn:["At least one-third of the total number of representatives","At least a simple majority of representatives","At least two-thirds of representatives","All sponsors must be present"],
+   ans:0,
+   expFr:"La règle III.b exige qu'au moins un tiers du nombre total de représentants soit présent pour ouvrir une séance.",
+   expEn:"Rule III.b requires at least one-third of the total number of representatives to be present to begin a session."},
+  {id:21,cat:"par",ref:"III.b",
+   qFr:"Quelle majorité est mentionnée à la règle III.b pour passer à la procédure de vote sur un projet de résolution ?",
+   qEn:"What majority is mentioned in Rule III.b to move to voting procedure on a draft resolution?",
+   oFr:["Une majorité des trois quarts","Une majorité simple","Une majorité des deux tiers","L'unanimité"],
+   oEn:["A three-quarters majority","A simple majority","A two-thirds majority","Unanimity"],
+   ans:0,
+   expFr:"La règle III.b indique qu'une majorité des trois quarts est nécessaire pour passer à la procédure de vote sur un projet de résolution.",
+   expEn:"Rule III.b states that a three-quarters majority is needed to move to voting procedure on a draft resolution."},
+  {id:22,cat:"par",ref:"III.c",
+   qFr:"À quel moment les délégués peuvent-ils soumettre une motion pour fixer l'ordre du jour (Agenda Topic) ?",
+   qEn:"When may delegates submit a motion to set the Agenda?",
+   oFr:["Après l'appel (Roll Call)","Avant l'ouverture de la séance","Uniquement après l'adoption d'une résolution","Pendant un vote par appel nominal"],
+   oEn:["After the roll call","Before the session opens","Only after a resolution passes","During a roll call vote"],
+   ans:0,
+   expFr:"La règle III.c prévoit qu'après l'appel, les délégués peuvent soumettre une motion pour fixer l'ordre du jour.",
+   expEn:"Rule III.c states that after a roll call, delegates may submit a motion to set the Agenda."},
+  {id:23,cat:"par",ref:"III.d",
+   qFr:"Quels votes sont considérés comme procéduraux selon la règle III.d ?",
+   qEn:"Which votes are considered procedural under Rule III.d?",
+   oFr:["Tous les votes sauf ceux sur le projet de résolution final et ses amendements","Uniquement le vote final sur la résolution","Uniquement les votes sur les amendements inamicaux","Aucun vote n'est procédural"],
+   oEn:["All votes except the final draft resolution and its amendments","Only the final vote on the resolution","Only votes on unfriendly amendments","No vote is procedural"],
+   ans:0,
+   expFr:"Selon la règle III.d, tous les votes — à l'exception du vote sur le projet de résolution final et ses amendements (vote de fond) — sont procéduraux.",
+   expEn:"Under Rule III.d, all votes except the final draft resolution and its amendments (substantive vote) are procedural."},
+  {id:24,cat:"par",ref:"III.d",
+   qFr:"L'abstention est-elle autorisée lors d'un vote procédural ?",
+   qEn:"Is abstaining in order during a procedural vote?",
+   oFr:["Non, les abstentions ne sont pas recevables lors des votes procéduraux","Oui, pour toute délégation « Present »","Oui, si la majorité est des deux tiers","Oui, sur décision du Bureau"],
+   oEn:["No, abstentions are not in order for procedural votes","Yes, for any 'Present' delegation","Yes, if a two-thirds majority applies","Yes, at the chairs' discretion"],
+   ans:0,
+   expFr:"La règle III.d précise que lors des votes procéduraux, un représentant ne peut voter que pour ou contre ; les abstentions ne sont pas recevables.",
+   expEn:"Rule III.d states that for procedural votes, a representative may only vote in favor or against; abstentions are not in order."},
+  {id:25,cat:"par",ref:"III.e",
+   qFr:"Quel seuil est requis pour qu'un vote de fond (substantive vote) soit adopté ?",
+   qEn:"What threshold is required for a substantive vote to pass?",
+   oFr:["Une majorité simple","Une majorité des trois quarts","L'unanimité des votants","Deux tiers des membres inscrits"],
+   oEn:["A simple majority","A three-quarters majority","Unanimity of voters","Two-thirds of enrolled members"],
+   ans:0,
+   expFr:"La règle III.e prévoit qu'une majorité simple est nécessaire pour qu'un vote de fond soit adopté.",
+   expEn:"Rule III.e states that a simple majority is needed to pass a substantive vote."},
+  {id:26,cat:"par",ref:"III.e",
+   qFr:"Combien de voix possède chaque membre lors d'un vote de fond ?",
+   qEn:"How many votes does each member have in substantive voting?",
+   oFr:["Une voix par membre","Deux voix pour les membres fondateurs","Un vote pondéré par la population","Un vote par pôle"],
+   oEn:["One vote per member","Two votes for founding members","Weighted by population","One vote per committee team"],
+   ans:0,
+   expFr:"Selon la règle III.e, chaque membre dispose d'une voix lors des votes de fond.",
+   expEn:"Under Rule III.e, each member has one vote in substantive voting."},
+  {id:27,cat:"par",ref:"III.e",
+   qFr:"Quelles options de vote figurent à la règle III.e pour le vote de fond ?",
+   qEn:"Which voting options are listed in Rule III.e for substantive voting?",
+   oFr:["« Yes », « No », « Abstain », « Yes with rights » ou « No with rights »","« Pour », « Contre » ou « Blanc » uniquement","« Present » ou « Present and Voting »","« Pass » ou « Veto »"],
+   oEn:["'Yes', 'No', 'Abstain', 'Yes with rights' or 'No with rights'","'For', 'Against' or 'Blank' only","'Present' or 'Present and Voting'","'Pass' or 'Veto'"],
+   ans:0,
+   expFr:"La règle III.e énumère « Yes », « No », « Abstain », « Yes with rights » et « No with rights » (voir règle IX.c).",
+   expEn:"Rule III.e lists 'Yes', 'No', 'Abstain', 'Yes with rights', and 'No with rights' (see Rule IX.c)."},
+  {id:28,cat:"par",ref:"III.e",
+   qFr:"Les membres qui s'abstiennent lors d'un vote de fond sont-ils comptés comme votants ?",
+   qEn:"Are abstaining members counted as voting in a substantive vote?",
+   oFr:["Non, les membres qui s'abstiennent ne sont pas considérés comme votants","Oui, ils comptent comme un vote négatif","Oui, ils comptent dans le décompte des « Yes »","Uniquement si le quorum est atteint"],
+   oEn:["No, abstaining members are not considered to be voting","Yes, they count as a negative vote","Yes, they count toward 'Yes'","Only if quorum is met"],
+   ans:0,
+   expFr:"La règle III.e indique que les membres qui s'abstiennent ne sont pas considérés comme votants.",
+   expEn:"Rule III.e states that abstaining members are not considered to be voting."},
+  {id:29,cat:"par",ref:"III.f",
+   qFr:"Que signifie la motion d'ajournement (Adjournment of the meeting) selon la règle III.f ?",
+   qEn:"What does a motion for adjournment of the meeting mean under Rule III.f?",
+   oFr:["Tous les travaux du Conseil sont achevés et le Conseil ne se réunira plus jusqu'à la prochaine session","Une pause de 10 minutes dans le débat","Le passage immédiat au vote final","La réouverture de la liste des orateurs"],
+   oEn:["All Council business is completed and the Council will not reconvene until the next session","A 10-minute break in debate","Immediate move to final vote","Reopening the speakers' list"],
+   ans:0,
+   expFr:"Selon la règle III.f, l'ajournement signifie que tous les travaux du Conseil sont achevés et que le Conseil ne se réunira pas avant la session suivante.",
+   expEn:"Under Rule III.f, adjournment means all Council business is completed and it will not reconvene until the next session."},
+  {id:30,cat:"par",ref:"III.f",
+   qFr:"Quelle majorité est requise pour une motion d'ajournement de la séance ?",
+   qEn:"What majority is required for a motion to adjourn the meeting?",
+   oFr:["Une majorité des deux tiers","Une majorité simple","Une majorité des trois quarts","L'unanimité"],
+   oEn:["A two-thirds majority","A simple majority","A three-quarters majority","Unanimity"],
+   ans:0,
+   expFr:"La règle III.f précise qu'une majorité des deux tiers est nécessaire pour l'ajournement de la séance.",
+   expEn:"Rule III.f specifies that a two-thirds majority is needed for adjournment of the meeting."},
+  {id:31,cat:"par",ref:"III.f",
+   qFr:"Une motion d'ajournement prononcée par les présidents est-elle susceptible d'appel ?",
+   qEn:"Is a motion to adjourn by the chairs subject to appeal?",
+   oFr:["Non, une motion d'ajournement par les présidents n'est pas susceptible d'appel","Oui, sur motion de trois délégués","Oui, pendant les 30 secondes suivantes","Uniquement si elle est rejetée"],
+   oEn:["No, a motion to adjourn by the chairs is not appealable","Yes, on a motion by three delegates","Yes, within the next 30 seconds","Only if defeated"],
+   ans:0,
+   expFr:"La règle III.f dispose qu'une motion d'ajournement décidée par les présidents n'est pas susceptible d'appel.",
+   expEn:"Rule III.f states that a motion to adjourn by the chairs is not appealable."},
+  {id:32,cat:"par",ref:"III.e",
+   qFr:"À quel moment le comité passe-t-il à la procédure de vote de fond sur le sujet ?",
+   qEn:"When does the committee move into substantive voting procedures on the Topic Area?",
+   oFr:["Une fois que le Comité a clos le débat sur le sujet","Dès l'ouverture de la liste des orateurs","Avant la présentation du projet de résolution","Dès que l'appel est terminé"],
+   oEn:["Once the Committee closes debate on the Topic Area","As soon as the speakers' list opens","Before introducing the draft resolution","As soon as roll call ends"],
+   ans:0,
+   expFr:"La règle III.e prévoit que le Comité entre en procédure de vote de fond une fois le débat sur le sujet clos.",
+   expEn:"Rule III.e states that once the Committee closes debate on the Topic Area, it moves into substantive voting procedures."},
+  {id:33,cat:"par",ref:"III.a",
+   qFr:"Quand débute l'appel (Roll Call) selon la règle III.a ?",
+   qEn:"When does the Roll Call begin under Rule III.a?",
+   oFr:["Après l'ouverture de la séance par les présidents","Après la clôture du débat","Pendant un caucus modéré","Avant l'arrivée du Bureau"],
+   oEn:["After the opening of the session by the chairs","After closure of debate","During a moderated caucus","Before the chairs arrive"],
+   ans:0,
+   expFr:"Selon la règle III.a, après l'ouverture de la séance, les présidents commencent par un appel.",
+   expEn:"Under Rule III.a, after the opening of the session, the chairs begin with a roll call."},
+  {id:34,cat:"par",ref:"III.c",
+   qFr:"Quelle action intervient juste après l'appel selon la règle III.c ?",
+   qEn:"What step follows roll call under Rule III.c?",
+   oFr:["Les délégués peuvent soumettre une motion pour fixer l'ordre du jour","Le vote final sur la résolution","La clôture définitive de la session","Le dépôt d'un amendement inimical"],
+   oEn:["Delegates may submit a motion to set the Agenda","The final vote on the resolution","Final closure of the session","Filing an unfriendly amendment"],
+   ans:0,
+   expFr:"La règle III.c prévoit qu'après l'appel, les délégués peuvent proposer une motion pour fixer l'ordre du jour.",
+   expEn:"Rule III.c provides that after a roll call, delegates may submit a motion to set the Agenda."},
+
+  // --- Catégorie 3 : IV–VI Débats, Points & Motions (34 questions) ---
+  {id:35,cat:"deb",ref:"IV.a",
+   qFr:"Quel est le temps de parole par défaut sur la General Speakers' List (GSL) ?",
+   qEn:"What is the default speaking time on the General Speakers' List (GSL)?",
+   oFr:["90 secondes","60 secondes","120 secondes","30 secondes"],
+   oEn:["90 seconds","60 seconds","120 seconds","30 seconds"],
+   ans:0,
+   expFr:"La règle IV.a fixe par défaut le temps de parole à 90 secondes, modifiable par motion.",
+   expEn:"Rule IV.a sets speaker's time by default to 90 seconds, which delegates can move to change."},
+  {id:36,cat:"deb",ref:"IV.a",
+   qFr:"Quelle est l'activité par défaut du Comité lorsqu'aucune motion n'est en cours ?",
+   qEn:"What is the default activity of the Committee when no motions are on the floor?",
+   oFr:["La General Speakers' List (liste des orateurs)","Un unmoderated caucus","Une consultation of the whole","Un vote par appel nominal"],
+   oEn:["The General Speakers' List","An unmoderated caucus","A consultation of the whole","A roll call vote"],
+   ans:0,
+   expFr:"Selon la règle IV.a, la liste des orateurs est l'activité par défaut et les débats y reviennent automatiquement sans motion active.",
+   expEn:"Under Rule IV.a, the Speaker's List is the default activity and debate automatically returns to it if no motions are on the floor."},
+  {id:37,cat:"deb",ref:"IV.a",
+   qFr:"Que doit-il se passer avant de pouvoir présenter un projet de résolution selon la règle IV.a ?",
+   qEn:"What must happen before introducing any draft resolution under Rule IV.a?",
+   oFr:["La liste générale des orateurs (GSL) doit être close","Un vote à la majorité des trois quarts doit avoir eu lieu","Deux amendements amicaux doivent être adoptés","Le quorum doit être doublé"],
+   oEn:["The general speakers' list must be closed","A three-quarters vote must have occurred","Two friendly amendments must pass","Quorum must be doubled"],
+   ans:0,
+   expFr:"La règle IV.a dispose que la liste générale des orateurs doit être close avant l'introduction de tout projet de résolution.",
+   expEn:"Rule IV.a states that the general speakers' list must be closed before introducing any draft resolution."},
+  {id:38,cat:"deb",ref:"IV.a",
+   qFr:"Quand le débat prend-il fin automatiquement si la liste des orateurs s'épuise sans projet de résolution à présenter ?",
+   qEn:"When does debate close automatically if the General Speakers' List runs out with no draft resolutions to introduce?",
+   oFr:["Dès que la liste des orateurs s'épuise et qu'aucun projet de résolution n'est à introduire","Après trois minutes de silence","Dès qu'un délégué demande un caucus","Uniquement sur décision du Secrétaire général"],
+   oEn:["As soon as the General Speaker's List runs out and there are no draft resolutions to be introduced","After three minutes of silence","As soon as a delegate moves a caucus","Only by Secretary-General decision"],
+   ans:0,
+   expFr:"La règle IV.a précise que le débat est clos dès que la liste des orateurs s'épuise et qu'aucun projet de résolution n'est à présenter.",
+   expEn:"Rule IV.a states that debate closes as soon as the General Speaker's List runs out and there are no draft resolutions to be introduced."},
+  {id:39,cat:"deb",ref:"IV.b",
+   qFr:"Comment les délégations signalent-elles leur souhait de prendre la parole ?",
+   qEn:"How do delegations signify their wish to speak on an item before the Council?",
+   oFr:["En levant leur pancarte (placard)","En se levant sans mot dire","En envoyant un message au rapporteur","En frappant sur la table"],
+   oEn:["By raising their placards","By standing up silently","By sending a note to the rapporteur","By knocking on the table"],
+   ans:0,
+   expFr:"La règle IV.b prévoit que les délégations manifestent leur souhait de parler en levant leur pancarte.",
+   expEn:"Rule IV.b states that delegations wishing to speak signify this by raising their placards."},
+  {id:40,cat:"deb",ref:"IV.b",
+   qFr:"Un délégué peut-il intervenir sans avoir préalablement obtenu l'autorisation du Bureau ?",
+   qEn:"May a delegate address the Council without first obtaining permission from the chairs?",
+   oFr:["Non, aucune intervention sans autorisation préalable du Bureau","Oui, s'il s'agit d'un sponsor","Oui, pendant moins de 15 secondes","Oui, si la pancarte est levée depuis deux tours"],
+   oEn:["No, no delegate may address the Council without prior permission from the chairs","Yes, if a sponsor","Yes, for under 15 seconds","Yes, if placard was raised for two rounds"],
+   ans:0,
+   expFr:"La règle IV.b énonce qu'aucun délégué ne peut s'adresser au Conseil sans avoir obtenu l'autorisation préalable des présidents.",
+   expEn:"Rule IV.b states that no delegate may address the Council without having previously obtained permission from the chairs."},
+  {id:41,cat:"deb",ref:"IV.b",
+   qFr:"Que peuvent faire les présidents si les propos d'un orateur ne portent pas sur le sujet en discussion ?",
+   qEn:"What may chairs do if a speaker's remarks are not relevant to the subject under discussion?",
+   oFr:["Rappeler l'orateur à l'ordre (qu'il respecte les règles de la séance formelle)","Lui accorder 30 secondes supplémentaires","L'exclure définitivement de la conférence","Suspendre le vote de fond"],
+   oEn:["Call the speaker to order to obey formal meeting rules","Grant 30 extra seconds","Expel the delegation permanently","Suspend substantive voting"],
+   ans:0,
+   expFr:"La règle IV.b permet aux présidents de rappeler un orateur à l'ordre si ses remarques ne sont pas pertinentes par rapport au sujet.",
+   expEn:"Rule IV.b allows chairs to call a speaker to order if remarks are not relevant to the subject under discussion."},
+  {id:42,cat:"deb",ref:"IV.c",
+   qFr:"Quels sont les trois modes de cession (yield) du temps restant lorsqu'un orateur a terminé avant la fin de son temps ?",
+   qEn:"What are the three ways a speaker who finishes early may yield remaining time?",
+   oFr:["Au Bureau, aux questions, ou à un autre délégué","À un observateur, à la presse, ou au chronométreur","Aux questions, à l'ajournement, ou au vote","Au Bureau, à l'amendement, ou au secrétaire"],
+   oEn:["To the chairs, to questions, or to another delegate","To an observer, to press, or to the timer","To questions, to adjournment, or to vote","To chairs, to amendment, or to secretary"],
+   ans:0,
+   expFr:"La règle IV.c prévoit la cession (yield) aux présidents, aux questions ou à un autre délégué.",
+   expEn:"Rule IV.c provides yields to the chairs, to questions, or to another delegate."},
+  {id:43,cat:"deb",ref:"IV.c",
+   qFr:"Lors d'un yield aux questions, combien de questions chaque délégué sélectionné peut-il poser, et quel temps compte dans la limite ?",
+   qEn:"During a yield to questions, how many questions may each selected delegate ask, and what counts toward the time limit?",
+   oFr:["Une question chacun ; seules les réponses de l'orateur comptent dans le temps imparti","Deux questions chacun ; tout le temps de questionnement compte","Trois questions chacun ; seules les questions comptent","Une question chacun ; le chronomètre est arrêté"],
+   oEn:["One question each; only the speaker's answers count toward the time limit","Two questions each; all questioning time counts","Three questions each; only questions count","One question each; the clock is paused"],
+   ans:0,
+   expFr:"Selon la règle IV.c, chaque intervenant sélectionné est limité à une question et seules les réponses de l'orateur comptent dans la limite de temps.",
+   expEn:"Under Rule IV.c, selected questioners are limited to one question each, and only the speaker's answers count toward the time limit."},
+  {id:44,cat:"deb",ref:"IV.c",
+   qFr:"Un délégué qui reçoit un yield d'un autre délégué peut-il céder le temps restant à un troisième délégué ?",
+   qEn:"May a delegate who accepts a yield from another delegate make a further yield to a third delegate?",
+   oFr:["Non, un seul yield à un autre délégué est possible dans le temps d'un orateur","Oui, jusqu'à deux cessions successives","Oui, s'il cède aux questions","Oui, sur accord du délégué initial"],
+   oEn:["No, only one yield to another delegate is possible within one speaker's time","Yes, up to two successive yields","Yes, if yielding to questions","Yes, with the initial speaker's consent"],
+   ans:0,
+   expFr:"La règle IV.c précise que le délégué acceptant un yield ne peut faire de nouvelle cession : un seul yield vers un autre délégué est possible.",
+   expEn:"Rule IV.c states that a delegate accepting a yield may make no further yields; only one yield to another delegate is possible."},
+  {id:45,cat:"deb",ref:"IV.d",
+   qFr:"Quelle est la durée maximale d'une prolongation unique d'un unmoderated caucus ?",
+   qEn:"What is the maximum length of a single extension of an unmoderated caucus?",
+   oFr:["La moitié de sa durée initiale","Le double de sa durée initiale","5 minutes maximum","Égale à sa durée initiale"],
+   oEn:["Half of its original time","Double its original time","5 minutes maximum","Equal to its original time"],
+   ans:0,
+   expFr:"La règle IV.d indique qu'un unmoderated caucus peut être prolongé une fois et ne peut excéder la moitié de sa durée initiale.",
+   expEn:"Rule IV.d states an unmoderated caucus can be extended once and cannot exceed half of its original time."},
+  {id:46,cat:"deb",ref:"IV.e",
+   qFr:"Que doit préciser un délégué lorsqu'il propose une motion de moderated caucus ?",
+   qEn:"What must a delegate state when proposing a Motion for a Moderated Caucus?",
+   oFr:["L'objet du caucus, la durée totale et le temps de parole individuel par délégué","Uniquement la durée totale","Le nom des co-auteurs de la résolution","Le type de vote souhaité"],
+   oEn:["The purpose, total time, and individual speaking time per delegate","Only the total time","Names of resolution co-authors","Desired voting type"],
+   ans:0,
+   expFr:"Selon la règle IV.e, le délégué indique brièvement l'objet du caucus, propose une durée totale et un temps de parole individuel.",
+   expEn:"Under Rule IV.e, the delegate briefly states the purpose, proposes a total time, and proposes an individual speaking time."},
+  {id:47,cat:"deb",ref:"IV.e",
+   qFr:"Si plusieurs motions de moderated caucus sont proposées simultanément, dans quel ordre sont-elles mises aux voix ?",
+   qEn:"If multiple Motions for a Moderated Caucus are on the floor at once, in what order are they voted on?",
+   oFr:["Par ordre de perturbation par rapport à la liste des orateurs, de la plus perturbatrice à la moins perturbatrice","Par ordre alphabétique des pays","De la durée totale la plus courte à la plus longue","Dans l'ordre exact où elles ont été déposées"],
+   oEn:["In order of disruptiveness relative to the General Speakers' List, from most to least disruptive","In alphabetical order of countries","Shortest total duration to longest","In exact chronological order of proposal"],
+   ans:0,
+   expFr:"La règle IV.e prévoit un vote par ordre de perturbation par rapport à la GSL, en commençant par la motion la plus perturbatrice.",
+   expEn:"Rule IV.e states they are voted on in order of disruptiveness relative to the GSL, beginning with the most disruptive."},
+  {id:48,cat:"deb",ref:"IV.e",
+   qFr:"La cession de temps (yielding) est-elle autorisée pendant un moderated caucus ?",
+   qEn:"Is yielding of time allowed during moderated caucuses?",
+   oFr:["Non, il n'y a pas de cession de temps dans les moderated caucuses","Oui, uniquement vers le Bureau","Oui, vers un autre délégué","Oui, si le temps restant dépasse 30 secondes"],
+   oEn:["No, there is no yielding of time in moderated caucuses","Yes, only to the chairs","Yes, to another delegate","Yes, if over 30 seconds remain"],
+   ans:0,
+   expFr:"La règle IV.e énonce clairement qu'il n'y a pas de cession de temps (no yielding of time) dans les moderated caucuses.",
+   expEn:"Rule IV.e clearly states there is no yielding of time in moderated caucuses."},
+  {id:49,cat:"deb",ref:"IV.e",
+   qFr:"Quelle est la durée maximale d'une prolongation d'un moderated caucus ?",
+   qEn:"What is the maximum duration of an extension of a moderated caucus?",
+   oFr:["Au plus égale à la durée initiale du moderated caucus","La moitié de la durée initiale","Trois fois la durée initiale","Illimitée sur vote simple"],
+   oEn:["Cannot exceed the original time of the moderated caucus","Half of the original time","Three times the original time","Unlimited by simple majority"],
+   ans:0,
+   expFr:"La règle IV.e précise qu'un moderated caucus peut être prolongé une fois sans dépasser sa durée initiale.",
+   expEn:"Rule IV.e states a moderated caucus can be extended once and cannot exceed its original time."},
+  {id:50,cat:"deb",ref:"IV.e",
+   qFr:"La décision du Bureau de déclarer irrecevable une motion de moderated caucus peut-elle faire l'objet d'un appel ?",
+   qEn:"Is the chairpersons' decision to rule out a Motion for a Moderated Caucus subject to appeal?",
+   oFr:["Non, la décision des présidents n'est pas susceptible d'appel","Oui, à la majorité simple","Oui, à la majorité des deux tiers","Oui, si deux sponsors le demandent"],
+   oEn:["No, the decision of the chairpersons is not subject to appeal","Yes, by simple majority","Yes, by two-thirds majority","Yes, if two sponsors request it"],
+   ans:0,
+   expFr:"La règle IV.e indique que la décision des présidents d'écarter une motion de moderated caucus n'est pas susceptible d'appel.",
+   expEn:"Rule IV.e states that the chairpersons' decision to rule out a Motion for a Moderated Caucus is not subject to appeal."},
+  {id:51,cat:"deb",ref:"V.a",
+   qFr:"Quand un délégué peut-il soulever un Point of Order ?",
+   qEn:"When may a delegate raise a Point of Order?",
+   oFr:["Lorsqu'il estime que le Bureau procède d'une manière contraire au règlement intérieur","Pour répondre à une critique sur le fond du texte","Pour poser une question de fond à un autre délégué","Pendant le discours d'un autre orateur"],
+   oEn:["When believing the chairs are proceeding contrary to the Rules of Procedure","To rebut a substantive argument","To ask a substantive question to another delegate","While a speaker is speaking"],
+   ans:0,
+   expFr:"Selon la règle V.a, un Point of Order porte sur un manquement supposé au règlement intérieur par le Bureau et n'interrompt pas un orateur.",
+   expEn:"Under Rule V.a, a Point of Order addresses chairs proceeding contrary to the ROP and may not interrupt a speaker."},
+  {id:52,cat:"deb",ref:"V.a",
+   qFr:"Un délégué qui soulève un Point of Order peut-il parler du fond de la question débattue ?",
+   qEn:"May a delegate rising to a Point of Order speak on the substance of the matter under discussion?",
+   oFr:["Non, il ne peut pas parler du fond du sujet en discussion","Oui, pendant 30 secondes","Oui, s'il a obtenu l'accord des signataires","Uniquement en fin de séance"],
+   oEn:["No, a delegate rising to a Point of Order may not speak on the substance","Yes, for 30 seconds","Yes, with signatories' consent","Only at session end"],
+   ans:0,
+   expFr:"La règle V.a interdit expressément de parler du fond de la question lors d'un Point of Order.",
+   expEn:"Rule V.a explicitly states that a delegate rising to a Point of Order may not speak on the substance."},
+  {id:53,cat:"deb",ref:"V.b",
+   qFr:"Quel est l'objet d'un Point of Personal Privilege ?",
+   qEn:"What is the purpose of a Point of Personal Privilege?",
+   oFr:["Signaler au Bureau un inconfort physique nuisant à la participation (ex. température ou audition difficile)","Contester l'ordre des amendements","Demander le retrait d'un projet de résolution","Proposer un vote par appel nominal"],
+   oEn:["Inform chairs of physical discomfort impairing participation (e.g. room heat or unable to hear)","Challenge amendment order","Move to withdraw a draft resolution","Propose a roll call vote"],
+   ans:0,
+   expFr:"La règle V.b couvre l'inconfort physique nuisant à la participation, comme une chaleur excessive ou l'impossibilité d'entendre l'orateur.",
+   expEn:"Rule V.b covers physical discomfort impairing participation, such as high room temperature or inability to hear the speaker."},
+  {id:54,cat:"deb",ref:"V.b",
+   qFr:"Un Point of Personal Privilege peut-il interrompre un orateur ?",
+   qEn:"May a Point of Personal Privilege interrupt a speaker?",
+   oFr:["Oui, si cela est inévitablement nécessaire, avec la plus grande discrétion","Jamais en aucune circonstance","Uniquement si le délégué est rapporteur","Seulement après 60 secondes de discours"],
+   oEn:["Yes, if unavoidably necessary, with utmost discretion","Never under any circumstances","Only if rapporteur","Only after 60 seconds of speech"],
+   ans:0,
+   expFr:"La règle V.b prévoit qu'un Point of Personal Privilege peut interrompre un orateur si cela est inévitablement nécessaire, avec discrétion.",
+   expEn:"Rule V.b states a Point of Personal Privilege may interrupt a speaker if unavoidably necessary, with utmost discretion."},
+  {id:55,cat:"deb",ref:"V.c",
+   qFr:"À quoi sert un Point of Information selon la règle V.c ?",
+   qEn:"What is a Point of Information used for under Rule V.c?",
+   oFr:["Demander au Bureau une clarification de procédure ou un rappel des points dont le Conseil est saisi","Interrompre un orateur en plein discours","Modifier le texte d'une clause opératoire","Demander un droit de réponse"],
+   oEn:["Obtain procedural clarification from chairs or a statement of matters before the Council","Interrupt a speaker mid-speech","Edit an operative clause","Request a right of reply"],
+   ans:0,
+   expFr:"La règle V.c définit le Point of Information comme une demande au Bureau pour clarifier la procédure ou l'état des questions à l'ordre du jour.",
+   expEn:"Rule V.c defines a Point of Information as raised to chairs to obtain procedural clarification or a statement of matters before the Council."},
+  {id:56,cat:"deb",ref:"V.c",
+   qFr:"Un Point of Information peut-il interrompre un orateur ?",
+   qEn:"May a Point of Information interrupt a speaker?",
+   oFr:["Non, les délégués ne peuvent pas interrompre un orateur sur un Point of Information","Oui, si la question est courte","Oui, sur décision d'un co-auteur","Uniquement lors d'un caucus"],
+   oEn:["No, delegates may not interrupt a speaker on a Point of Information","Yes, if the question is brief","Yes, if approved by a co-author","Only during a caucus"],
+   ans:0,
+   expFr:"La règle V.c indique explicitement que les délégués ne peuvent pas interrompre un orateur sur un Point of Information.",
+   expEn:"Rule V.c explicitly states delegates may not interrupt a speaker on a Point of Information."},
+  {id:57,cat:"deb",ref:"V.d",
+   qFr:"Dans quel cas le Bureau peut-il accorder un Right of Reply ?",
+   qEn:"When may the chairs accord a Right of Reply?",
+   oFr:["Lorsqu'un discours contient des propos clairement insultants pour la dignité personnelle ou nationale d'un délégué","Dès qu'un délégué n'est pas d'accord avec un argument","À chaque fin de discours sur la GSL","Uniquement pendant les votes"],
+   oEn:["When a speech contains language clearly insulting to personal or national dignity","Whenever a delegate disagrees with an argument","After every GSL speech","Only during voting"],
+   ans:0,
+   expFr:"La règle V.d prévoit qu'un Right of Reply peut être accordé si un discours porte atteinte à la dignité personnelle ou nationale.",
+   expEn:"Rule V.d allows a Right of Reply if a speech contains language clearly insulting to personal or national dignity."},
+  {id:58,cat:"deb",ref:"V.d",
+   qFr:"Quelle est la durée maximale d'un Right of Reply selon la règle V.d ?",
+   qEn:"What is the time limit of a Right of Reply under Rule V.d?",
+   oFr:["30 secondes","60 secondes","90 secondes","15 secondes"],
+   oEn:["30 seconds","60 seconds","90 seconds","15 seconds"],
+   ans:0,
+   expFr:"La règle V.d fixe la limite d'un Right of Reply à 30 secondes.",
+   expEn:"Rule V.d limits a Right of Reply to 30 seconds."},
+  {id:59,cat:"deb",ref:"V.d",
+   qFr:"Peut-on demander un Right of Reply en réponse à un Right of Reply ?",
+   qEn:"May there be a Right of Reply to a Right of Reply?",
+   oFr:["Non, il n'y a pas de droit de réponse à un droit de réponse","Oui, limité à 15 secondes","Oui, avec l'accord du Bureau","Uniquement sur vote des deux tiers"],
+   oEn:["No, there shall be no Right of Reply to a Right of Reply","Yes, limited to 15 seconds","Yes, with chairs' consent","Only by two-thirds vote"],
+   ans:0,
+   expFr:"La règle V.d stipule expressément qu'il n'y a pas de Right of Reply à un Right of Reply.",
+   expEn:"Rule V.d explicitly states there shall be no Right of Reply to a Right of Reply."},
+  {id:60,cat:"deb",ref:"V.d",
+   qFr:"Comment demande-t-on un Right of Reply et la décision du Bureau est-elle susceptible d'appel ?",
+   qEn:"How is a Right of Reply requested, and is the chair's decision appealable?",
+   oFr:["Par note envoyée au Bureau ; la décision du président n'est pas susceptible d'appel","À voix haute en interrompant l'orateur ; appel possible","Par pancarte levée ; appel à majorité simple","Par e-mail au secrétaire ; appel possible"],
+   oEn:["By sending a note to the chairs; the chair's decision is not subject to appeal","Aloud interrupting the speaker; appealable","By raising a placard; appealable by simple majority","By email to the secretary; appealable"],
+   ans:0,
+   expFr:"Selon la règle V.d, la demande se fait par note au Bureau et la décision du président n'est pas susceptible d'appel.",
+   expEn:"Under Rule V.d, a delegate requests it by note to the chairs and the chair's decision is not subject to appeal."},
+  {id:61,cat:"deb",ref:"VI.A",
+   qFr:"Quand les motions procédurales peuvent-elles être présentées pendant le débat formel ?",
+   qEn:"When may procedural motions be raised during formal debate?",
+   oFr:["À tout moment où la parole est libre, avant la clôture du débat, sans interrompre un orateur","Uniquement après l'adoption d'un amendement","Pendant qu'un orateur a la parole","Uniquement pendant la procédure de vote"],
+   oEn:["At any time when the floor is open, prior to Closure of Debate, without interrupting a speaker","Only after an amendment passes","While a speaker has the floor","Only during voting procedure"],
+   ans:0,
+   expFr:"La règle VI.A précise que les motions sont recevables lorsque la parole est ouverte, avant la clôture du débat, et n'interrompent pas un orateur.",
+   expEn:"Rule VI.A states motions may be raised when the floor is open, prior to Closure of Debate, without interrupting a speaker."},
+  {id:62,cat:"deb",ref:"VI.A.iii",
+   qFr:"Comment fonctionne une « Motion for a consultation of the whole » ?",
+   qEn:"How does a 'Motion for a consultation of the whole' work?",
+   oFr:["Un temps global est fixé et l'auteur peut parler puis céder le temps restant à qui il souhaite jusqu'à épuisement","Chaque orateur a exactement 45 secondes sur liste","Le Bureau choisit seul chaque intervenant sans cession","Le vote se fait clause par clause"],
+   oEn:["Overall time is set and the mover may speak and yield remaining time to chosen delegates until time runs out","Each speaker gets 45 seconds on a list","Chairs alone pick speakers with no yields","Voting happens clause by clause"],
+   ans:0,
+   expFr:"Selon la règle VI.A.iii, une consultation of the whole fixe une durée globale et permet de céder le temps restant de délégué en délégué.",
+   expEn:"Under Rule VI.A.iii, a consultation of the whole sets an overall time and lets the mover speak and yield remaining time to chosen delegates."},
+  {id:63,cat:"deb",ref:"VI.A.iii",
+   qFr:"Que peuvent faire les présidents si un délégué limite ses cessions par favoritisme contre la volonté du comité ?",
+   qEn:"What may chairs do if a delegate limits yields out of favouritism against the will of the committee?",
+   oFr:["Ils peuvent demander que le temps soit cédé à d'autres délégués","Ils doivent clore définitivement le débat","Ils annulent toutes les résolutions","Ils doublent la durée du caucus"],
+   oEn:["They may ask for the time to be yielded to other delegates","They must permanently close debate","They cancel all draft resolutions","They double the caucus time"],
+   ans:0,
+   expFr:"La règle VI.A.iii permet aux présidents de demander que le temps soit cédé à d'autres délégués en cas de favoritisme contraire à la volonté du comité.",
+   expEn:"Rule VI.A.iii allows chairs to ask for time to be yielded to other delegates if favouritism goes against the committee's will."},
+  {id:64,cat:"deb",ref:"VI.A.iv",
+   qFr:"Quelle majorité est requise pour adopter une motion de suspension de la séance (en cas d'objection) ?",
+   qEn:"What majority is required to pass a motion for the suspension of the meeting if objected to?",
+   oFr:["Une majorité simple","Une majorité des trois quarts","Une majorité des deux tiers","L'unanimité"],
+   oEn:["A simple majority","A three-quarters majority","A two-thirds majority","Unanimity"],
+   ans:0,
+   expFr:"Selon la règle VI.A.iv, en cas d'objection, la motion de suspension de la séance nécessite une majorité simple.",
+   expEn:"Under Rule VI.A.iv, if objected to, a motion to suspend the meeting requires a simple majority to pass."},
+  {id:65,cat:"deb",ref:"VI.A.v",
+   qFr:"Quelle majorité est nécessaire pour adopter une motion de reprise du débat (Motion to resume debate) ?",
+   qEn:"What majority is needed to pass a Motion to resume debate?",
+   oFr:["Une majorité simple","Une majorité des trois quarts","Une majorité des deux tiers","Uniquement l'accord du président"],
+   oEn:["A simple majority","A three-quarters majority","A two-thirds majority","Chair's consent alone"],
+   ans:0,
+   expFr:"La règle VI.A.v prévoit qu'une motion de reprise du débat requiert un soutien (second) et une majorité simple.",
+   expEn:"Rule VI.A.v states a motion to resume debate requires a second and a simple majority."},
+  {id:66,cat:"deb",ref:"VI.A.vi",
+   qFr:"Quelle majorité est exigée pour adopter une motion de clôture du débat (Motion to Close Debate) ?",
+   qEn:"What majority is required for a Motion to Close Debate?",
+   oFr:["Trois quarts du Conseil","Deux tiers du Conseil","Majorité simple","Quatre cinquièmes du Conseil"],
+   oEn:["Three-quarters of the Council","Two-thirds of the Council","Simple majority","Four-fifths of the Council"],
+   ans:0,
+   expFr:"La règle VI.A.vi dispose que si trois quarts du Conseil sont favorables à la clôture du débat, les présidents prononcent la clôture.",
+   expEn:"Rule VI.A.vi states that if three-quarters of the Council favor closure, the chairs declare debate closed."},
+  {id:67,cat:"deb",ref:"VI.A.vi",
+   qFr:"Que se passe-t-il lorsque la clôture du débat est prononcée sur un sujet de fond ?",
+   qEn:"What happens when closure of debate is declared on a substantive issue?",
+   oFr:["Le Conseil entre en procédure de vote sur l'ensemble des amendements et projets de résolution présentés","La séance est ajournée jusqu'à l'année suivante","La liste des orateurs recommence avec 90 secondes","Tous les amendements sont rejetés d'office"],
+   oEn:["The Council enters voting procedure on all amendments and draft resolutions presented","The meeting is adjourned until next year","The speakers' list restarts at 90 seconds","All amendments are automatically rejected"],
+   ans:0,
+   expFr:"Selon la règle VI.A.vi, la clôture du débat fait entrer le Conseil en procédure de vote sur tous les amendements et projets de résolution présentés.",
+   expEn:"Under Rule VI.A.vi, closure of debate brings the Council into voting procedure on all amendments and draft resolutions presented."},
+  {id:68,cat:"deb",ref:"VI.B",
+   qFr:"Jusqu'à quel moment l'auteur d'une motion peut-il la retirer, et peut-elle être représentée ?",
+   qEn:"Until when may a motion be withdrawn by its proposer, and may it be reintroduced?",
+   oFr:["À tout moment avant le début du vote ; n'importe quel membre peut la représenter","Jamais une fois le second obtenu ; non représentable","Jusqu'à 10 secondes après l'annonce ; uniquement par le même délégué","Uniquement avant l'ouverture du débat ; non représentable"],
+   oEn:["At any time before voting on it has commenced; any member may reintroduce it","Never once seconded; cannot be reintroduced","Up to 10 seconds after announcement; only by same delegate","Only before debate opens; cannot be reintroduced"],
+   ans:0,
+   expFr:"La règle VI.B permet le retrait d'une motion avant le début du vote et sa réintroduction par n'importe quel membre.",
+   expEn:"Rule VI.B allows withdrawing a motion before voting begins and reintroducing it by any member."},
+
+  // --- Catégorie 4 : VII–VIII Résolutions & Amendements (17 questions) ---
+  {id:69,cat:"res",ref:"VII.a",
+   qFr:"De quoi se compose au minimum un Draft Resolution selon la règle VII.a ?",
+   qEn:"What does a Draft Resolution consist of at minimum under Rule VII.a?",
+   oFr:["Au moins une clause préambulatoire et une clause opératoire","Au moins trois clauses préambulatoires et cinq opératoires","Uniquement des clauses opératoires","Au moins deux annexes et un préambule"],
+   oEn:["At least one preambular and one operative clause","At least three preambular and five operative clauses","Operative clauses only","At least two annexes and a preamble"],
+   ans:0,
+   expFr:"La règle VII.a définit un projet de résolution comme comportant au moins une clause préambulatoire et une clause opératoire.",
+   expEn:"Rule VII.a defines a draft resolution as consisting of at least one preambular and one operative clause."},
+  {id:70,cat:"res",ref:"VII.b",
+   qFr:"Combien un projet de résolution doit-il compter de sponsors (auteurs principaux) ?",
+   qEn:"How many sponsors (principal submitters) must a Draft Resolution have?",
+   oFr:["Au minimum 2 et au maximum 5 sponsors","Au minimum 1 et au maximum 3 sponsors","Au minimum 3 et au maximum 8 sponsors","Exactement 2 sponsors"],
+   oEn:["At least two and at most five sponsors","At least one and at most three sponsors","At least three and at most eight sponsors","Exactly two sponsors"],
+   ans:0,
+   expFr:"La règle VII.b fixe le nombre de sponsors entre deux minimum et cinq maximum.",
+   expEn:"Rule VII.b requires at least two sponsors and at most five sponsors."},
+  {id:71,cat:"res",ref:"VII.c",
+   qFr:"Combien un projet de résolution doit-il compter de signatories (co-auteurs soutiens) ?",
+   qEn:"How many signatories (supporters) must a Draft Resolution have?",
+   oFr:["Au minimum 2 et au maximum 8 délégations","Au minimum 1 et au maximum 5 délégations","Au minimum 5 et au maximum 12 délégations","Aucune limite supérieure"],
+   oEn:["At least 2 and at most 8 delegations","At least 1 and at most 5 delegations","At least 5 and at most 12 delegations","No upper limit"],
+   ans:0,
+   expFr:"La règle VII.c impose au moins 2 et au plus 8 signataires pour un projet de résolution.",
+   expEn:"Rule VII.c requires at least 2 and at most 8 delegations as signatories."},
+  {id:72,cat:"res",ref:"VII.d",
+   qFr:"Quelle est la durée totale accordée pour introduire un projet de résolution approuvé, et comment se répartit-elle ?",
+   qEn:"What is the total time to introduce an approved Draft Resolution, and how is it divided?",
+   oFr:["4 minutes : 3 minutes de présentation et 1 minute pour les questions de clarification non substantielles","3 minutes : 2 minutes de présentation et 1 minute de questions","5 minutes de présentation sans questions","2 minutes au total"],
+   oEn:["4 minutes: 3 minutes to present and 1 minute for non-substantive clarifying questions","3 minutes: 2 minutes to present and 1 minute for questions","5 minutes presentation with no questions","2 minutes total"],
+   ans:0,
+   expFr:"La règle VII.d accorde quatre minutes : trois minutes pour présenter et une minute pour répondre aux questions de clarification non substantielles.",
+   expEn:"Rule VII.d grants four minutes: three minutes to present and one minute to answer non-substantive clarifying questions."},
+  {id:73,cat:"res",ref:"VII.e",
+   qFr:"Que peuvent faire les délégués après l'introduction d'un projet de résolution ?",
+   qEn:"What may delegates do after a Draft Resolution is introduced?",
+   oFr:["Proposer une motion pour ouvrir une liste générale des orateurs afin d'en débattre","Passer obligatoirement à l'ajournement","Déposer un amendement sans forme écrite","Exiger un vote immédiat sans débat"],
+   oEn:["Introduce a motion to open a general speakers' list to debate on the resolution","Move immediately to adjournment","Submit an unformatted oral amendment","Demand an immediate vote without debate"],
+   ans:0,
+   expFr:"La règle VII.e prévoit qu'après l'introduction, les délégués peuvent proposer une motion pour ouvrir une liste générale des orateurs sur la résolution.",
+   expEn:"Rule VII.e states that after introduction, delegates may move to open a general speakers' list to debate the resolution."},
+  {id:74,cat:"res",ref:"VII.f",
+   qFr:"Dans quel cas un projet de résolution ne peut-il pas être retiré par ses sponsors avant le vote ?",
+   qEn:"When may a Draft Resolution NOT be withdrawn by its Sponsors prior to voting?",
+   oFr:["Lorsqu'un amendement inimical (Unfriendly Amendment) est sur le bureau","Lorsqu'il a plus de trois sponsors","Lorsque le quorum est supérieur à la moitié","Lorsqu'il comporte une clause préambulatoire"],
+   oEn:["If an Unfriendly Amendment to it is on the floor","If it has more than three sponsors","If quorum exceeds half","If it contains a preambular clause"],
+   ans:0,
+   expFr:"La règle VII.f précise qu'un projet de résolution ne peut être retiré si un amendement inimical le visant est en cours d'examen.",
+   expEn:"Rule VII.f states a Draft Resolution may not be withdrawn if an Unfriendly Amendment to it is on the floor."},
+  {id:75,cat:"res",ref:"VIII.a",
+   qFr:"Combien un amendement doit-il réunir de sponsor et de signatories selon la règle VIII.a ?",
+   qEn:"How many sponsors and signatories must an amendment have under Rule VIII.a?",
+   oFr:["Un sponsor et deux signatories","Deux sponsors et quatre signatories","Un sponsor et zéro signatory","Cinq sponsors et deux signatories"],
+   oEn:["One sponsor and two signatories","Two sponsors and four signatories","One sponsor and zero signatories","Five sponsors and two signatories"],
+   ans:0,
+   expFr:"La règle VIII.a exige un sponsor et deux signatories sur un formulaire officiel d'amendement.",
+   expEn:"Rule VIII.a requires one sponsor and two signatories on an official amendment form."},
+  {id:76,cat:"res",ref:"VIII.a",
+   qFr:"Quelle précision importante ne faut-il pas oublier dans la rédaction d'un amendement ?",
+   qEn:"What important detail must be included when drafting an amendment?",
+   oFr:["Mentionner le numéro de ligne où l'amendement doit être effectué","Indiquer le nom du président","Rédiger le texte en deux colonnes","Ajouter un titre en majuscules"],
+   oEn:["Mention the line number in which the amendment should be made","State the chair's name","Write in two columns","Add an all-caps title"],
+   ans:0,
+   expFr:"La règle VIII.a rappelle de ne pas oublier de mentionner le numéro de ligne auquel l'amendement doit s'appliquer.",
+   expEn:"Rule VIII.a reminds delegates not to forget to mention the line number in which the amendment should be made."},
+  {id:77,cat:"res",ref:"VIII.b",
+   qFr:"Un amendement à un amendement (« amendement à l'amendement à l'amendement ») est-il recevable ?",
+   qEn:"Is an amendment to an amendment to an amendment in order?",
+   oFr:["Non, un amendement à l'amendement à l'amendement n'est pas recevable","Oui, s'il est amical","Oui, à la majorité des deux tiers","Oui, sur décision des signataires"],
+   oEn:["No, an amendment to the amendment to the amendment is not in order","Yes, if friendly","Yes, by two-thirds majority","Yes, if signatories agree"],
+   ans:0,
+   expFr:"La règle VIII.b stipule qu'un amendement à l'amendement à l'amendement n'est pas recevable.",
+   expEn:"Rule VIII.b states that an amendment to the amendment to the amendment will not be in order."},
+  {id:78,cat:"res",ref:"VIII.b",
+   qFr:"Lorsqu'un amendement est soumis sur une proposition, à quel moment est-il mis aux voix ?",
+   qEn:"When an amendment is moved to a proposal, when is it voted on?",
+   oFr:["L'amendement est mis aux voix en premier","Après le vote définitif sur le projet de résolution","Uniquement à la fin de la session","Après l'élection du Bureau"],
+   oEn:["The amendment is voted on first","After the final vote on the draft resolution","Only at session end","After chair elections"],
+   ans:0,
+   expFr:"La règle VIII.b prévoit que l'amendement est mis aux voix en premier.",
+   expEn:"Rule VIII.b states that when an amendment is moved to a proposal, the amendment shall be voted on first."},
+  {id:79,cat:"res",ref:"VIII.c",
+   qFr:"À quelles conditions un amendement est-il qualifié d'amical (Friendly Amendment) ?",
+   qEn:"Under what conditions is an amendment considered 'friendly'?",
+   oFr:["Tous les sponsors sont d'accord et l'amendement ne modifie pas fondamentalement l'intention globale du texte","Au moins un sponsor est contre mais la majorité est pour","Il ajoute cinq nouvelles clauses opératoires","Il supprime l'ensemble du préambule"],
+   oEn:["All sponsors agree and it does not fundamentally change the intent of the Draft Resolution as a whole","At least one sponsor opposes but majority agrees","It adds five operative clauses","It deletes the entire preamble"],
+   ans:0,
+   expFr:"Selon la règle VIII.c, l'accord de tous les sponsors et le respect de l'intention globale du texte caractérisent un amendement amical.",
+   expEn:"Under Rule VIII.c, all sponsors must agree and it must not fundamentally change the intent of the Draft Resolution as a whole."},
+  {id:80,cat:"res",ref:"VIII.c",
+   qFr:"Un vote est-il nécessaire pour intégrer un amendement amical à un projet de résolution ?",
+   qEn:"Is a vote required to add a friendly amendment to a Draft Resolution?",
+   oFr:["Non, aucun vote n'est requis pour ajouter un amendement amical","Oui, une majorité simple est requise","Oui, une majorité des deux tiers est requise","Oui, une majorité des trois quarts est requise"],
+   oEn:["No, no vote is required to add a friendly amendment","Yes, a simple majority is required","Yes, a two-thirds majority is required","Yes, a three-quarters majority is required"],
+   ans:0,
+   expFr:"La règle VIII.c précise qu'aucun vote n'est requis pour ajouter un amendement amical à un projet de résolution.",
+   expEn:"Rule VIII.c states no vote is required to add a friendly amendment to a Draft Resolution."},
+  {id:81,cat:"res",ref:"VIII.d",
+   qFr:"Comment se déroule le débat sur un amendement inimical (Unfriendly Amendment) ?",
+   qEn:"How is an Unfriendly Amendment debated?",
+   oFr:["Avec deux orateurs pour et deux orateurs contre, chacun limité à une minute maximum","Avec cinq orateurs pour et cinq contre de deux minutes chacun","Sans aucun débat préalable","Avec un seul orateur de 90 secondes"],
+   oEn:["With two speakers in favor and two speakers against, each speech not exceeding one minute","With five speakers for and five against of two minutes each","With no prior debate","With one 90-second speaker"],
+   ans:0,
+   expFr:"La règle VIII.d prévoit deux intervenants pour et deux contre, chaque intervention ne pouvant excéder une minute.",
+   expEn:"Rule VIII.d provides two speakers in favor and two against, each speech not exceeding one minute."},
+  {id:82,cat:"res",ref:"VIII.d",
+   qFr:"Quelle majorité est nécessaire pour qu'un amendement inimical soit intégré au projet de résolution ?",
+   qEn:"What majority is required for an Unfriendly Amendment to be incorporated into the Draft Resolution?",
+   oFr:["Une majorité des deux tiers","Une majorité simple","Une majorité des trois quarts","L'unanimité des sponsors"],
+   oEn:["A two-thirds majority","A simple majority","A three-quarters majority","Unanimity of sponsors"],
+   ans:0,
+   expFr:"La règle VIII.d dispose qu'un amendement inimical requiert une majorité des deux tiers pour être incorporé.",
+   expEn:"Rule VIII.d states unfriendly amendments require a two-thirds majority to be incorporated into the Draft Resolution."},
+  {id:83,cat:"res",ref:"VIII.d",
+   qFr:"Les amendements à des amendements inimicaux sont-ils recevables ?",
+   qEn:"Are amendments to unfriendly amendments in order?",
+   oFr:["Non, les amendements à des amendements inimicaux ne sont pas recevables","Oui, s'ils sont rédigés par un sponsor","Oui, sur vote majoritaire","Oui, pendant 30 secondes"],
+   oEn:["No, amendments to unfriendly amendments are out of order","Yes, if drafted by a sponsor","Yes, by majority vote","Yes, for 30 seconds"],
+   ans:0,
+   expFr:"La règle VIII.d précise que les amendements à des amendements inimicaux sont irrecevables (out of order).",
+   expEn:"Rule VIII.d states amendments to unfriendly amendments are out of order."},
+  {id:84,cat:"res",ref:"VIII.e",
+   qFr:"Quel est l'objet d'un amendement non substantiel (Non-substantive Amendment) ?",
+   qEn:"What is the purpose of a Non-substantive Amendment?",
+   oFr:["Corriger des erreurs d'orthographe ou de mise en forme","Modifier la portée politique d'une clause opératoire","Ajouter un nouveau paragraphe complet","Supprimer une clause existante"],
+   oEn:["Correct errors in spelling or format","Change the policy scope of an operative clause","Add a new full paragraph","Delete an existing clause"],
+   ans:0,
+   expFr:"Selon la règle VIII.e, les amendements non substantiels corrigent des erreurs d'orthographe ou de format sans vote.",
+   expEn:"Under Rule VIII.e, non-substantive amendments correct errors in spelling or format without a vote."},
+  {id:85,cat:"res",ref:"VIII.e",
+   qFr:"Un amendement non substantiel nécessite-t-il un vote pour être intégré au projet de résolution initial ?",
+   qEn:"Does a non-substantive amendment require a vote to become part of the original Draft Resolution?",
+   oFr:["Non, il est intégré sans vote","Oui, à la majorité simple","Oui, à la majorité des deux tiers","Oui, sur appel nominal"],
+   oEn:["No, it is incorporated without a vote","Yes, by simple majority","Yes, by two-thirds majority","Yes, by roll call"],
+   ans:0,
+   expFr:"La règle VIII.e indique qu'un amendement non substantiel est intégré au projet de résolution initial sans vote.",
+   expEn:"Rule VIII.e states non-substantive amendments are incorporated as part of the original Draft Resolution without a vote."},
+
+  // --- Catégorie 5 : IX Procédure de vote & Appel nominal (15 questions) ---
+  {id:86,cat:"vot",ref:"IX.a",
+   qFr:"Une délégation peut-elle voter au nom d'un autre pays, et les observateurs ont-ils le droit de vote ?",
+   qEn:"May a delegation cast a vote on behalf of another country, and do observers have voting rights?",
+   oFr:["Non aux deux : pas de vote au nom d'un autre pays et pas de droit de vote pour les observateurs","Oui pour les alliés ; oui pour les observateurs","Non pour les observateurs ; oui si le Bureau l'autorise","Oui pour un autre pays avec une note signée"],
+   oEn:["No to both: no voting for another country and observers have no voting rights","Yes for allies; yes for observers","No for observers; yes if chairs allow","Yes for another country with a signed note"],
+   ans:0,
+   expFr:"La règle IX.a dispose qu'aucune délégation ne peut voter au nom d'un autre pays et que les observateurs n'ont pas le droit de vote.",
+   expEn:"Rule IX.a states no delegation may cast a vote on behalf of another country and observers shall not have voting rights."},
+  {id:87,cat:"vot",ref:"IX.b",
+   qFr:"Quelle majorité est requise pour qu'une résolution soit approuvée selon la règle IX.b ?",
+   qEn:"What majority is required for a resolution to be approved under Rule IX.b?",
+   oFr:["Une majorité simple","Une majorité des trois quarts","Une majorité des deux tiers","Trois cinquièmes"],
+   oEn:["A simple majority","A three-quarters majority","A two-thirds majority","Three-fifths"],
+   ans:0,
+   expFr:"La règle IX.b prévoit qu'une résolution requiert une majorité simple pour être approuvée.",
+   expEn:"Rule IX.b states a resolution requires a simple majority to be approved."},
+  {id:88,cat:"vot",ref:"IX.c",
+   qFr:"Entre quels moments s'étend la procédure de vote (« voting procedure ») ?",
+   qEn:"Between which moments does voting procedure run?",
+   oFr:["De la déclaration « we are in voting procedure » par le Bureau jusqu'à l'annonce des résultats","De l'ouverture de l'appel jusqu'à la pause","De l'introduction de la résolution jusqu'au caucus","Du début de la séance jusqu'à l'ajournement"],
+   oEn:["From chairs declaring 'we are in voting procedure' until results are announced","From roll call to break","From introduction to caucus","From session opening to adjournment"],
+   ans:0,
+   expFr:"Selon la règle IX.c, le vote commence lorsque le Bureau déclare « we are in voting procedure » et se termine à l'annonce des résultats.",
+   expEn:"Under Rule IX.c, voting begins upon chairs declaring 'we are in voting procedure' and ends when results are announced."},
+  {id:89,cat:"vot",ref:"IX.c",
+   qFr:"Pendant la procédure de vote (chambres closes), quels points et motions sont recevables ?",
+   qEn:"During voting procedure (chambers sealed), which points and motions are in order?",
+   oFr:["Point of Personal Privilege, Point of Order, Point of Parliamentary Inquiry et Motion to vote clause by clause","Toutes les motions de caucus et le Right of Reply","Uniquement le Right of Reply et la suspension de séance","Aucune motion ni aucun point n'est recevable"],
+   oEn:["Point of Personal Privilege, Point of Order, Point of Parliamentary Inquiry, and Motion to vote clause by clause","All caucus motions and Right of Reply","Only Right of Reply and suspension","No motions or points are in order"],
+   ans:0,
+   expFr:"La règle IX.c énumère précisément ces quatre points/motions recevables pendant la procédure de vote.",
+   expEn:"Rule IX.c lists these exact four points/motions in order during voting procedure."},
+  {id:90,cat:"vot",ref:"IX.c",
+   qFr:"Avant la procédure de vote, comment se déroule un vote clause par clause (clause-by-clause) ?",
+   qEn:"Before voting procedure, how does a clause-by-clause vote proceed?",
+   oFr:["Chaque clause opératoire est votée séparément à la majorité simple, puis un vote porte sur l'ensemble de la résolution","Seules les clauses préambulaires sont votées séparément","Chaque clause exige une majorité des trois quarts","Les amendements sont annulés automatiquement"],
+   oEn:["Each operative clause is voted on separately by simple majority, then a vote is cast on the entire resolution","Only preambular clauses are voted separately","Each clause requires a three-quarters majority","Amendments are automatically cancelled"],
+   ans:0,
+   expFr:"La règle IX.c prévoit que chaque clause opératoire est votée séparément à la majorité simple, suivie d'un vote sur l'ensemble de la résolution.",
+   expEn:"Rule IX.c states each operative clause is voted on separately by simple majority, followed by a vote on the entire resolution."},
+  {id:91,cat:"vot",ref:"IX.c",
+   qFr:"Dans quel ordre s'effectue l'appel nominal (Roll Call Vote) sur le document final ?",
+   qEn:"In what order is a Roll Call Vote taken on the final document?",
+   oFr:["Selon l'ordre alphabétique anglais du nom des membres","Dans l'ordre inverse de la liste des orateurs","Par tirage au sort effectué par le Bureau","Par ordre d'entrée dans la salle"],
+   oEn:["Following the English alphabetical order of the names of the members","In reverse speakers' list order","By draw conducted by the chairs","By order of entering the room"],
+   ans:0,
+   expFr:"La règle IX.c indique que l'appel nominal suit l'ordre alphabétique anglais du nom des membres.",
+   expEn:"Rule IX.c states a roll call follows the English alphabetical order of the names of the members."},
+  {id:92,cat:"vot",ref:"IX.c",
+   qFr:"De combien de temps dispose une délégation votant « with rights » à la fin de l'appel nominal pour expliquer son vote ?",
+   qEn:"How much time does a delegation voting 'with rights' have at the end of roll call to explain its decision?",
+   oFr:["30 secondes","60 secondes","90 secondes","15 secondes"],
+   oEn:["30 seconds","60 seconds","90 seconds","15 seconds"],
+   ans:0,
+   expFr:"La règle IX.c accorde trente secondes à la fin de l'appel nominal aux délégations ayant voté « with rights » pour expliquer leur position.",
+   expEn:"Rule IX.c grants thirty seconds at the end of the roll call for delegations voting 'with rights' to explain their decision."},
+  {id:93,cat:"vot",ref:"IX.c",
+   qFr:"Que se passe-t-il si un délégué choisit « pass » lors d'un vote par appel nominal ?",
+   qEn:"What happens if a delegate chooses to 'pass' during a roll call vote?",
+   oFr:["Le Bureau place la délégation en bas de la liste de vote","La délégation est considérée comme s'abstenant définitivement","La délégation perd son droit de vote pour la séance","Le vote est annulé et recommencé"],
+   oEn:["The chairs place the delegate at the bottom of the voting list","The delegation is deemed to have permanently abstained","The delegation loses voting rights for the session","The vote is cancelled and restarted"],
+   ans:0,
+   expFr:"Selon la règle IX.c, lorsqu'un délégué passe lors d'un appel nominal, le Bureau le place à la fin de la liste de vote.",
+   expEn:"Under Rule IX.c, when a delegate passes during a roll call vote, chairs place the delegate at the bottom of the voting list."},
+  {id:94,cat:"vot",ref:"IX.c",
+   qFr:"Quelles restrictions s'appliquent à un délégué qui a déjà passé (« passed ») une fois lors d'un appel nominal ?",
+   qEn:"What restrictions apply to a delegate who has already passed once during a voting sequence?",
+   oFr:["Il ne peut plus passer à nouveau, ni s'abstenir, ni voter « with rights », mais doit arrêter son vote","Il doit obligatoirement voter « No »","Il peut passer une deuxième fois si le Bureau l'accepte","Il est exempté du vote final"],
+   oEn:["They may not pass again, nor abstain, nor vote 'with rights', but must ascertain their vote","They must vote 'No'","They may pass a second time if chairs allow","They are exempt from the final vote"],
+   ans:0,
+   expFr:"La règle IX.c précise qu'un délégué ayant déjà passé ne peut ni passer à nouveau, ni s'abstenir, ni voter « with rights » : il doit exprimer son vote.",
+   expEn:"Rule IX.c specifies a delegate who has passed once may not pass again, abstain, or vote 'with rights', but must ascertain their vote."},
+  {id:95,cat:"vot",ref:"IX.c",
+   qFr:"Quelles réponses sont prévues lors d'un vote par appel nominal à la règle IX.c ?",
+   qEn:"Which replies are listed during a roll call vote under Rule IX.c?",
+   oFr:["« yes », « no », « abstention », « yes with rights » et « no with rights »","« pour » et « contre » uniquement","« present » et « present and voting »","« agree » et « disagree »"],
+   oEn:["'yes', 'no', 'abstention', 'yes with rights', and 'no with rights'","'for' and 'against' only","'present' and 'present and voting'","'agree' and 'disagree'"],
+   ans:0,
+   expFr:"La règle IX.c prévoit les réponses « yes », « no », « abstention », « yes with rights » et « no with rights ».",
+   expEn:"Rule IX.c lists 'yes', 'no', 'abstention', 'yes with rights', and 'no with rights'."},
+  {id:96,cat:"vot",ref:"IX.c",
+   qFr:"Lors d'un appel nominal, les membres qui s'abstiennent comptent-ils comme « present and voting » ?",
+   qEn:"During a roll call vote, do members who abstain count as 'present and voting'?",
+   oFr:["Non, les membres qui s'abstiennent ne comptent pas comme présents et votants","Oui, systématiquement","Uniquement si la résolution porte sur un amendement","Uniquement si l'orateur a cédé son temps"],
+   oEn:["No, members who abstain from voting do not count as present and voting","Yes, systematically","Only if the resolution concerns an amendment","Only if a speaker yielded time"],
+   ans:0,
+   expFr:"La règle IX.c indique que les membres qui s'abstiennent lors du vote ne comptent pas comme « present and voting ».",
+   expEn:"Rule IX.c states members who abstain from voting do not count as present and voting."},
+  {id:97,cat:"vot",ref:"IX.c",
+   qFr:"Quelle règle générale s'applique lorsqu'une motion de vote clause par clause est proposée ?",
+   qEn:"What general rule applies when a motion to vote clause by clause is proposed?",
+   oFr:["La règle générale relative aux motions s'applique","Elle est adoptée automatiquement sans discussion","Elle exige l'unanimité des sponsors","Elle n'est recevable qu'avant l'appel initial"],
+   oEn:["The general rule regarding motions applies","It passes automatically without discussion","It requires unanimity of sponsors","It is only in order before initial roll call"],
+   ans:0,
+   expFr:"La règle IX.c précise que lorsqu'une motion de vote clause par clause est présentée, la règle générale régissant les motions s'applique.",
+   expEn:"Rule IX.c specifies that when a motion to vote clause by clause is raised, the general rule regarding motions applies."},
+  {id:98,cat:"vot",ref:"IX.c",
+   qFr:"Que signifie l'expression « the chambers are sealed » dans la règle IX.c ?",
+   qEn:"What does 'the chambers are sealed' mean in Rule IX.c?",
+   oFr:["La procédure de vote est en cours et aucune interruption n'est autorisée en dehors des points et motions prévus","Les portes de l'université sont verrouillées à clé","Plus aucun vote n'est possible","Le débat sur le fond reprend librement"],
+   oEn:["Voting procedure is active and no interruptions are allowed outside listed points and motions","University doors are locked with a key","No further votes are possible","Substantive debate resumes freely"],
+   ans:0,
+   expFr:"Selon la règle IX.c, une fois la procédure de vote déclarée, les chambres sont closes (« sealed ») et aucune interruption hors règles n'est permise.",
+   expEn:"Under Rule IX.c, once voting procedure begins, chambers are sealed and no interruptions are allowed except the listed points and motions."},
+  {id:99,cat:"vot",ref:"IX.a",
+   qFr:"Sur quels types de questions chaque membre du Conseil dispose-t-il d'une voix selon la règle IX.a ?",
+   qEn:"On which matters does each Council member have one vote under Rule IX.a?",
+   oFr:["Sur les questions de fond et de procédure","Uniquement sur les questions de procédure","Uniquement sur l'adoption finale de la résolution","Uniquement sur l'ordre du jour"],
+   oEn:["On both substantive and procedural matters","On procedural matters only","On final resolution adoption only","On the agenda only"],
+   ans:0,
+   expFr:"La règle IX.a énonce que chaque membre du Conseil a une voix tant sur les questions de fond que sur les questions de procédure.",
+   expEn:"Rule IX.a states each member of the Council shall have one vote on both substantive and procedural matters."},
+  {id:100,cat:"vot",ref:"IX.c",
+   qFr:"Quel point permet à un délégué de demander une précision sur le déroulement du vote en cours ?",
+   qEn:"Which point lets a delegate ask about how voting is proceeding?",
+   oFr:["Point of Parliamentary Inquiry","Right of Reply","Motion to adjourn the meeting","Motion for an unmoderated caucus"],
+   oEn:["Point of Parliamentary Inquiry","Right of Reply","Motion to adjourn the meeting","Motion for an unmoderated caucus"],
+   ans:0,
+   expFr:"La règle IX.c prévoit expressément le Point of Parliamentary Inquiry parmi les points recevables pendant la procédure de vote.",
+   expEn:"Rule IX.c explicitly includes Point of Parliamentary Inquiry among points in order during voting procedure."}
+];
+
+/* ===== ÉTAT DU JEU ROP ===== */
+let gameState=ls.get("somun_rop_game",{
+  cat:"all",
+  idx:0,
+  score:0,
+  streak:0,
+  best:0,
+  answers:{} // qId -> chosenOptionIndex
+});
+function saveGame(){
+  try{localStorage.setItem("somun_rop_game",JSON.stringify(gameState))}catch(e){}
+}
+function filteredQuestions(){
+  if(!gameState.cat||gameState.cat==="all")return ROP_QUIZ;
+  return ROP_QUIZ.filter(q=>q.cat===gameState.cat);
+}
+function setGameCat(cat){
+  gameState.cat=cat;
+  gameState.idx=0;
+  saveGame();
+  render(false,true);
+}
+function pickGameAnswer(qId,optIdx){
+  const qItem=ROP_QUIZ.find(x=>x.id===qId);
+  if(!qItem)return;
+  if(Object.prototype.hasOwnProperty.call(gameState.answers,qId))return;
+  gameState.answers[qId]=optIdx;
+  if(optIdx===qItem.ans){
+    gameState.score+=1;
+    gameState.streak+=1;
+    if(gameState.streak>gameState.best)gameState.best=gameState.streak;
+    toast(t("q_correct"));
+  }else{
+    gameState.streak=0;
+    toast(t("q_wrong"));
+  }
+  saveGame();
+  render(true);
+}
+function stepGame(delta){
+  const pool=filteredQuestions();
+  if(!pool.length)return;
+  gameState.idx=Math.max(0,Math.min(pool.length-1,gameState.idx+delta));
+  saveGame();
+  render(false,true);
+}
+function shuffleGameQuestions(){
+  const pool=filteredQuestions();
+  if(!pool.length)return;
+  gameState.idx=Math.floor(Math.random()*pool.length);
+  saveGame();
+  render(false,true);
+  toast(lang==="fr"?"Question aléatoire chargée":"Random question loaded");
+}
+function resetGameProgress(){
+  gameState={cat:gameState.cat||"all",idx:0,score:0,streak:0,best:gameState.best||0,answers:{}};
+  saveGame();
+  render(false,true);
+  toast(t("t_ok"));
+}
+
+function vGame(){
+  const cats=[
+    ["all",t("q_cat_all")],
+    ["gen",t("q_cat_gen")],
+    ["par",t("q_cat_par")],
+    ["deb",t("q_cat_deb")],
+    ["res",t("q_cat_res")],
+    ["vot",t("q_cat_vot")]
+  ];
+  const pool=filteredQuestions();
+  if(!pool.length)return `<h1>${t("game_t")}</h1><div class="card empty">${t("no_res")}</div>`;
+  const idx=Math.max(0,Math.min(pool.length-1,gameState.idx||0));
+  const item=pool[idx];
+  const chosen=Object.prototype.hasOwnProperty.call(gameState.answers,item.id)?gameState.answers[item.id]:null;
+  const answeredCount=Object.keys(gameState.answers).length;
+  const pct=Math.round((answeredCount/ROP_QUIZ.length)*100);
+  const qText=lang==="fr"?item.qFr:item.qEn;
+  const opts=lang==="fr"?item.oFr:item.oEn;
+  const expText=lang==="fr"?item.expFr:item.expEn;
+  const letters=["A","B","C","D"];
+
+  return `<h1>${t("game_t")}</h1>
+  <p class="mute">${t("game_s")}</p>
+  <div class="chips" style="margin-top:8px">
+    ${cats.map(([k,l])=>`<button class="chip ${gameState.cat===k?"on":""}" onclick="setGameCat('${k}')">${esc(l)}</button>`).join("")}
+  </div>
+  <div class="quiz-hud">
+    <div class="quiz-stat"><span>${t("q_score")}</span><b>${gameState.score}</b></div>
+    <div class="quiz-stat"><span>${t("q_streak")}</span><b>${gameState.streak}</b></div>
+    <div class="quiz-stat"><span>${t("q_best")}</span><b>${gameState.best}</b></div>
+    <div class="quiz-stat"><span>${t("q_answered")}</span><b>${answeredCount} / ${ROP_QUIZ.length}</b></div>
+  </div>
+  <div class="quiz-progress" aria-hidden="true"><span style="width:${pct}%"></span></div>
+  <div class="quiz-card">
+    <div class="quiz-meta">
+      <div><span class="tag">ROP ${esc(item.ref)}</span><span class="tag free">#${item.id} / 100</span></div>
+      <span class="mute" style="font-size:12.5px;font-weight:600">${idx+1} / ${pool.length}</span>
+    </div>
+    <div class="quiz-q">${esc(qText)}</div>
+    <div class="quiz-opts">
+      ${opts.map((txt,i)=>{
+        let cls="quiz-opt";
+        if(chosen!==null){
+          if(i===item.ans)cls+=" ok";
+          else if(i===chosen)cls+=" ko";
+          else cls+=" dim";
+        }
+        return `<button class="${cls}" ${chosen!==null?"disabled":""} onclick="pickGameAnswer(${item.id},${i})">
+          <span class="let">${letters[i]}</span>
+          <span>${esc(txt)}</span>
+        </button>`;
+      }).join("")}
+    </div>
+    ${chosen!==null?`<div class="quiz-fb ${chosen===item.ans?"ok":"ko"}">
+      <b>${chosen===item.ans?t("q_correct"):t("q_wrong")}</b> ${esc(expText)}
+    </div>`:""}
+    <div class="quiz-nav">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost sm" ${idx<=0?"disabled":""} onclick="stepGame(-1)">${t("q_prev")}</button>
+        <button class="btn sm" ${idx>=pool.length-1?"disabled":""} onclick="stepGame(1)">${t("q_next")}</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="shuffleGameQuestions()">🎲 ${t("q_shuffle")}</button>
+        <button class="btn danger sm" onclick="resetGameProgress()">↺ ${t("q_reset")}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
+const ROUTES=["accueil","activites","ressources","adherer","pole","bureau","jeu","partenaires","admin","account","login","actus","reset"];
+const ROUTE_RANK={
+  accueil:0,
+  actus:0.5,
+  activites:1,
+  event:1.5,
+  ressources:2,
+  adherer:3,
+  pole:4,
+  bureau:5,
+  jeu:5.5,
+  partenaires:6,
+  admin:7,
+  account:8,
+  login:8,
+  reset:8
+};
+function rankOf(r){return ROUTE_RANK[r]??8}
+function hashFor(){
+  if(route==="event"&&evSel!=null)return "#event-"+sid(evSel);
+  if(route==="pole"&&poleSel!=null)return "#pole-"+sid(poleSel);
+  return route==="accueil"?"":"#"+route;
+}
+function syncHash(replace){
+  const h=hashFor();
+  if((location.hash||"")===h)return;
+  const url=location.pathname+location.search+h;
+  try{replace?history.replaceState(null,"",url):history.pushState(null,"",url)}catch(e){}
+}
+function readHash(){
+  const oldRank=rankOf(route);
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(h.includes("="))return false;
+  let m;
+  if((m=h.match(/^event-([\w-]+)$/))){route="event";evSel=m[1];poleSel=null}
+  else if((m=h.match(/^pole-([\w-]+)$/))){route="pole";poleSel=m[1]}
+  else{route=ROUTES.includes(h)?h:"accueil";poleSel=null;evSel=null}
+  const newRank=rankOf(route);
+  navDir=newRank<oldRank?"left":"right";
+  return true;
+}
+function go(r,replace){
+  const oldRank=rankOf(route);
+  const newRank=rankOf(r);
+  navDir=newRank<oldRank?"left":"right";
+  closeSheet();route=r;if(r!=="pole")poleSel=null;if(r!=="event")evSel=null;
+  syncHash(replace);render();
+  if(r==="pole"&&poleSel)loadTasks().then(()=>render(true));
+  if(r==="event")loadRegistrants();
+}
+function openEvent(id){evSel=String(id);go("event")}
+window.addEventListener("popstate",()=>{
+  if(!readHash())return;
+  closeSheet();render();
+  if(route==="pole"&&poleSel){D.tasks=[];loadTasks().then(()=>render(true))}
+  if(route==="event")loadRegistrants();
+});
+window.addEventListener("scroll",()=>{
+  const h=$("#hdr");
+  if(h)h.classList.toggle("scrolled",window.scrollY>12);
+},{passive:true});
+function moveNavThumb(instant){
+  const nav=$("#dnav"),thumb=$("#nav-thumb"),active=nav&&nav.querySelector("button.on");
+  if(!nav||!thumb)return;
+  if(!active||nav.offsetParent===null){thumb.style.opacity="0";return}
+  const x=active.offsetLeft,w=active.offsetWidth;
+  if(instant){
+    thumb.style.transition="none";
+    thumb.style.transform=`translate3d(${x}px,0,0)`;
+    thumb.style.width=`${w}px`;
+    thumb.style.opacity="1";
+    thumb.getBoundingClientRect();
+    thumb.style.transition="";
+  }else{
+    thumb.style.opacity="1";
+    thumb.style.transform=`translate3d(${x}px,0,0)`;
+    thumb.style.width=`${w}px`;
+  }
+}
+window.addEventListener("resize",()=>moveNavThumb(true),{passive:true});
+
+function render(keep,instantThumb){
+  document.documentElement.lang=lang;
+  $("#langbtn").textContent=lang==="fr"?"EN":"FR";
+  const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
+  if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
+  if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
+  if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
+  const staff=isStaff(),cur=route==="event"?"activites":route;
+  const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["jeu","game"],["partenaires","partners"]];
+  if(staff)nav.push(["admin","admin"]);
+  $("#dnav").innerHTML=`<span class="nav-thumb" id="nav-thumb" aria-hidden="true"></span>`+nav.map(([k,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')">${t(l)}</button>`).join("");
+  const main=[["accueil","🏠","home"],["activites","🗓️","activities"],["adherer","🎫","join"],["pole","👥","poles"],["jeu","🎮","game"]];
+  const inMore=!main.some(m=>m[0]===cur);
+  $("#tabbar").innerHTML=main.map(([k,i,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')"><span class="ico" aria-hidden="true">${i}</span>${t(l)}</button>`).join("")+`<button class="${inMore?"on":""}" onclick="openMore()"><span class="ico" aria-hidden="true">☰</span>${t("more")}</button>`;
+  const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
+  $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,adherer:vAdherer,bureau:vBureau,jeu:vGame,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
+  const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
+  const appEl=$("#app");
+  const offlineOk=!configured||(route==="jeu");
+  appEl.innerHTML=`<div class="view ${animCls}">${offlineOk?(errBox()+(V[route]||vAccueil)()):vSetup()}</div>`;
+  requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
+  if(!keep)window.scrollTo(0,0);
+  observe(keep);
+}
+function observe(keep){
+  if(keep||!("IntersectionObserver" in window)){document.querySelectorAll(".reveal").forEach(e=>e.classList.add("show"));return}
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("show");io.unobserve(e.target)}}),{threshold:.08});
+  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+}
+function openSheet(html,extraClass=""){
+  const sh=$("#sheet");
+  sh.className="sheet"+(extraClass?" "+extraClass:"");
+  sh.innerHTML=html;
+  $("#sheetbg").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeSheet(){
+  $("#sheetbg").classList.remove("open");
+  $("#sheet").className="sheet";
+  document.body.style.overflow="";
+}
+function openMore(){
+  const items=[["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")]];
+  if(isStaff())items.push(["admin","⚙️",t("admin")]);
+  openSheet(`<h3>${t("more")}</h3><div class="more-list">${items.map(([k,i,l])=>`<button onclick="go('${k}')">${i}  ${esc(l)}</button>`).join("")}</div>`);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#sheetbg").classList.contains("open"))closeSheet()});
+
+/* ===== COMPOSANTS ===== */
+function evCard(e){
+  const cap=Math.max(0,Number(e.places)||0),taken=D.taken[e.id]||0,left=Math.max(0,cap-taken);
+  const pct=cap>0?Math.min(100,Math.round(taken/cap*100)):100;
+  const st=D.myRegs[e.id],j=daysTo(e.date),past=j<0,id=idArg(e.id),formHref=safeUrl(e.form_url);
+  const when=past?t("past"):j===0?t("today"):t("in_days",{n:j});
+  let action;
+  if(st==="confirmed")action=`<span class="tag free">${t("done_reg")}</span>`;
+  else if(st==="pending"&&!past)action=`<span><span class="tag paid">${t("pending")}</span><button class="btn sm" onclick="payEvent(${id})">${t("pay_now")}</button></span>`;
+  else if(past)action=`<span class="tag gray">${t("ended")}</span>`;
+  else if(formHref)action=`<button class="btn sm" onclick="openFormEvent(${id})">${t("open_form")}</button>`;
+  else if(left<=0)action="";
+  else action=`<button class="btn sm" onclick="openReg(${id})">${t("reg")}${e.prix?" · "+e.prix+" €":""}</button>`;
+  const staffBtns=isStaff()?`<div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);justify-content:flex-end"><button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${id},this)">🗑️ ${t("del")}</button></div>`:"";
+  return `<div class="card ev ${past?"past":""} reveal">
+   <div class="date"><b>${dd(e.date).getDate()||"—"}</b><span>${mon(e.date)}</span></div>
+   <div class="body">
+    <div><span class="tag">${esc(I18N[lang][e.type]||e.type)}</span><span class="tag ${e.prix?"paid":"free"}">${e.prix?e.prix+" €":t("free")}</span>${e.members_only?`<span class="tag red">${t("members_only")}</span>`:""}${formHref?`<span class="tag">${t("form_badge")}</span>`:""}</div>
+    <h3 style="margin-top:6px"><button class="linkish" onclick="openEvent(${id})">${esc(T(e.title))}</button></h3>
+    <div class="mute">📍 ${esc(T(e.lieu))} · ${when}${hhmm(e.heure)?" · "+hhmm(e.heure):""}</div>
+    <div class="bar-p"><span style="width:${pct}%"></span></div>
+    <div class="foot"><span class="left">${past?`${taken}/${cap}`:left>0?left+" "+t("places"):t("full")}</span>${action}</div>
+    ${staffBtns}
+   </div></div>`;
+}
+const newsCard=n=>`<div class="card news reveal"><h3>${esc(T(n.title))}</h3><div class="mute">${long(n.created_at)}</div><p style="margin:8px 0 0">${esc(T(n.body))}</p></div>`;
+const vSetup=()=>`<h1>${keysConfigured?t("sdk_t"):t("setup_t")}</h1><div class="card" style="margin-top:14px"><p style="margin:0">${keysConfigured?t("sdk_txt"):t("setup_txt")}</p></div>`;
+const loadingBox=()=>`<div class="empty">${t("loading")}</div>`;
+const errBox=()=>D.err?`<div class="info" style="background:#fde8e8;color:#9b1c1c;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${t("err_load")}</span><button class="btn sm danger" onclick="withBusy(this,refreshAll)">${t("retry")}</button></div>`:"";
+
+/* ===== VUES ===== */
+function socialLinks(){
+  const l=[],ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin"),cMail=cfg("contact_email")||DEFAULT_CONTACT;
+  if(ig)l.push(`<a class="btn ghost sm" href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
+  if(li)l.push(`<a class="btn ghost sm" href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  if(cMail)l.push(`<a class="btn ghost sm" href="mailto:${esc(cMail)}">✉️ ${t("contact")}</a>`);
+  return l;
+}
+function aboutBlock(){
+  const s=socialLinks();
+  return `<section class="about reveal"><h2>${t("about_t")}</h2><p style="margin:0">${t("about_txt")}</p>
+   <div class="grid">${[1,2,3].map(i=>`<div class="card"><b>${t("about_"+i+"t")}</b><span class="mute">${t("about_"+i)}</span></div>`).join("")}</div>
+   ${s.length?`<div class="social">${s.join("")}</div>`:""}</section>`;
+}
+function vAccueil(){
+  if(D.loading)return loadingBox();
+  const next=D.events.filter(e=>isoDay(e.date)>=todayStr()).sort((a,b)=>isoDay(a.date).localeCompare(isoDay(b.date))).slice(0,3);
+  const myRegCount=Object.values(D.myRegs).filter(s=>s==="confirmed").length;
+  const totalRegs=Object.values(D.taken).reduce((a,b)=>a+b,0);
+  const name=S.profile&&S.profile.prenom,hImg=safeAsset(cfg("hero_img"));
+  const heroBg=hImg?`background-image:url('${hImg.replace(/['"\\()]/g,"")}')`:"";
+  return `<section class="hero">
+   <div class="hero-visual ${hImg?"has-photo":""}" style="${heroBg}">
+     <div class="hero-crest">${logoImg()}</div>
+   </div>
+   <div class="hero-txt">
+   <p class="kicker">Sorbonne Model United Nations</p>
+   <h1>${S.user?esc(t("hello"))+(name?" "+esc(name):"")+" 👋":esc(t("hero_out"))}</h1>
+   <p>${S.user?t("hero_sub_in"):t("hero_sub_out")}</p>
+   <div class="cta"><button class="btn" onclick="go('activites')">${t("see_acts")}</button><button class="btn ghost" onclick="go('jeu')">🎮 ${t("game")}</button>${S.user?"":`<button class="btn ghost" onclick="go('login')">${t("login")}</button>`}</div>
+   <div class="stats"><div class="stat"><b>${D.events.length}</b><span>${t("st_events")}</span></div><div class="stat"><b>${D.poles.length}</b><span>${t("st_poles")}</span></div><div class="stat"><b>${S.user?myRegCount:totalRegs}</b><span>${S.user?t("st_my_regs"):t("st_regs")}</span></div></div>
+  </div></section>
+  ${S.user?"":aboutBlock()}
+  <h2>${t("next")} ${isStaff()?`<button onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}<button onclick="go('activites')">${t("see_all")}</button></h2>
+  ${next.length?`<div class="grid">${next.map(evCard).join("")}</div>`:`<div class="card empty">${t("no_events")}</div>`}
+  <h2>${t("news")} <button onclick="go('actus')">${t("see_all")}</button></h2>
+  ${D.news.length?`<div class="grid">${D.news.slice(0,3).map(newsCard).join("")}</div>`:`<div class="card empty">${t("no_news")}</div>`}`;
+}
+function vActivites(){
+  if(D.loading)return loadingBox();
+  const base=S.user?["all","mine"]:["all"];
+  if(!S.user&&filt==="mine")filt="all";
+  const types=[...base,...new Set(D.events.map(e=>e.type).filter(Boolean))];
+  return `<div class="page-head"><h1 style="margin:6px 0 8px">${t("activities")}</h1>${isStaff()?`<button class="btn sm" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}</div>
+  <input class="search" id="q" placeholder="🔍  ${esc(t("search"))}" value="${esc(q)}" oninput="q=this.value;list()" style="margin:8px 0">
+  <div class="chips">${types.map(k=>`<button class="chip ${k===filt?"on":""}" onclick="filt='${sid(k)}';render(false,true)">${esc(k==="all"?t("all"):k==="mine"?t("mine"):(I18N[lang][k]||k))}</button>`).join("")}</div>
+  <div class="grid" id="list">${listHTML()}</div>`;
+}
+function listHTML(){
+  const needle=q.trim().toLowerCase(),today=todayStr();
+  const sorted=[...D.events].sort((a,b)=>{
+    const pa=isoDay(a.date)<today,pb=isoDay(b.date)<today;
+    if(pa!==pb)return pa?1:-1;
+    return pa?isoDay(b.date).localeCompare(isoDay(a.date)):isoDay(a.date).localeCompare(isoDay(b.date));
+  });
+  const l=sorted.filter(e=>{
+    const okType=filt==="all"||(filt==="mine"?Boolean(D.myRegs[e.id]):e.type===filt);
+    if(!okType)return false;
+    if(!needle)return true;
+    return `${T(e.title)} ${e.title} ${T(e.lieu)} ${e.lieu}`.toLowerCase().includes(needle);
+  });
+  return l.length?l.map(e=>evCard(e).replace("reveal","reveal show")).join(""):`<div class="empty">${t("no_res")}</div>`;
+}
+const list=()=>{$("#list").innerHTML=listHTML()};
+const vActus=()=>D.loading?loadingBox():`<h1>${t("news")}</h1>${D.news.length?`<div class="grid" style="margin-top:12px">${D.news.map(newsCard).join("")}</div>`:`<div class="card empty" style="margin-top:12px">${t("no_news")}</div>`}`;
+
+function vRessources(){
+  if(D.loading)return loadingBox();
+  const canEdit=isTrainingLead();
+  return `<h1>${t("rop_t")}</h1><p class="mute">${t("rop_s")}</p>
+  ${canEdit?`<div style="margin:12px 0"><button class="btn sm" onclick="editResource()">+ ${t("add_rop")}</button></div>`:""}
+  ${D.resources.length?`<div class="grid" style="margin-top:14px">${D.resources.map(r=>{
+    const href=normalizeUrl(r.url);
+    return `<div class="card reveal">
+      <div><span class="tag">${esc(r.lang||"FR / EN")}</span></div>
+      <h3 style="margin-top:8px">${esc(T(r.title))}</h3>
+      ${r.description?`<p class="mute" style="margin:6px 0 12px">${esc(T(r.description))}</p>`:""}
+      <div class="foot">
+        ${href?`<a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${t("open_doc")}</a>`:""}
+        ${canEdit?`<div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editResource(${idArg(r.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('resources',${idArg(r.id)},this)">${t("del")}</button></div>`:""}
+      </div>
+    </div>`;
+  }).join("")}</div>`:`<div class="card empty" style="margin-top:14px">${t("no_rop")}</div>`}`;
+}
+function editResource(id){
+  const r=id!=null?D.resources.find(x=>String(x.id)===String(id)):{};
+  const isNew=!r||r.id==null;
+  openSheet(`<h3>${isNew?t("add_rop"):t("edit_rop")}</h3><form onsubmit="saveResource(event,${isNew?"null":idArg(r.id)})">
+    <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(r.title||"")}">
+    <label>${t("f_lang")}</label><select name="lang">${["FR / EN","FR","EN","ES"].map(x=>`<option value="${x}" ${r.lang===x?"selected":""}>${x}</option>`).join("")}</select>
+    <label>${t("f_url")}</label><input name="url" type="text" required placeholder="https://…" value="${esc(r.url||"")}">
+    <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="800">${esc(r.description||"")}</textarea>
+    <br><button class="btn" type="submit" style="width:100%">${isNew?t("publish"):t("save")}</button>
+  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveResource(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),url=normalizeUrl(String(f.get("url")||"").trim());
+    if(!url)return toast(t("e_url"));
+    const row={title:f.get("title").trim(),lang:f.get("lang"),url,description:(f.get("description")||"").trim()||null,category:"rop"};
+    const {error}=id==null?await sb.from("resources").insert(row):await sb.from("resources").update(row).eq("id",id);
+    if(error)return toast(errMsg(error));
+    toast(id==null?t("t_pub"):t("t_ok"));
+    closeSheet();await loadPublic();render(true);
+  });
+}
+
+function vAdherer(){
+  const p=S.profile,u=membershipUrl(),price=Number(cfg("cotisation"))||DEFAULT_COTISATION;
+  let action;
+  if(!S.user)action=`<button class="btn" onclick="go('login')">${t("need_acc")}</button>`;
+  else if(hasPaid())action=`<span class="tag free" style="font-size:14px;padding:6px 12px">${t("ha_verified")}</span>${p&&p.paid_until?`<div class="mute" style="margin-top:8px">${t("paid_until",{d:long(p.paid_until)})}</div>`:""}`;
+  else if(u)action=`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="btn gold" target="_blank" rel="noopener" href="${u}">${t("pay")}</a><button class="btn ghost sm" onclick="withBusy(this,async()=>{await loadPrivate();render(true);toast(t('t_ok'))})">${t("refresh_status")}</button></div>`;
+  else action=`<div class="info" style="margin:0">${t("ha_soon")}</div>`;
+  return `<h1>${t("join_t")}</h1><p class="mute">${t("join_s")}</p>
+  <div class="plan reveal"><div class="mute">${t("season")}</div><div class="price">${price} €</div>
+   <ul>${I18N[lang].perks.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><br>${action}
+   <p class="mute" style="font-size:12px;margin:14px 0 0">${S.user&&!hasPaid()&&u?esc(t("ha_sync",{e:S.user.email}))+"<br>":""}${t("secure")}</p></div>`;
+}
+
+/* --- Bureau & Fiche Bio --- */
+function firstKey(name){
+  return String(name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+function sortedBoard(){
+  return [...D.board].sort((a,b)=>{
+    const ia=BOARD_ORDER.indexOf(firstKey(a.name));
+    const ib=BOARD_ORDER.indexOf(firstKey(b.name));
+    const ra=ia===-1?999:ia;
+    const rb=ib===-1?999:ib;
+    if(ra!==rb)return ra-rb;
+    return (a.sort||0)-(b.sort||0);
+  });
+}
+function boardMemberPhoto(m){
+  const key=firstKey(m.name);
+  const custom=safeAsset(m.photo_url||m.avatar_url||m.image_url);
+  if(custom){
+    const preset=BOARD_PHOTOS[key];
+    if(key==="come"&&(!preset||custom!==preset))return preset||"photo_come_bureau.jpeg";
+    return custom;
+  }
+  return BOARD_PHOTOS[key]||null;
+}
+function boardBioPhoto(m){
+  const key=firstKey(m.name);
+  const dedicated=safeAsset(m.bio_photo_url||m.detail_photo_url||m.portrait_url);
+  if(dedicated)return dedicated;
+  const presetBio=safeAsset(BOARD_BIO_PHOTOS[key]);
+  if(presetBio)return presetBio;
+  if(key==="come")return "photo_bio_come.jpeg";
+  return boardMemberPhoto(m);
+}
+function photoFallbackAttr(src,init,cls,extraCls=""){
+  const safe=safeAsset(src)||"";
+  if(safe.toLowerCase().endsWith(".jpeg")){
+    const jpg=safe.slice(0,-5)+".jpg";
+    return `onerror="if(!this.dataset.fb1){this.dataset.fb1=1;this.src='${esc(jpg)}'}else if(!this.dataset.fb2){this.dataset.fb2=1;this.src='IMG_2778.jpeg'}else{this.outerHTML='<div class=\\'${cls} ${extraCls}\\'>${esc(init)}</div>'"`;
+  }
+  return `onerror="this.outerHTML='<div class=\\'${cls} ${extraCls}\\'>${esc(init)}</div>'"`;
+}
+function avatarMarkup(src,init,cls,extraCls=""){
+  const safe=safeAsset(src);
+  return safe
+    ?`<img class="${cls} ${extraCls}" src="${esc(safe)}" alt="${esc(init)}" loading="lazy" ${photoFallbackAttr(safe,init,cls,extraCls)}>`
+    :`<div class="${cls} ${extraCls}">${esc(init)}</div>`;
+}
+function vBureau(){
+  if(D.loading)return loadingBox();
+  const ordered=sortedBoard();
+  return `<h1>${t("bureau_t")}</h1><p class="mute">${t("bureau_s")}</p>
+  <div class="bureau-wrap" style="margin-top:16px">
+    <div class="board-grid">${ordered.map(m=>{
+      const pUrl=boardMemberPhoto(m);
+      const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+      return `<div class="card board-card reveal" role="button" tabindex="0" onclick="openBoardBio(${idArg(m.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBoardBio(${idArg(m.id)})}">
+        ${avatarMarkup(pUrl,init,"board-photo")}
+        <span class="tag">${esc(T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr)))}</span>
+        <h3 style="margin-top:8px">${esc(protectProperNames(m.name))}</h3>
+        <span class="board-hint">${t("see_bio")} →</span>
+      </div>`;
+    }).join("")}</div>
+  </div>`;
+}
+function openBoardBio(id){
+  const m=D.board.find(x=>String(x.id)===String(id));if(!m)return;
+  const key=firstKey(m.name);
+  const bUrl=boardBioPhoto(m);
+  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+  const roleLabel=T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr));
+  const bioText=m.bio?T(m.bio):t("no_bio");
+  const ig=normalizeUrl(m.instagram_url||m.insta_url,"instagram");
+  const li=normalizeUrl(m.linkedin_url,"linkedin");
+  const links=[];
+  if(ig)links.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
+  if(li)links.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  const socialBlock=links.length
+    ?`<div class="bio-socials"><span class="bio-socials-lbl">${t("follow")}</span><div class="bio-socials-links">${links.join("")}</div></div>`
+    :"";
+  const focusCls=key==="come"?"focus-come":"";
+
+  openSheet(`<div class="bio-modal">
+    <div class="bio-hero-wrap">
+      ${avatarMarkup(bUrl,init,"bio-hero-photo",focusCls)}
+      <div class="bio-hero-fade"></div>
+    </div>
+    <div class="bio-body">
+      <span class="tag">${esc(roleLabel)}</span>
+      <h3 style="margin-top:8px">${esc(protectProperNames(m.name))}</h3>
+      <div class="bio-text">${esc(bioText)}</div>
+      <div class="bio-footer">
+        <div class="bio-actions">
+          ${isStaff()?`<button class="btn sm" onclick="editBoardBio(${idArg(m.id)})">✏️ ${t("edit_bio_photo")}</button>`:""}
+          <button class="btn ghost sm" onclick="closeSheet()">${t("cancel")}</button>
+        </div>
+        ${socialBlock}
+      </div>
+    </div>
+  </div>`,"bio-sheet");
+}
+function editBoardBio(id){
+  if(!isStaff())return toast(t("admin_only"));
+  const m=D.board.find(x=>String(x.id)===String(id));if(!m)return;
+  const currentBioPhoto=m.bio_photo_url||boardBioPhoto(m)||"";
+  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+  openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
+   <h3>✏️ ${esc(protectProperNames(m.name))}</h3>
+   <form onsubmit="saveBoardBio(event,${idArg(m.id)})">
+    ${avatarMarkup(currentBioPhoto,init,"bio-preview")}
+    <label>${t("f_bio_photo_url")}</label>
+    <input id="bioPhotoInput" name="bio_photo_url" value="${esc(currentBioPhoto)}" placeholder="photo_bio_come.jpeg ou https://…" oninput="previewBioPhoto(this.value,'${esc(init)}')">
+    <label>${t("f_photo_file")}</label>
+    <input type="file" accept="image/*" onchange="handleBioPhotoFile(this,'${esc(init)}')">
+    <div class="row2">
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
+    </div>
+    <label>${t("f_bio_full")}</label>
+    <textarea name="bio" rows="6" maxlength="2000" placeholder="${esc(t("f_bio"))}…">${esc(m.bio||"")}</textarea>
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+   </form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="openBoardBio(${idArg(m.id)})">${t("back")}</button>
+  </div>`,"bio-sheet");
+}
+function previewBioPhoto(val,init){
+  const box=$("#sheet .bio-preview");
+  if(!box)return;
+  const safe=safeAsset(val);
+  if(safe){
+    box.outerHTML=`<img class="bio-preview" src="${esc(safe)}" alt="${esc(init)}" ${photoFallbackAttr(safe,init,"bio-preview")}>`;
+  }else{
+    box.outerHTML=`<div class="bio-preview">${esc(init)}</div>`;
+  }
+}
+function handleBioPhotoFile(input,init){
+  const file=input.files&&input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=720,ratio=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement("canvas");
+      c.width=Math.max(1,Math.round(img.width*ratio));
+      c.height=Math.max(1,Math.round(img.height*ratio));
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      const dataUrl=c.toDataURL("image/jpeg",0.85);
+      const inp=$("#bioPhotoInput");
+      if(inp)inp.value=dataUrl;
+      previewBioPhoto(dataUrl,init);
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+async function saveBoardBio(ev,id){
+  ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const rawPhoto=String(f.get("bio_photo_url")||"").trim();
+    const bioPhoto=rawPhoto?safeAsset(rawPhoto):null;
+    if(rawPhoto&&!bioPhoto)return toast(t("e_url"));
+    const rawIg=String(f.get("instagram_url")||"").trim();
+    const rawLi=String(f.get("linkedin_url")||"").trim();
+    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const bio=String(f.get("bio")||"").trim()||null;
+    const payload={bio,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
+    let res=await sb.from("board_members").update(payload).eq("id",id);
+    if(res.error&&/column/i.test(res.error.message||"")){
+      const fallback={bio};
+      if("bio_photo_url" in (D.board.find(x=>String(x.id)===String(id))||{}))fallback.bio_photo_url=bioPhoto;
+      if("instagram_url" in (D.board.find(x=>String(x.id)===String(id))||{}))fallback.instagram_url=ig;
+      if("linkedin_url" in (D.board.find(x=>String(x.id)===String(id))||{}))fallback.linkedin_url=li;
+      res=await sb.from("board_members").update(fallback).eq("id",id);
+    }
+    if(res.error)return toast(errMsg(res.error));
+    await loadPublic();render(true);openBoardBio(id);toast(t("t_ok"));
+  });
+}
+
+function vPartenaires(){
+  if(D.loading)return loadingBox();
+  const contact=cfg("contact_email")||DEFAULT_CONTACT;
+  return `<h1>${t("part_t")}</h1><p class="mute">${t("part_s")}</p>
+  ${D.partners.length?`<div class="partners">${D.partners.map(p=>{
+    const href=normalizeUrl(p.url||p.website);
+    return href?`<a class="card reveal" href="${esc(href)}" target="_blank" rel="noopener">${esc(T(p.name))}</a>`:`<div class="card reveal">${esc(T(p.name))}</div>`;
+  }).join("")}</div>`:`<div class="card empty">${t("part_empty")}</div>`}
+  <h2>${t("part_sp")}</h2><div class="card"><p class="mute" style="margin-top:0">${t("part_txt")}</p>
+  ${contact?`<a class="btn sm" href="mailto:${esc(contact)}?subject=${encodeURIComponent("Partenariat SOMUN")}">${t("part_contact")}</a>`:""}</div>`;
+}
+
+function vEvent(){
+  if(D.loading)return loadingBox();
+  const back=`<button class="chip" onclick="go('activites')">${t("back_acts")}</button>`;
+  const e=D.events.find(x=>String(x.id)===String(evSel));
+  if(!e)return back+`<div class="card empty" style="margin-top:12px">${t("ev_404")}</div>`;
+  const id=idArg(e.id),cap=Math.max(0,Number(e.places)||0),taken=D.taken[e.id]||0,left=Math.max(0,cap-taken);
+  const st=D.myRegs[e.id],past=daysTo(e.date)<0,img=safeUrl(e.image_url),formHref=safeUrl(e.form_url);
+  const canEditSG=e.type==="Training"&&isTrainingLead();
+  const sgHref=safeUrl(e.study_guide_url);
+  const canSeeSG=Boolean(sgHref)&&(st==="confirmed"||canEditSG);
+
+  let action;
+  if(past)action=`<span class="tag gray">${t("ended")}</span>`;
+  else if(st==="confirmed")action=`<span class="tag free" style="font-size:13px;padding:6px 12px">${t("done_reg")}</span>`+
+    (Number(e.prix)>0?`<p class="mute" style="width:100%;margin:4px 0 0">${t("paid_cancel")}</p>`:`<button class="btn sm danger" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`);
+  else if(st==="pending")action=`<button class="btn gold" onclick="payEvent(${id})">${t("pay_now")} · ${e.prix} €</button><button class="btn sm danger" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`;
+  else if(formHref)action=`<button class="btn" onclick="openFormEvent(${id})">${t("open_form")}</button>`;
+  else if(left<=0)action=`<span class="tag gray">${t("full")}</span>`;
+  else action=`<button class="btn" onclick="openReg(${id})">${t("reg")}${e.prix?" · "+e.prix+" €":""}</button>`;
+  if(isStaff())action+=`<button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">🗑️ ${t("del")}</button>`;
+  if(canEditSG)action+=`<button class="btn ghost sm" onclick="editStudyGuide(${id})">📘 ${t("sg_edit")}</button>`;
+
+  const sgBlock=(canSeeSG||canEditSG)?`<div class="sg-box">
+    <h3>📘 ${esc(T(e.study_guide_title||t("sg_box")))}</h3>
+    <div class="actions" style="margin-top:10px">
+      ${sgHref?`<a class="btn sm" href="${esc(sgHref)}" target="_blank" rel="noopener">${t("sg_open")}</a>`:`<span class="mute">${t("none_yet")}</span>`}
+    </div></div>`:"";
+
+  return `${back}
+  <div class="card" style="margin-top:12px">
+   <div><span class="tag">${esc(I18N[lang][e.type]||e.type)}</span><span class="tag ${e.prix?"paid":"free"}">${e.prix?e.prix+" €":t("free")}</span>${e.members_only?`<span class="tag red">${t("members_only")}</span>`:""}${formHref?`<span class="tag">${t("form_badge")}</span>`:""}</div>
+   <h1 style="margin-top:10px">${esc(T(e.title))}</h1>
+   <div class="meta"><span>🗓️ ${long(e.date)}${hhmm(e.heure)?" "+t("at")+" "+hhmm(e.heure):""}</span><span>📍 ${esc(T(e.lieu))}</span><span>👥 ${past?`${taken}/${cap}`:left>0?left+" "+t("places"):t("full")}</span></div>
+   ${img?`<img class="ev-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">`:""}
+   ${e.description?`<p class="desc">${esc(T(e.description))}</p>`:""}
+   ${sgBlock}
+   <div class="actions">${action}</div>
+  </div>
+  ${(isStaff()||canEditSG)?registrantsBlock(e):""}`;
+}
+
+function editStudyGuide(id){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  openSheet(`<h3>📘 ${t("sg_edit")}</h3><form onsubmit="saveStudyGuide(event,${idArg(e.id)})">
+    <label>${t("f_sg_title")}</label><input name="title" maxlength="140" placeholder="ex : Study Guide — Conseil de Sécurité" value="${esc(e.study_guide_title||"")}">
+    <label>${t("f_sg_url")}</label><input name="url" type="text" placeholder="https://…" value="${esc(e.study_guide_url||"")}">
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveStudyGuide(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawUrl=String(f.get("url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
+    if(rawUrl&&!url)return toast(t("e_url"));
+    const title=String(f.get("title")||"").trim()||null;
+    const {error}=await sb.from("events").update({study_guide_title:title,study_guide_url:url}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+
+async function loadRegistrants(){
+  if(!configured||(!isStaff()&&!isTrainingLead())||route!=="event"||evSel==null)return;
+  const e=D.events.find(x=>String(x.id)===String(evSel));
+  const targetId=e?e.id:evSel;
+  const [r]=await Promise.all([
+    sb.from("registrations").select("user_id,status").eq("event_id",targetId),
+    D.members.length?Promise.resolve():loadAdmin()
+  ]);
+  if(r.error){console.error(r.error);return}
+  regList={event:String(targetId),rows:r.data||[]};
+  if(route==="event"&&String(evSel)===String(targetId))softRender();
+}
+function registrantRows(){
+  const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
+  return (regList.rows||[]).map(r=>{const m=byId[r.user_id]||{};return {uid:r.user_id,prenom:m.prenom||"",nom:m.nom||"",email:m.email||"",paid:Boolean(m.paid),status:r.status}})
+    .sort((a,b)=>(a.nom+" "+a.prenom).localeCompare(b.nom+" "+b.prenom,"fr"));
+}
+const stLabel=s=>s==="confirmed"?t("st_confirmed"):t("st_pending");
+function registrantsBlock(e){
+  if(regList.event!==String(e.id))return `<h2>${t("registrants")}</h2>${loadingBox()}`;
+  const rows=registrantRows();
+  return `<h2>${t("registrants")} (${rows.length}) ${rows.length?`<button onclick="exportCSV(${idArg(e.id)})">⬇ ${t("export_csv")}</button>`:""}</h2>
+  ${rows.length?`<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>${t("col_ln")}</th><th>${t("col_fn")}</th><th>${t("col_mail")}</th><th>${t("col_member")}</th><th>${t("col_status")}</th>${isStaff()?"<th></th>":""}</tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${esc(protectProperNames(r.nom))}</td><td>${esc(protectProperNames(r.prenom))}</td><td>${esc(r.email)}</td><td>${r.paid?t("yes"):t("no")}</td><td><span class="tag ${r.status==="confirmed"?"free":"paid"}">${stLabel(r.status)}</span></td>${isStaff()?`<td>${r.status==="pending"?`<button class="btn sm" onclick="confirmRegistration(${idArg(e.id)},'${sid(r.uid)}',this)">${t("validate")}</button>`:""}</td>`:""}</tr>`).join("")}
+  </tbody></table></div>`:`<div class="card empty">${t("no_registrants")}</div>`}`;
+}
+async function confirmRegistration(eid,uid,btn){
+  if(!isStaff())return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("registrations").update({status:"confirmed"}).eq("event_id",eid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadRegistrants(),loadTaken()]);
+    render(true);toast(t("t_ok"));
+  });
+}
+function exportCSV(id){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  const cell=v=>{let x=String(v??"");if(/^[=+\-@\t\r]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"'};
+  const lines=[[t("col_ln"),t("col_fn"),t("col_mail"),t("col_member"),t("col_status")].map(cell).join(";")]
+    .concat(registrantRows().map(r=>[r.nom,r.prenom,r.email,r.paid?t("yes"):t("no"),stLabel(r.status)].map(cell).join(";")));
+  const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const slug=String(e.title||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`inscrits-${isoDay(e.date)}-${slug}.csv`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function openFormEvent(id){
+  if(!S.user){toast(t("t_need"));go("login");return}
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  if(e.members_only&&!hasPaid()){toast(t("t_err_members"));go("adherer");return}
+  const href=safeUrl(e.form_url);
+  if(href)window.open(href,"_blank","noopener,noreferrer");
+}
+function openReg(id){
+  if(!S.user){toast(t("t_need"));go("login");return}
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  if(daysTo(e.date)<0)return;
+  if(e.members_only&&!hasPaid()){toast(t("t_err_members"));go("adherer");return}
+  if(safeUrl(e.form_url))return openFormEvent(id);
+  openSheet(`<h3>${esc(T(e.title))}</h3><div class="mute">${long(e.date)} · ${esc(T(e.lieu))}</div>
+   <p>${e.prix?t("pay_note",{p:e.prix}):t("free_note")}</p>
+   <button class="btn" style="width:100%" onclick="confirmReg(${idArg(e.id)},this)">${e.prix?t("go_pay"):t("confirm")}</button>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+function haSheet(e){
+  const u=eventUrl(e);
+  openSheet(`<h3>${esc(T(e.title))}</h3><p>${t("ha_after")}</p>
+   ${u?`<a class="btn gold" style="width:100%" target="_blank" rel="noopener" href="${u}">${t("go_ha")}</a>`:`<div class="info">${t("t_err_slug")}</div>`}
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+function payEvent(id){const e=D.events.find(x=>String(x.id)===String(id));if(e)haSheet(e)}
+async function confirmReg(id,btn){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  await withBusy(btn,async()=>{
+    const {data,error}=await sb.rpc("register_event",{p_event:e.id});
+    if(error){closeSheet();toast(errMsg(error));return}
+    D.myRegs[e.id]=data;await loadTaken();if(route==="event")await loadRegistrants();render(true);
+    if(data==="pending")haSheet(e);else{closeSheet();toast(t("t_reg"))}
+  });
+}
+async function cancelReg(id,btn){
+  if(!confirm(t("confirm_cancel")))return;
+  const e=D.events.find(x=>String(x.id)===String(id));
+  await withBusy(btn,async()=>{
+    const {error}=await sb.rpc("cancel_registration",{p_event:e?e.id:id});
+    if(error)return toast(errMsg(error));
+    if(e)delete D.myRegs[e.id];
+    await loadTaken();if(route==="event")await loadRegistrants();
+    render(true);toast(t("t_cancelled"));
+  });
+}
+
+function vAuth(){
+  if(S.user)return vAccount();
+  const signup=authMode==="signup",forgot=authMode==="forgot";
+  return `<h1>${forgot?t("forgot"):signup?t("signup_t"):t("login_t")}</h1>
+  ${authInfo?`<div class="info" style="margin-top:12px">${esc(authInfo)}</div>`:""}
+  <div class="card" style="margin-top:14px"><form onsubmit="submitAuth(event)">
+   ${signup?`<label>${t("fn")}</label><input name="prenom" required maxlength="60" autocomplete="given-name"><label>${t("ln")}</label><input name="nom" required maxlength="60" autocomplete="family-name">`:""}
+   <label>${t("email")}</label><input name="email" type="email" required autocomplete="email">
+   ${forgot?"":`<label>${t("pwd")}</label><input name="password" type="password" ${signup?`minlength="${MIN_PWD}"`:""} required autocomplete="${signup?"new-password":"current-password"}">${signup?`<div class="mute" style="font-size:12px;margin-top:4px">${t("pwd_hint")}</div>`:""}`}
+   <br><br><button class="btn" type="submit" style="width:100%">${forgot?t("send_link"):signup?t("signup_t"):t("login_t")}</button></form>
+   <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="chip sm" onclick="authMode='${signup?"login":"signup"}';authInfo='';render(true)">${signup?t("have_acc"):t("no_acc")}</button>
+    ${signup||forgot?"":`<button class="chip sm" onclick="authMode='forgot';authInfo='';render(true)">${t("forgot")}</button>`}
+   </div></div>`;
+}
+async function submitAuth(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=Object.fromEntries(new FormData(ev.target));f.email=f.email.trim().toLowerCase();
+    const back=location.origin+location.pathname;
+    if(authMode==="signup"){
+      const {data,error}=await sb.auth.signUp({email:f.email,password:f.password,options:{data:{prenom:protectProperNames(f.prenom.trim()),nom:f.nom.trim()},emailRedirectTo:back}});
+      if(error)return toast(errMsg(error));
+      if(data.session){toast(t("t_welcome"));go("accueil")}
+      else{authMode="login";authInfo=t("check_mail");render(true)}
+    }else if(authMode==="forgot"){
+      const {error}=await sb.auth.resetPasswordForEmail(f.email,{redirectTo:back});
+      if(error)return toast(errMsg(error));
+      authMode="login";authInfo=t("reset_sent");render(true);
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email:f.email,password:f.password});
+      if(error)return toast(errMsg(error));
+      authInfo="";toast(t("t_welcome"));go("accueil");
+    }
+  });
+}
+const vReset=()=>`<h1>${t("reset_t")}</h1><div class="card" style="margin-top:14px"><form onsubmit="submitReset(event)">
+  <label>${t("pwd_new")}</label><input name="password" type="password" minlength="${MIN_PWD}" required autocomplete="new-password">
+  <br><br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form></div>`;
+async function submitReset(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {error}=await sb.auth.updateUser({password:new FormData(ev.target).get("password")});
+    if(error)return toast(errMsg(error));
+    toast(t("pwd_updated"));go("accueil");
+  });
+}
+async function logout(){
+  try{await sb.auth.signOut()}catch(e){console.error(e)}
+  clearUser();toast(t("t_bye"));go("accueil");
+}
+function clearUser(){S.user=null;S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.tasks=[];poleSel=null;regList={event:null,rows:null}}
+
+function vAccount(){
+  if(D.loading&&!S.user)return loadingBox();
+  if(!S.user)return vAuth();
+  const p=S.profile||{},mine=D.poles.filter(x=>D.myPoles.includes(x.id));
+  const regs=D.events.filter(e=>D.myRegs[e.id]==="confirmed"||D.myRegs[e.id]==="pending");
+  const histRows=D.myHistory.length?D.myHistory:(hasPaid()?[{season:currentSeason(),created_at:p.paid_until||todayStr(),source:"HelloAsso"}]:[]);
+  return `<h1>${t("account")}</h1><div class="card" style="margin-top:14px"><h3>${esc(protectProperNames(p.prenom||""))} ${esc(p.nom||"")}</h3>
+   <div class="mute">${esc(S.user.email)} · ${t("acc_role")} : <b>${esc(p.role==="bureau"?t("role_bureau"):t("role_member"))}</b></div>
+   <div style="margin-top:10px">${hasPaid()?`<span class="tag free">${t("ha_verified")}</span>`:`<span class="tag paid">${t("ha_unverified")}</span>`}</div>
+   <h3 style="margin-top:14px">${t("pole_l")}</h3><div>${mine.length?mine.map(x=>`<span class="tag">${esc(x.icon||"")} ${esc(poleName(x))}${D.myPoleRoles[x.id]==="lead"?" ★":""}</span>`).join(""):`<span class="mute">${t("none")}</span>`}</div>
+   <h3 style="margin-top:14px">${t("my_history")}</h3>${histRows.length?histRows.map(h=>`<div class="mute" style="margin-top:4px">• <b>${esc(t("hist_season",{s:h.season||currentSeason()}))}</b> — ${esc(t("hist_source",{d:long(h.created_at),src:h.source||"HelloAsso"}))}</div>`).join(""):`<div class="mute">${t("none_yet")}</div>`}
+   <h3 style="margin-top:14px">${t("my_regs")}</h3>${regs.map(e=>{
+     const sg=e.type==="Training"&&D.myRegs[e.id]==="confirmed"&&safeUrl(e.study_guide_url);
+     return `<div class="mute" style="margin-top:6px">• <button class="linkish" onclick="openEvent(${idArg(e.id)})">${esc(T(e.title))}</button> — ${long(e.date)} ${D.myRegs[e.id]==="pending"?`<span class="tag paid">${t("pending")}</span> <button class="btn sm" onclick="payEvent(${idArg(e.id)})">${t("pay_now")}</button>`:""}${sg?` · <a href="${esc(sg)}" target="_blank" rel="noopener">📘 Study Guide ↗</a>`:""}</div>`;
+   }).join("")||`<div class="mute">${t("none_yet")}</div>`}
+   <br><button class="btn ghost sm" onclick="logout()">${t("logout")}</button></div>
+  <div class="card" style="margin-top:14px"><h3>${t("profile_t")}</h3><form onsubmit="saveProfile(event)">
+   <div class="row2"><div><label>${t("fn")}</label><input name="prenom" required maxlength="60" value="${esc(protectProperNames(p.prenom||""))}" autocomplete="given-name"></div>
+   <div><label>${t("ln")}</label><input name="nom" required maxlength="60" value="${esc(p.nom||"")}" autocomplete="family-name"></div></div>
+   <label>${t("ha_alt_mail")}</label><input name="helloasso_email" type="email" maxlength="120" value="${esc(p.helloasso_email||"")}">
+   <div class="mute" style="font-size:12px;margin-top:4px">${t("ha_alt_hint")}</div>
+   <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
+  <div class="card danger-zone" style="margin-top:14px"><h3>${t("danger_t")}</h3><p class="mute" style="margin-top:4px">${t("danger_txt")}</p>
+   <button class="btn sm danger" onclick="openDelete()">${t("danger_t")}</button></div>`;
+}
+async function saveProfile(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),prenom=protectProperNames(String(f.get("prenom")||"").trim()),nom=String(f.get("nom")||"").trim();
+    const haMail=String(f.get("helloasso_email")||"").trim().toLowerCase()||null;
+    if(!prenom||!nom)return;
+    const {error}=await sb.from("profiles").update({prenom,nom,helloasso_email:haMail}).eq("id",S.user.id);
+    if(error)return toast(errMsg(error));
+    await loadPrivate();render(true);toast(t("t_ok"));
+  });
+}
+function openDelete(){
+  openSheet(`<h3>${t("danger_t")}</h3><p class="mute">${t("danger_txt")}</p>
+   <label>${t("danger_confirm")}</label><input id="delword" placeholder="${esc(t("danger_word"))}" autocomplete="off" oninput="$('#delbtn').disabled=this.value.trim().toUpperCase()!==t('danger_word')">
+   <button class="btn danger" id="delbtn" style="width:100%;margin-top:14px" disabled onclick="deleteAccount(this)">${t("danger_btn")}</button>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function deleteAccount(btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.rpc("delete_my_account");
+    if(error)return toast(errMsg(error));
+    try{await sb.auth.signOut({scope:"local"})}catch(e){}
+    clearUser();toast(t("t_deleted"));go("accueil");
+  });
+}
+
+const SUBPOLES=[
+  {key:"culturel",label:"Culturel",i18n:"subpole_culturel",driveKey:"drive_re_culturel"},
+  {key:"partenariats",label:"Partenariats",i18n:"subpole_partenariats",driveKey:"drive_re_partenariats"},
+  {key:"alumni",label:"Alumni",i18n:"subpole_alumni",driveKey:"drive_re_alumni"}
+];
+const isRelExt=p=>Boolean(p&&/relations?\s*externes|external\s*relations/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`));
+function parseTaskSubpole(title){
+  const m=String(title||"").match(/^\[(Culturel|Partenariats|Alumni)\]\s*(.*)$/i);
+  if(!m)return {sub:"culturel",clean:String(title||"")};
+  return {sub:m[1].toLowerCase(),clean:m[2]};
+}
+function vPole(){
+  if(D.loading)return loadingBox();
+  if(!S.user)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("members")}<br><br><button class="btn" onclick="go('login')">${t("login")}</button></div>`;
+  const visible=D.poles.filter(p=>isStaff()||D.myPoles.includes(p.id));
+  if(!poleSel){
+    if(!visible.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
+    return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p>
+     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
+  }
+  const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p){poleSel=null;return vPole()}
+  const hasSub=isRelExt(p),lead=isPoleLead(p.id);
+  const activeSub=hasSub?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
+  const rawDrive=hasSub?(cfg(activeSub.driveKey)||p.drive_url||p.doc_url):(p.drive_url||p.doc_url);
+  const docUrl=normalizeUrl(rawDrive);
+
+  const visibleTasks=hasSub
+    ?D.tasks.filter(x=>parseTaskSubpole(x.title).sub===activeSub.key)
+    :D.tasks;
+
+  const col=(k,l)=>{const items=visibleTasks.filter(x=>x.status===k);
+    return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')">
+     <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id),cleanTitle=hasSub?parseTaskSubpole(x.title).clean:x.title;return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(T(cleanTitle))}
+      <div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
+
+  let leadPanel="";
+  if(lead){
+    const teamLinks=D.memberPoles.filter(x=>String(x.pole_id)===String(p.id));
+    const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
+    const inIds=new Set(teamLinks.map(x=>x.user_id));
+    const candidates=D.members.filter(m=>!inIds.has(m.id));
+    leadPanel=`<h2>${t("pole_team")}</h2><div class="card">
+      ${candidates.length?`<div style="display:flex;gap:8px;margin-bottom:12px"><select id="addPoleMem"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")} (${esc(m.email||"")})</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(p.id)},this)">${t("add")}</button></div>`:""}
+      ${teamLinks.map(link=>{const m=byId[link.user_id]||{};const uid=sid(link.user_id);return `<div class="foot" style="border-bottom:1px solid var(--line);padding:8px 0;margin:0">
+        <span><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")})</span></span>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${isStaff()?`<select style="width:auto;padding:4px 8px;font-size:12px" onchange="setPoleMemberRole('${uid}',${idArg(p.id)},this.value,this)">
+            <option value="member" ${(link.role||"member")==="member"?"selected":""}>${t("pole_member")}</option>
+            <option value="lead" ${link.role==="lead"?"selected":""}>${t("pole_lead")}</option>
+          </select>`:`<span class="tag ${link.role==="lead"?"paid":"gray"}">${link.role==="lead"?t("pole_lead"):t("pole_member")}</span>`}
+          ${(isStaff()||link.role!=="lead")?`<button class="btn danger sm" onclick="removePoleMember('${uid}',${idArg(p.id)},this)">×</button>`:""}
+        </div></div>`}).join("")||`<div class="mute">${t("no_members")}</div>`}
+    </div>`;
+  }
+
+  const subTabs=hasSub?`<div class="chips" style="margin:14px 0 4px">${SUBPOLES.map(s=>`<button class="chip ${activeSub.key===s.key?"on":""}" onclick="subPoleSel='${s.key}';render(false,true)">${esc(t(s.i18n))}</button>`).join("")}</div>`:"";
+
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="chip" onclick="poleSel=null;go('pole')">${t("back")}</button>${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
+  <h1 style="margin-top:12px">${esc(p.icon||"")} ${esc(poleName(p))}</h1><div class="mute">${esc(poleDesc(p))}</div>
+  ${subTabs}
+  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}${hasSub?" ("+esc(t(activeSub.i18n))+")":""}" required><button class="btn" type="submit">${t("add")}</button></form>
+  <div class="cols">${col("todo",t("todo"))}${col("doing",t("doing"))}${col("done",t("done"))}</div>
+  ${leadPanel}
+  <h2>${t("docs")}${hasSub?` · ${esc(t(activeSub.i18n))}`:""}</h2><div class="card">${docUrl?`<a class="btn sm" target="_blank" rel="noopener" href="${esc(docUrl)}">${t("open_docs")}</a>`:`<span class="mute">${t("none_yet")}</span>`}</div>`;
+}
+function openPole(id){
+  if(!isStaff()&&!D.myPoles.some(x=>String(x)===String(id)))return toast(t("no_pole_yet"));
+  const p=D.poles.find(x=>String(x.id)===String(id));
+  poleSel=p?p.id:id;
+  if(p&&isRelExt(p))subPoleSel="culturel";
+  D.tasks=[];
+  syncHash();render();
+  loadTasks().then(()=>render(true));
+  if((isPoleLead(poleSel)||isStaff())&&!D.members.length)loadAdmin().then(()=>render(true));
+}
+async function addTask(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const inp=ev.target.t;let title=inp.value.trim();if(!title)return;
+    const p=D.poles.find(x=>String(x.id)===String(poleSel));
+    if(p&&isRelExt(p)){
+      const activeSub=SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0];
+      title=`[${activeSub.label}] ${title}`;
+    }
+    const {data,error}=await sb.from("tasks").insert({pole_id:poleSel,title,status:"todo"}).select().single();
+    if(error)return toast(errMsg(error));
+    D.tasks.push(data);inp.value="";render(true);
+  });
+}
+function dragStart(id){dragId=id;const el=event.target.closest(".task");if(el)requestAnimationFrame(()=>el.classList.add("drag"))}
+async function dropTask(ev,st){
+  ev.preventDefault();ev.currentTarget.classList.remove("over");
+  const x=D.tasks.find(t=>String(t.id)===String(dragId));dragId=null;
+  if(!x||x.status===st)return;
+  const old=x.status;x.status=st;render(true);
+  const {error}=await sb.from("tasks").update({status:st}).eq("id",x.id);
+  if(error){x.status=old;render(true);toast(errMsg(error))}
+}
+async function moveTask(id,d,btn){
+  const o=["todo","doing","done"],x=D.tasks.find(t=>String(t.id)===String(id));if(!x)return;
+  const ns=o[o.indexOf(x.status)+d];if(!ns)return;
+  await withBusy(btn,async()=>{
+    const old=x.status;x.status=ns;
+    const {error}=await sb.from("tasks").update({status:ns}).eq("id",x.id);
+    if(error){x.status=old;render(true);return toast(errMsg(error))}
+    render(true);
+  });
+}
+async function delTask(id,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("tasks").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    D.tasks=D.tasks.filter(t=>String(t.id)!==String(id));render(true);
+  });
+}
+function editPole(id){
+  const p=D.poles.find(x=>String(x.id)===String(id));if(!p)return;
+  const hasSub=isRelExt(p);
+  const activeSub=hasSub?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
+  const currentDrive=hasSub?(cfg(activeSub.driveKey)||p.drive_url||""):(p.drive_url||"");
+  openSheet(`<h3>${t("edit_pole")}${hasSub?` · ${esc(t(activeSub.i18n))}`:""}</h3><form onsubmit="savePole(event,${idArg(p.id)},${hasSub?`'${activeSub.key}'`:"null"})">
+   <label>${t("f_icon")}</label><input name="icon" maxlength="8" value="${esc(p.icon||"")}">
+   <label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}">
+   <label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}">
+   <label>${t("f_desc_fr")}</label><textarea name="desc_fr" rows="2" maxlength="400">${esc(p.desc_fr||"")}</textarea>
+   <label>${t("f_desc_en")}</label><textarea name="desc_en" rows="2" maxlength="400">${esc(p.desc_en||"")}</textarea>
+   <label>${t("f_drive")}${hasSub?` (${esc(t(activeSub.i18n))})`:""}</label><input name="drive_url" type="text" placeholder="https://…" value="${esc(currentDrive)}">
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function savePole(ev,id,subKey){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawDrive=String(f.get("drive_url")||"").trim(),drive=rawDrive?normalizeUrl(rawDrive):null;
+    if(rawDrive&&!drive)return toast(t("e_url"));
+    if(subKey){
+      const subObj=SUBPOLES.find(s=>s.key===subKey);
+      if(subObj)await setSetting(subObj.driveKey,drive||"");
+    }
+    const row={icon:f.get("icon").trim(),name_fr:f.get("name_fr").trim(),name_en:f.get("name_en").trim()||f.get("name_fr").trim(),desc_fr:f.get("desc_fr").trim(),desc_en:f.get("desc_en").trim()||f.get("desc_fr").trim(),drive_url:subKey?(D.poles.find(x=>String(x.id)===String(id))?.drive_url||null):drive};
+    const {error}=await sb.from("poles").update(row).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function addMemberToPole(pid,btn){
+  const uid=$("#addPoleMem")&&$("#addPoleMem").value;if(!uid)return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").insert({pole_id:pid,user_id:uid,role:"member"});
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
+  });
+}
+async function setPoleMemberRole(uid,pid,role,sel){
+  if(!isStaff())return;
+  if(sel)sel.disabled=true;
+  const {error}=await sb.from("pole_members").update({role}).eq("pole_id",pid).eq("user_id",uid);
+  if(sel)sel.disabled=false;
+  if(error)return toast(errMsg(error));
+  await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
+}
+async function removePoleMember(uid,pid,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").delete().eq("pole_id",pid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
+  });
+}
+
+function vAdmin(){
+  if(D.loading&&!S.user)return loadingBox();
+  if(!S.user)return `<h1>${t("admin_t")}</h1><div class="card empty">${t("admin_only")}<br><br><button class="btn" onclick="go('login')">${t("login")}</button></div>`;
+  if(!isStaff())return `<h1>${t("admin_t")}</h1><div class="card empty">${t("admin_only")}</div>`;
+  const tabs=[["members",t("tab_members")],["content",t("tab_content")],["org",t("tab_org")]];
+  return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_s")}</p>
+  <div class="chips" style="margin-top:10px">${tabs.map(([k,l])=>`<button class="chip ${adminTab===k?"on":""}" onclick="adminTab='${k}';render(false,true)">${l}</button>`).join("")}</div>
+  ${adminTab==="members"?vAdminMembers():adminTab==="content"?vAdminContent():vAdminOrg()}`;
+}
+function isPaidMember(m){return Boolean(m.paid&&(!m.paid_until||isoDay(m.paid_until)>=todayStr()))}
+function vAdminMembers(){
+  const needle=memberQ.trim().toLowerCase();
+  const filtChips=[
+    ["all",t("filter_all")],
+    ["paid",t("filter_paid")],
+    ["unpaid",t("filter_unpaid")],
+    ["bureau",t("filter_bureau")]
+  ];
+  const filtered=D.members.filter(m=>{
+    if(memberFilt==="paid"&&!isPaidMember(m))return false;
+    if(memberFilt==="unpaid"&&isPaidMember(m))return false;
+    if(memberFilt==="bureau"&&m.role!=="bureau")return false;
+    if(!needle)return true;
+    return `${m.prenom||""} ${m.nom||""} ${m.email||""} ${m.helloasso_email||""}`.toLowerCase().includes(needle);
+  });
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>${t("ha_tools")}</h3>
+    <p class="mute" style="margin:4px 0 12px">${t("ha_sync_info")}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn sm gold" onclick="triggerHelloAssoSync(this)">🔄 ${t("sync_ha")}</button>
+      <label class="btn ghost sm" style="margin:0;cursor:pointer">📥 ${t("import_csv")}<input type="file" accept=".csv,text/csv" style="display:none" onchange="importHelloAssoCSV(this)"></label>
+      <button class="btn sm danger" onclick="resetAcademicYear(this)">🗓️ ${t("reset_year")}</button>
+    </div>
+  </div>
+  <input class="search" placeholder="🔍  ${esc(t("search_member"))}" value="${esc(memberQ)}" oninput="memberQ=this.value;render(true)">
+  <div class="chips" style="margin-top:8px">${filtChips.map(([k,l])=>`<button class="chip sm ${memberFilt===k?"on":""}" onclick="memberFilt='${k}';render(false,true)">${l}</button>`).join("")}</div>
+  <div style="margin-top:8px">${filtered.map(m=>{const uid=sid(m.id),paidNow=isPaidMember(m);
+    const mp=D.memberPoles.filter(x=>String(x.user_id)===String(m.id));
+    return `<div class="card member"><div class="top"><div><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")}${m.helloasso_email?` · HA: ${esc(m.helloasso_email)}`:""})</span><br>
+     <span class="tag ${paidNow?"free":"paid"}">${paidNow?t("ha_verified"):t("ha_unverified")}</span>${paidNow&&m.paid_until?`<span class="mute" style="font-size:12px"> · ${esc(t("paid_until",{d:long(m.paid_until)}))}</span>`:""}</div>
+     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+       <button class="btn sm ${paidNow?"ghost":"gold"}" onclick="toggleMemberPaid('${uid}',${!paidNow},this)">${paidNow?t("toggle_paid_off"):t("toggle_paid_on")}</button>
+       <select aria-label="Role" onchange="setRole('${uid}',this.value,this)"><option value="member" ${m.role==="member"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select>
+     </div></div>
+     <div class="pchips">${D.poles.map(p=>{const link=mp.find(x=>String(x.pole_id)===String(p.id)),on=Boolean(link),lead=link&&link.role==="lead";
+      return `<button class="chip sm ${on?"on":""}" onclick="togglePole('${uid}',${idArg(p.id)},${on},this)">${esc(poleName(p))}${on?" ✓":""}</button>${on?`<button class="chip sm ${lead?"on":""}" onclick="setPoleMemberRole('${uid}',${idArg(p.id)},'${lead?"member":"lead"}',this)">★ ${t("pole_lead")}</button>`:""}`}).join("")}</div></div>`}).join("")||`<div class="empty">${t("no_members")}</div>`}</div>`;
+}
+async function toggleMemberPaid(uid,newPaid,btn){
+  await withBusy(btn,async()=>{
+    const until=newPaid?academicYearEnd():null;
+    const {error}=await sb.from("profiles").update({paid:newPaid,paid_until:until}).eq("id",uid);
+    if(error)return toast(errMsg(error));
+    if(newPaid){
+      await sb.from("membership_history").insert({user_id:uid,season:currentSeason(),source:"Bureau"});
+    }
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
+  });
+}
+async function triggerHelloAssoSync(btn){
+  await withBusy(btn,async()=>{
+    const {data,error}=await sb.functions.invoke("helloasso-sync",{body:{action:"sync"}});
+    if(error){
+      console.error(error);
+      toast(lang==="fr"?"Synchronisation API indisponible : utilise l'import CSV ou la validation manuelle.":"API sync unavailable: use CSV import or manual verification.");
+      return;
+    }
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);
+    toast(t("t_ok")+(data&&data.updated!=null?` (${data.updated})`:""));
+  });
+}
+function parseCsvLine(line,delim){
+  const out=[];let cur="",inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else inQ=!inQ}
+    else if(ch===delim&&!inQ){out.push(cur);cur=""}
+    else cur+=ch;
+  }
+  out.push(cur);return out;
+}
+async function importHelloAssoCSV(input){
+  const file=input.files&&input.files[0];input.value="";
+  if(!file)return;
+  const text=await file.text();
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(lines.length<2)return toast(t("e_generic"));
+  const delim=lines[0].includes(";")&&!lines[0].includes(",")?";":",";
+  const headers=parseCsvLine(lines[0],delim).map(h=>h.toLowerCase().trim());
+  const mailIdx=headers.findIndex(h=>/mail|email|courriel/.test(h));
+  const statusIdx=headers.findIndex(h=>/statut|status|etat|état/.test(h));
+  const col=mailIdx>=0?mailIdx:0;
+  const emails=new Set();
+  for(let i=1;i<lines.length;i++){
+    const cells=parseCsvLine(lines[i],delim);
+    if(statusIdx>=0&&/annul|rembours|refund|cancel|échec|echec|refus/i.test(cells[statusIdx]||""))continue;
+    const em=String(cells[col]||"").trim().toLowerCase();
+    if(em.includes("@"))emails.add(em);
+  }
+  if(!emails.size)return toast(t("no_res"));
+  const until=academicYearEnd(),season=currentSeason();
+  let matched=0,prequeued=0;
+  for(const em of emails){
+    const m=D.members.find(x=>(x.email&&x.email.toLowerCase()===em)||(x.helloasso_email&&x.helloasso_email.toLowerCase()===em));
+    if(m){
+      const {error}=await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",m.id);
+      if(!error){
+        matched++;
+        await sb.from("membership_history").insert({user_id:m.id,season,source:"HelloAsso CSV"});
+      }
+    }else{
+      const {error}=await sb.from("preapproved_members").upsert({email:em,season,paid_until:until},{onConflict:"email"});
+      if(!error)prequeued++;
+    }
+  }
+  await Promise.all([loadAdmin(),loadPrivate()]);render(true);
+  toast(t("csv_done",{m:matched,q:prequeued}));
+}
+async function resetAcademicYear(btn){
+  if(!confirm(t("confirm_reset_year")))return;
+  await withBusy(btn,async()=>{
+    const today=todayStr();
+    const expired=D.members.filter(m=>m.paid&&m.paid_until&&isoDay(m.paid_until)<today);
+    for(const m of expired){
+      await sb.from("profiles").update({paid:false}).eq("id",m.id);
+    }
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);
+    toast(t("reset_year_done",{n:expired.length}));
+  });
+}
+
+function vAdminContent(){
+  const types=["Training","Conférence","Visite","Voyage","Soirée"];
+  return `<div class="grid">
+   <div class="card"><h3>${t("add_ev")}</h3><form onsubmit="addEvent(event)">
+    <label>${t("f_title")}</label><input name="title" required maxlength="140">
+    <label>${t("f_type")}</label><select name="type">${types.map(x=>`<option value="${x}">${esc(t(x))}</option>`).join("")}</select>
+    <label>${t("f_place")}</label><input name="lieu" required maxlength="140">
+    <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required></div><div><label>${t("f_time")}</label><input name="heure" type="time"></div></div>
+    <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" step="0.01" min="0" value="0"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div></div>
+    <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" placeholder="ex : gala-de-printemps">
+    <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…">
+    <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
+    <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
+    <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
+    <br><button class="btn" type="submit" style="width:100%">${t("publish")}</button></form></div>
+   <div class="card"><h3>${t("add_news")}</h3><form onsubmit="addNews(event)">
+    <label>${t("f_title")}</label><input name="title" required maxlength="140">
+    <label>${t("f_text")}</label><textarea name="body" rows="5" required maxlength="3000"></textarea>
+    <br><br><button class="btn" type="submit" style="width:100%">${t("publish")}</button></form></div>
+  </div>
+  <h2>${t("existing")} · ${t("news")}</h2>
+  ${D.news.length?`<div class="grid">${D.news.map(n=>`<div class="card news"><h3>${esc(T(n.title))}</h3><div class="mute">${long(n.created_at)}</div><p style="margin:8px 0 0">${esc(T(n.body))}</p><div style="display:flex;gap:6px;margin-top:12px;justify-content:flex-end"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">🗑️ ${t("del")}</button></div></div>`).join("")}</div>`:`<div class="card empty">${t("no_news")}</div>`}`;
+}
+
+function vAdminOrg(){
+  const ordered=sortedBoard();
+  return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSettings(event)">
+   <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}" placeholder="ex : https://… ou photo-accueil.jpg">
+   <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||"")}"></div><div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" step="0.01" min="0" value="${esc(cfg("cotisation"))}"></div></div>
+   <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url")||"")}"></div><div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(cfg("linkedin_url")||"")}"></div></div>
+   <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
+
+  <h2>${t("manage_board")}</h2>
+  <div class="card"><form onsubmit="addBoard(event)">
+   <div class="row2"><div><label>${t("fn")+" & "+t("ln")}</label><input name="name" required maxlength="100"></div><div><label>${t("f_photo_url")}</label><input name="photo_url" placeholder="https://… ou photo.jpg"></div></div>
+   <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="100"></div><div><label>${t("f_role_en")}</label><input name="role_en" maxlength="100"></div></div>
+   <label>${t("f_bio")}</label><textarea name="bio" rows="2" maxlength="2000"></textarea>
+   <br><button class="btn sm" type="submit" style="margin-top:10px">${t("add")}</button></form>
+   ${ordered.map(m=>{const pUrl=boardMemberPhoto(m);const init=((m.name||"?").trim()[0]||"?").toUpperCase();return `<div class="foot" style="border-top:1px solid var(--line);padding-top:10px;margin-top:12px"><span style="display:flex;align-items:center;gap:10px">${avatarMarkup(pUrl,init,"board-photo")}<span><b>${esc(protectProperNames(m.name))}</b> — ${esc(T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr)))}</span></span><span style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoardBio(${idArg(m.id)})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></span></div>`}).join("")}</div>
+
+  <h2>${t("manage_poles")}</h2>
+  <div class="card"><form onsubmit="addPole(event)">
+   <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80"></div><div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80"></div></div>
+   <div class="row2"><div><label>${t("f_desc_fr")}</label><input name="desc_fr" required maxlength="300"></div><div><label>${t("f_desc_en")}</label><input name="desc_en" maxlength="300"></div></div>
+   <div class="row2"><div><label>${t("f_icon")}</label><input name="icon" maxlength="8" placeholder="🏛️"></div><div><label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://…"></div></div>
+   <br><button class="btn sm" type="submit">${t("add")}</button></form>
+   ${D.poles.map(p=>`<div class="foot" style="border-top:1px solid var(--line);padding-top:10px;margin-top:12px"><span>${esc(p.icon||"")} <b>${esc(poleName(p))}</b></span><span style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></span></div>`).join("")}</div>
+
+  <h2>${t("manage_partners")}</h2>
+  <div class="card"><form onsubmit="addPartner(event)">
+   <div class="row2"><div><label>${t("fn")+" / "+t("f_title")}</label><input name="name" required maxlength="100"></div><div><label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…"></div></div>
+   <br><button class="btn sm" type="submit">${t("add")}</button></form>
+   ${D.partners.map(p=>`<div class="foot" style="border-top:1px solid var(--line);padding-top:10px;margin-top:12px"><span><b>${esc(T(p.name))}</b>${p.url?` — <span class="mute">${esc(p.url)}</span>`:""}</span><button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div>`).join("")}</div>`;
+}
+
+async function setSetting(k,v){
+  const {error}=await sb.from("site_settings").upsert({key:k,value:v});
+  if(error)throw error;
+  D.settings[k]=v;
+}
+async function saveSettings(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const rawHero=String(f.get("hero_img")||"").trim(),hero=rawHero?safeAsset(rawHero):null;
+    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawHero&&!hero)||(rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    await Promise.all([
+      setSetting("hero_img",hero||""),
+      setSetting("contact_email",f.get("contact_email").trim()),
+      setSetting("instagram_url",ig||""),
+      setSetting("linkedin_url",li||""),
+      setSetting("cotisation",String(Math.max(0,Number(f.get("cotisation"))||0)))
+    ]);
+    render(true);toast(t("t_ok"));
+  });
+}
+async function addBoard(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawP=String(f.get("photo_url")||"").trim(),photo=rawP?safeAsset(rawP):null;
+    if(rawP&&!photo)return toast(t("e_url"));
+    const row={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:f.get("role_en").trim()||f.get("role_fr").trim(),bio:f.get("bio").trim()||null,photo_url:photo,sort:D.board.length+1};
+    const {error}=await sb.from("board_members").insert(row);
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function addPole(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawD=String(f.get("drive_url")||"").trim(),drive=rawD?normalizeUrl(rawD):null;
+    if(rawD&&!drive)return toast(t("e_url"));
+    const nameFr=f.get("name_fr").trim();
+    const slug=nameFr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||("pole-"+Date.now());
+    const row={slug,name_fr:nameFr,name_en:f.get("name_en").trim()||nameFr,desc_fr:f.get("desc_fr").trim(),desc_en:f.get("desc_en").trim()||f.get("desc_fr").trim(),icon:f.get("icon").trim()||"🏛️",drive_url:drive,sort:D.poles.length+1};
+    const {error}=await sb.from("poles").insert(row);
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function addPartner(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawU=String(f.get("url")||"").trim(),url=rawU?normalizeUrl(rawU):null;
+    if(rawU&&!url)return toast(t("e_url"));
+    const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url,sort:D.partners.length+1});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function setRole(uid,role,sel){
+  if(sel)sel.disabled=true;
+  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+  if(sel)sel.disabled=false;
+  if(error)return toast(errMsg(error));
+  const m=D.members.find(x=>String(x.id)===String(uid));if(m)m.role=role;
+  if(S.user&&String(S.user.id)===String(uid)){await loadPrivate();render()}
+  toast(t("t_ok"));
+}
+async function togglePole(uid,pid,on,btn){
+  await withBusy(btn,async()=>{
+    const {error}=on?await sb.from("pole_members").delete().eq("pole_id",pid).eq("user_id",uid):await sb.from("pole_members").insert({pole_id:pid,user_id:uid,role:"member"});
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);
+  });
+}
+function openNewEvent(){
+  if(!isStaff())return toast(t("admin_only"));
+  const types=["Training","Conférence","Visite","Voyage","Soirée"];
+  openSheet(`<h3>${t("add_ev")}</h3><form onsubmit="addEvent(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140">
+   <label>${t("f_type")}</label><select name="type">${types.map(x=>`<option value="${x}">${esc(t(x))}</option>`).join("")}</select>
+   <label>${t("f_place")}</label><input name="lieu" required maxlength="140">
+   <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required></div><div><label>${t("f_time")}</label><input name="heure" type="time"></div></div>
+   <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" step="0.01" min="0" value="0"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div></div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" placeholder="ex : gala-de-printemps">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…">
+   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
+   <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
+   <br><button class="btn" type="submit" style="width:100%">${t("publish")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function addEvent(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0);
+    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?safeUrl(rawImg):null;
+    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
+    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
+    const row={title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,parseInt(f.get("places"),10)||30),helloasso_slug:normalizeSlug(f.get("helloasso_slug")),form_url:formUrl,image_url:img,description:f.get("description").trim()||null,members_only:f.get("members_only")==="on"};
+    const {error}=await sb.from("events").insert(row);
+    if(error)return toast(errMsg(error));
+    ev.target.reset();closeSheet();await loadPublic();render(true);toast(t("t_pub"));
+    if(prix>0&&!row.helloasso_slug)toast(t("slug_warn"));
+  });
+}
+function editEvent(id){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  const types=["Training","Conférence","Visite","Voyage","Soirée"];
+  openSheet(`<h3>${t("edit_ev")}</h3><form onsubmit="saveEvent(event,${idArg(e.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(e.title||"")}">
+   <label>${t("f_type")}</label><select name="type">${types.map(x=>`<option value="${x}" ${e.type===x?"selected":""}>${esc(t(x))}</option>`).join("")}</select>
+   <label>${t("f_place")}</label><input name="lieu" required maxlength="140" value="${esc(e.lieu||"")}">
+   <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required value="${isoDay(e.date)}"></div><div><label>${t("f_time")}</label><input name="heure" type="time" value="${hhmm(e.heure)}"></div></div>
+   <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" step="0.01" min="0" value="${Number(e.prix)||0}"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="${Math.max(1,Number(e.places)||30)}" required></div></div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" value="${esc(e.helloasso_slug||"")}">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…" value="${esc(e.form_url||"")}">
+   <label>${t("f_img")}</label><input name="image_url" type="text" value="${esc(e.image_url||"")}">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000">${esc(e.description||"")}</textarea>
+   <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveEvent(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0);
+    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?safeUrl(rawImg):null;
+    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
+    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
+    const row={title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,parseInt(f.get("places"),10)||30),helloasso_slug:normalizeSlug(f.get("helloasso_slug")),form_url:formUrl,image_url:img,description:f.get("description").trim()||null,members_only:f.get("members_only")==="on"};
+    const {error}=await sb.from("events").update(row).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+    if(prix>0&&!row.helloasso_slug)toast(t("slug_warn"));
+  });
+}
+function editNews(id){
+  const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
+  openSheet(`<h3>${t("edit_news")}</h3><form onsubmit="saveNews(event,${idArg(n.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(n.title||"")}">
+   <label>${t("f_text")}</label><textarea name="body" rows="5" required maxlength="3000">${esc(n.body||"")}</textarea>
+   <br><br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveNews(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const {error}=await sb.from("news").update({title:f.get("title").trim(),body:f.get("body").trim()}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function addNews(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const {error}=await sb.from("news").insert({title:f.get("title").trim(),body:f.get("body").trim()});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function delRow(tbl,id,btn){
+  if(!confirm(t("confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from(tbl).delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function delEventFromView(id,btn){
+  if(!confirm(t("confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("events").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();toast(t("t_ok"));go("activites");
+  });
+}
+
+/* ===== DÉMARRAGE ===== */
+function cleanAuthUrl(){
+  const u=new URL(location.href);let changed=false;
+  ["code","token_hash","type","error","error_code","error_description"].forEach(k=>{if(u.searchParams.has(k)){u.searchParams.delete(k);changed=true}});
+  if(changed)history.replaceState(null,"",u.pathname+u.search+u.hash);
+  if(/access_token=|refresh_token=|type=recovery/.test(location.hash))history.replaceState(null,"",u.pathname+u.search);
+}
+async function start(){
+  readHash();syncHash(true);
+  if(!configured){D.loading=false;render();return}
+  render();
+  const u=new URL(location.href),code=u.searchParams.get("code"),th=u.searchParams.get("token_hash"),tp=u.searchParams.get("type");
+  let pendingToast="";
+  if(code){const {error}=await sb.auth.exchangeCodeForSession(code);if(error)toast(authErr(error));else if(tp==="recovery")route="reset";else pendingToast=t("t_mail_confirmed")}
+  else if(th&&tp){const {error}=await sb.auth.verifyOtp({token_hash:th,type:tp});if(error)toast(authErr(error));else if(tp==="recovery")route="reset";else pendingToast=t("t_mail_confirmed")}
+  cleanAuthUrl();
+  const {data:{session}}=await sb.auth.getSession();
+  S.user=session&&session.user||null;
+  await Promise.all([loadPublic(),loadPrivate()]);
+  D.loading=false;
+  if(route==="pole"&&poleSel)await loadTasks();
+  if(route==="event")await loadRegistrants();
+  render();
+  if(pendingToast)toast(pendingToast);
+  sb.auth.onAuthStateChange((ev,sess)=>{
+    if(ev==="PASSWORD_RECOVERY"){route="reset";syncHash();render();return}
+    const nextUser=sess&&sess.user||null,prevId=S.user&&S.user.id,nextId=nextUser&&nextUser.id;
+    S.user=nextUser;
+    if(nextId!==prevId){
+      loadPrivate().then(()=>{if(route==="event")loadRegistrants();render(true)});
+    }else if(ev==="TOKEN_REFRESHED"&&!S.profile&&nextUser){
+      loadPrivate().then(()=>render(true));
+    }
+  });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible"&&S.user&&Date.now()-lastSync>30000)refreshAll();
+  });
+}
+start();
+</script>
+</body>
+</html>
