@@ -64,28 +64,34 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 
 /* Navigation bureau avec pilule coulissante */
 .dnav{position:relative;display:none;gap:4px;background:var(--soft);padding:4px;border-radius:99px;border:1px solid rgba(226,228,242,.8);isolation:isolate}
-.nav-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:99px;background:var(--bleu);box-shadow:0 3px 12px rgba(0,0,142,.24);transform:translateX(4px);transition:transform .34s var(--ios-ease),width .34s var(--ios-ease),opacity .2s ease;z-index:0;pointer-events:none;opacity:0}
-.dnav button{position:relative;z-index:1;border:0;background:none;padding:7px 14px;font-size:13px;color:var(--mute);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .22s ease,transform .15s ease}
+.nav-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:99px;background:var(--bleu);box-shadow:0 3px 12px rgba(0,0,142,.24);transform:translateX(4px);transition:transform .36s var(--ios-ease),width .36s var(--ios-ease),opacity .22s var(--ease);z-index:0;pointer-events:none;opacity:0;will-change:transform,width}
+.dnav button{position:relative;z-index:1;border:0;background:none;padding:7px 14px;font-size:13px;color:var(--mute);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .24s var(--ease),transform .15s var(--ease)}
 .dnav button:hover{color:var(--bleu)}
 .dnav button:active{transform:scale(.96)}
 .dnav button.on{color:#fff;background:transparent;font-weight:600;box-shadow:none}
 
 /* ---------- Barre d'onglets (mobile) ---------- */
 .tabbar{position:fixed;left:12px;right:12px;bottom:10px;z-index:100;background:rgba(2,2,89,.92);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.12);border-radius:22px;display:flex;padding:5px 6px calc(5px + env(safe-area-inset-bottom)*.35);box-shadow:0 12px 32px rgba(2,2,89,.28)}
-.tabbar button{flex:1;border:0;background:none;color:rgba(255,255,255,.68);font-size:10.5px;font-weight:500;padding:6px 2px;min-height:46px;border-radius:16px;cursor:pointer;position:relative;transition:color .2s var(--ease),background .22s var(--ios-ease),transform .15s var(--ease)}
+.tabbar button{flex:1;border:0;background:none;color:rgba(255,255,255,.68);font-size:10.5px;font-weight:500;padding:6px 2px;min-height:46px;border-radius:16px;cursor:pointer;position:relative;transition:color .22s var(--ease),background .24s var(--ios-ease),transform .15s var(--ease)}
 .tabbar button:active{transform:scale(.94)}
 .tabbar button .ico{display:block;font-size:19px;line-height:1.25;filter:grayscale(.25);transition:transform .28s var(--ios-ease),filter .2s var(--ease)}
 .tabbar button.on{color:var(--or);font-weight:600;background:rgba(235,192,0,.14)}
 .tabbar button.on .ico{filter:none;transform:translateY(-2px) scale(1.08)}
 @media(min-width:860px){.dnav{display:flex}.tabbar{display:none}body{padding-bottom:0}}
 
-/* ---------- Mise en page & transitions de vues ---------- */
-main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1}
-.view{animation:slideInLeft .3s var(--ease) both}
-.view.back{animation-name:slideInRight}
+/* ---------- Mise en page & transitions de vues bidirectionnelles ---------- */
+main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;position:relative}
+.view{animation:pageSlideFwd .32s var(--ios-ease) both;will-change:transform,opacity}
+.view.back{animation-name:pageSlideBack}
 .view.noanim{animation:none}
-@keyframes slideInLeft{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
-@keyframes slideInRight{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes pageSlideFwd{
+  0%{opacity:0;transform:translate3d(22px,0,0) scale(.992)}
+  100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes pageSlideBack{
+  0%{opacity:0;transform:translate3d(-22px,0,0) scale(.992)}
+  100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
 h1{font-family:var(--f-titre);font-weight:800;font-size:clamp(30px,4.5vw,42px);line-height:1.06;margin:6px 0 8px;color:var(--bleu);letter-spacing:-.4px}
 h2{font-family:var(--f-titre);font-weight:700;font-size:clamp(20px,2.6vw,24px);color:var(--marine);margin:40px 0 16px;display:flex;justify-content:flex-start;align-items:center;gap:10px}
 h2::before{content:"";width:6px;height:22px;background:linear-gradient(180deg,var(--or),#d4ab00);border-radius:4px;margin-right:2px;flex:none;margin-top:-2px}
@@ -664,12 +670,14 @@ async function refreshAll(){
   softRender();
 }
 
-/* ===== NAVIGATION & ANIMATION COULISSANTE ===== */
+/* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
 const ROUTES=["accueil","activites","ressources","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
 const NAV_ORDER=["accueil","activites","ressources","adherer","pole","bureau","partenaires","admin"];
 function tabIndexFor(r){
-  const cur=r==="event"?"activites":r;
-  const i=NAV_ORDER.indexOf(cur);
+  if(r==="event")return NAV_ORDER.indexOf("activites")+0.5;
+  if(r==="actus")return NAV_ORDER.indexOf("accueil")+0.5;
+  if(r==="account"||r==="login"||r==="reset")return NAV_ORDER.length;
+  const i=NAV_ORDER.indexOf(r);
   return i>=0?i:NAV_ORDER.length;
 }
 function hashFor(){
@@ -691,13 +699,15 @@ function readHash(){
   if((m=h.match(/^event-([\w-]+)$/))){route="event";evSel=m[1];poleSel=null}
   else if((m=h.match(/^pole-([\w-]+)$/))){route="pole";poleSel=m[1]}
   else{route=ROUTES.includes(h)?h:"accueil";poleSel=null;evSel=null}
-  navDir=tabIndexFor(route)<prevIdx?"back":"fwd";
+  const nextIdx=tabIndexFor(route);
+  navDir=nextIdx<prevIdx?"back":"fwd";
   return true;
 }
 function go(r,replace){
   const prevIdx=tabIndexFor(route);
   closeSheet();route=r;if(r!=="pole")poleSel=null;if(r!=="event")evSel=null;
-  navDir=tabIndexFor(route)<prevIdx?"back":"fwd";
+  const nextIdx=tabIndexFor(route);
+  navDir=nextIdx<prevIdx?"back":"fwd";
   syncHash(replace);render();
   if(r==="pole"&&poleSel)loadTasks().then(()=>render(true));
   if(r==="event")loadRegistrants();
@@ -720,14 +730,14 @@ function moveNavThumb(instant){
   const x=active.offsetLeft,w=active.offsetWidth;
   if(instant){
     thumb.style.transition="none";
-    thumb.style.transform=`translateX(${x}px)`;
+    thumb.style.transform=`translate3d(${x}px,0,0)`;
     thumb.style.width=`${w}px`;
     thumb.style.opacity="1";
     thumb.getBoundingClientRect();
     thumb.style.transition="";
   }else{
     thumb.style.opacity="1";
-    thumb.style.transform=`translateX(${x}px)`;
+    thumb.style.transform=`translate3d(${x}px,0,0)`;
     thumb.style.width=`${w}px`;
   }
 }
