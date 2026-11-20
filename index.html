@@ -43,9 +43,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* ---------- En-tête ---------- */
-header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.84);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid rgba(226,228,242,.75);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
-header.scrolled{background:rgba(255,255,255,.94);box-shadow:0 4px 20px rgba(2,2,89,.06)}
+/* ---------- En-tête semi-transparent & lisible ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.68);backdrop-filter:blur(18px) saturate(165%);-webkit-backdrop-filter:blur(18px) saturate(165%);border-bottom:1px solid rgba(226,228,242,.65);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
+header.scrolled{background:rgba(255,255,255,.78);box-shadow:0 4px 20px rgba(2,2,89,.06)}
 .bar{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 18px;gap:12px;transition:padding .25s var(--ease)}
 header.scrolled .bar{padding:6px 18px}
 .brand{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:10px;color:var(--bleu);transition:transform .2s var(--ease)}
@@ -56,16 +56,16 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 .mark{display:grid;place-items:center;width:46px;background:var(--bleu-soft);color:var(--bleu);font-size:13px;font-weight:800}
 .wordmark{font-family:var(--f-marque);font-weight:900;font-size:23px;letter-spacing:2.5px;line-height:1;padding-top:3px}
 .right{display:flex;gap:8px;align-items:center}
-.lang{border:1.5px solid var(--line);background:rgba(255,255,255,.9);color:var(--bleu);border-radius:99px;padding:6px 13px;min-height:36px;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.6px;transition:border-color .2s var(--ease),background .2s var(--ease),transform .15s var(--ease)}
-.lang:hover{border-color:var(--bleu);background:var(--bleu-soft)}
+.lang{border:1.5px solid rgba(226,228,242,.95);background:rgba(255,255,255,.82);color:var(--bleu);border-radius:99px;padding:6px 13px;min-height:36px;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.6px;transition:border-color .2s var(--ease),background .2s var(--ease),transform .15s var(--ease)}
+.lang:hover{border-color:var(--bleu);background:rgba(236,236,249,.92)}
 .lang:active{transform:scale(.96)}
 .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--bleu),var(--marine));color:#fff;display:grid;place-items:center;font-weight:700;border:2px solid var(--or);cursor:pointer;font-family:var(--f-titre);font-size:16px;padding-top:2px;box-shadow:0 3px 10px rgba(0,0,142,.18);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .avatar:hover{transform:translateY(-1px) scale(1.04);box-shadow:0 6px 16px rgba(0,0,142,.26)}
 
 /* Navigation bureau avec pilule coulissante */
-.dnav{position:relative;display:none;gap:4px;background:var(--soft);padding:4px;border-radius:99px;border:1px solid rgba(226,228,242,.8);isolation:isolate}
+.dnav{position:relative;display:none;gap:4px;background:rgba(242,243,250,.76);padding:4px;border-radius:99px;border:1px solid rgba(226,228,242,.85);isolation:isolate}
 .nav-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:99px;background:var(--bleu);box-shadow:0 3px 12px rgba(0,0,142,.24);transform:translateX(4px);transition:transform .36s var(--ios-ease),width .36s var(--ios-ease),opacity .22s var(--ease);z-index:0;pointer-events:none;opacity:0;will-change:transform,width}
-.dnav button{position:relative;z-index:1;border:0;background:none;padding:7px 14px;font-size:13px;color:var(--mute);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .24s var(--ease),transform .15s var(--ease)}
+.dnav button{position:relative;z-index:1;border:0;background:none;padding:7px 14px;font-size:13px;color:var(--marine);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .24s var(--ease),transform .15s var(--ease)}
 .dnav button:hover{color:var(--bleu)}
 .dnav button:active{transform:scale(.96)}
 .dnav button.on{color:#fff;background:transparent;font-weight:600;box-shadow:none}
@@ -176,7 +176,7 @@ a{color:var(--bleu);transition:color .2s var(--ease)}
 /* ---------- Bureau : fond pleine page, portraits & fiche bio mise en valeur ---------- */
 body:has(.bureau-wrap){position:relative}
 body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url('photo_bureau.jpeg') center 18%/cover no-repeat;opacity:.26;z-index:-1;pointer-events:none}
-body:has(.bureau-wrap) header{background:rgba(255,255,255,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:rgba(226,228,242,.65)}
+body:has(.bureau-wrap) header{background:rgba(255,255,255,.56);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-bottom-color:rgba(226,228,242,.7)}
 .bureau-wrap{padding:6px 0}
 .board-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
 .board-card{flex:1 1 280px;max-width:340px;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:4px solid var(--or);border-radius:20px;cursor:pointer}
@@ -403,8 +403,8 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  danger_t:"Supprimer mon compte",danger_txt:"Ton compte, ton profil et tes inscriptions seront définitivement effacés. Cette action est irréversible.",
  danger_confirm:"Tape SUPPRIMER pour confirmer",danger_word:"SUPPRIMER",danger_btn:"Supprimer définitivement",t_deleted:"Compte supprimé",
  err_load:"Impossible de charger les données pour le moment.",retry:"Réessayer",
- e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"L'adresse doit commencer par https://",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
- e_cancel_past:"Cet événement est déjà passé.",
+ e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
+ e_cancel_past:"Cet événement déjà passé.",
  setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
 en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
  hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
@@ -456,7 +456,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  danger_t:"Delete my account",danger_txt:"Your account, profile and registrations will be permanently erased. This cannot be undone.",
  danger_confirm:"Type DELETE to confirm",danger_word:"DELETE",danger_btn:"Delete permanently",t_deleted:"Account deleted",
  err_load:"Unable to load data right now.",retry:"Retry",
- e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"URL must start with https://",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
+ e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"Invalid link (e.g. https://instagram.com/… or linkedin.com/in/…).",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
  e_cancel_past:"This event has already taken place.",
  setup_t:"Setup required",setup_txt:"Fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of index.html.",sdk_t:"Unable to load client library",sdk_txt:"The database client script could not be loaded. Check your internet connection or script blocker and reload.",loading:"Loading…"}
 };
@@ -561,6 +561,18 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const sid=s=>String(s??"").replace(/[^\w-]/g,"");
 const idArg=id=>typeof id==="number"&&Number.isFinite(id)?String(id):`'${sid(id)}'`;
 const safeUrl=u=>{try{const x=new URL(u);return x.protocol==="https:"?x.href:null}catch(e){return null}};
+function normalizeUrl(raw,platform){
+  let s=String(raw||"").trim();
+  if(!s)return null;
+  if(s.startsWith("@")){
+    const handle=s.slice(1).replace(/^\/+|\/+$/g,"");
+    if(!handle)return null;
+    s=platform==="linkedin"?`https://www.linkedin.com/in/${handle}`:`https://www.instagram.com/${handle}`;
+  }else if(!/^https?:\/\//i.test(s)){
+    s="https://"+s.replace(/^\/+/,"");
+  }
+  return safeUrl(s);
+}
 const safeAsset=u=>{
   const s=String(u||"").trim();if(!s)return null;
   if(/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(s))return s;
@@ -780,7 +792,7 @@ window.addEventListener("resize",()=>moveNavThumb(true),{passive:true});
 function render(keep,instantThumb){
   document.documentElement.lang=lang;
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
-  const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url"));
+  const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
@@ -858,7 +870,7 @@ const errBox=()=>D.err?`<div class="info" style="background:#fde8e8;color:#9b1c1
 
 /* ===== VUES ===== */
 function socialLinks(){
-  const l=[],ig=safeUrl(cfg("instagram_url")),li=safeUrl(cfg("linkedin_url")),cMail=cfg("contact_email")||DEFAULT_CONTACT;
+  const l=[],ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin"),cMail=cfg("contact_email")||DEFAULT_CONTACT;
   if(ig)l.push(`<a class="btn ghost sm" href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)l.push(`<a class="btn ghost sm" href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
   if(cMail)l.push(`<a class="btn ghost sm" href="mailto:${esc(cMail)}">✉️ ${t("contact")}</a>`);
@@ -929,7 +941,7 @@ function vRessources(){
   return `<h1>${t("rop_t")}</h1><p class="mute">${t("rop_s")}</p>
   ${canEdit?`<div style="margin:12px 0"><button class="btn sm" onclick="editResource()">+ ${t("add_rop")}</button></div>`:""}
   ${D.resources.length?`<div class="grid" style="margin-top:14px">${D.resources.map(r=>{
-    const href=safeUrl(r.url);
+    const href=normalizeUrl(r.url);
     return `<div class="card reveal">
       <div><span class="tag">${esc(r.lang||"FR / EN")}</span></div>
       <h3 style="margin-top:8px">${esc(T(r.title))}</h3>
@@ -947,7 +959,7 @@ function editResource(id){
   openSheet(`<h3>${isNew?t("add_rop"):t("edit_rop")}</h3><form onsubmit="saveResource(event,${isNew?"null":idArg(r.id)})">
     <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(r.title||"")}">
     <label>${t("f_lang")}</label><select name="lang">${["FR / EN","FR","EN","ES"].map(x=>`<option value="${x}" ${r.lang===x?"selected":""}>${x}</option>`).join("")}</select>
-    <label>${t("f_url")}</label><input name="url" type="url" required placeholder="https://…" value="${esc(r.url||"")}">
+    <label>${t("f_url")}</label><input name="url" type="text" required placeholder="https://…" value="${esc(r.url||"")}">
     <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="800">${esc(r.description||"")}</textarea>
     <br><button class="btn" type="submit" style="width:100%">${isNew?t("publish"):t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
@@ -956,7 +968,7 @@ async function saveResource(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),url=safeUrl(String(f.get("url")||"").trim());
+    const f=new FormData(ev.target),url=normalizeUrl(String(f.get("url")||"").trim());
     if(!url)return toast(t("e_url"));
     const row={title:f.get("title").trim(),lang:f.get("lang"),url,description:(f.get("description")||"").trim()||null,category:"rop"};
     const {error}=id==null?await sb.from("resources").insert(row):await sb.from("resources").update(row).eq("id",id);
@@ -1034,8 +1046,8 @@ function openBoardBio(id){
   const init=((m.name||"?").trim()[0]||"?").toUpperCase();
   const roleLabel=lang==="fr"?m.role_fr:(m.role_en||m.role_fr);
   const bioText=m.bio?T(m.bio):t("no_bio");
-  const ig=safeUrl(m.instagram_url||m.insta_url);
-  const li=safeUrl(m.linkedin_url);
+  const ig=normalizeUrl(m.instagram_url||m.insta_url,"instagram");
+  const li=normalizeUrl(m.linkedin_url,"linkedin");
   const links=[];
   if(ig)links.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)links.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
@@ -1070,8 +1082,8 @@ function editBoardBio(id){
     <label>${t("f_photo_file")}</label>
     <input type="file" accept="image/*" onchange="handleBioPhotoFile(this,'${esc(init)}')">
     <div class="row2">
-      <div><label>${t("f_insta")}</label><input name="instagram_url" type="url" placeholder="https://instagram.com/…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
-      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" placeholder="https://linkedin.com/in/…" value="${esc(m.linkedin_url||"")}"></div>
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
     </div>
     <label>${t("f_bio_full")}</label>
     <textarea name="bio" rows="6" maxlength="2000" placeholder="${esc(t("f_bio"))}…">${esc(m.bio||"")}</textarea>
@@ -1120,8 +1132,8 @@ async function saveBoardBio(ev,id){
     if(rawPhoto&&!bioPhoto)return toast(t("e_url"));
     const rawIg=String(f.get("instagram_url")||"").trim();
     const rawLi=String(f.get("linkedin_url")||"").trim();
-    const ig=rawIg?safeUrl(rawIg):null;
-    const li=rawLi?safeUrl(rawLi):null;
+    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
     if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
     const bio=String(f.get("bio")||"").trim()||null;
     const payload={bio,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
@@ -1143,7 +1155,7 @@ function vPartenaires(){
   const contact=cfg("contact_email")||DEFAULT_CONTACT;
   return `<h1>${t("part_t")}</h1><p class="mute">${t("part_s")}</p>
   ${D.partners.length?`<div class="partners">${D.partners.map(p=>{
-    const href=safeUrl(p.url||p.website);
+    const href=normalizeUrl(p.url||p.website);
     return href?`<a class="card reveal" href="${esc(href)}" target="_blank" rel="noopener">${esc(p.name)}</a>`:`<div class="card reveal">${esc(p.name)}</div>`;
   }).join("")}</div>`:`<div class="card empty">${t("part_empty")}</div>`}
   <h2>${t("part_sp")}</h2><div class="card"><p class="mute" style="margin-top:0">${t("part_txt")}</p>
@@ -1196,7 +1208,7 @@ function editStudyGuide(id){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
   openSheet(`<h3>📘 ${t("sg_edit")}</h3><form onsubmit="saveStudyGuide(event,${idArg(e.id)})">
     <label>${t("f_sg_title")}</label><input name="title" maxlength="140" placeholder="ex : Study Guide — Conseil de Sécurité" value="${esc(e.study_guide_title||"")}">
-    <label>${t("f_sg_url")}</label><input name="url" type="url" placeholder="https://…" value="${esc(e.study_guide_url||"")}">
+    <label>${t("f_sg_url")}</label><input name="url" type="text" placeholder="https://…" value="${esc(e.study_guide_url||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
@@ -1204,7 +1216,7 @@ async function saveStudyGuide(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawUrl=String(f.get("url")||"").trim(),url=rawUrl?safeUrl(rawUrl):null;
+    const f=new FormData(ev.target),rawUrl=String(f.get("url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
     if(rawUrl&&!url)return toast(t("e_url"));
     const title=String(f.get("title")||"").trim()||null;
     const {error}=await sb.from("events").update({study_guide_title:title,study_guide_url:url}).eq("id",id);
@@ -1441,7 +1453,7 @@ function vPole(){
   const hasSub=isRelExt(p),lead=isPoleLead(p.id);
   const activeSub=hasSub?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
   const rawDrive=hasSub?(cfg(activeSub.driveKey)||p.drive_url||p.doc_url):(p.drive_url||p.doc_url);
-  const docUrl=safeUrl(rawDrive);
+  const docUrl=normalizeUrl(rawDrive);
 
   const visibleTasks=hasSub
     ?D.tasks.filter(x=>parseTaskSubpole(x.title).sub===activeSub.key)
@@ -1715,8 +1727,8 @@ function eventForm(e){
     <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" min="0" step="0.01" value="${esc(e.prix??0)}" required></div>
      <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="${esc(e.places??30)}" required></div></div>
     <label>${t("f_desc")}</label><textarea name="description" rows="4" maxlength="2000">${v("description")}</textarea>
-    <label>${t("f_img")}</label><input name="image_url" type="url" placeholder="https://…" value="${v("image_url")}">
-    <label>${t("f_form_url")}</label><input name="form_url" type="url" placeholder="https://docs.google.com/forms/…" value="${v("form_url")}">
+    <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…" value="${v("image_url")}">
+    <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…" value="${v("form_url")}">
     <label>${t("f_slug")}</label><input name="slug" placeholder="ex : compimun-madrid-2026" value="${v("helloasso_slug")}">
     <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
     <br><button class="btn" type="submit">${isNew?t("publish"):t("save")}</button></form>`;
@@ -1760,12 +1772,13 @@ async function saveEvent(ev,id){
     const prix=Math.max(0,Number(f.get("prix"))||0);
     const places=Math.max(1,Math.floor(Number(f.get("places"))||1));
     const slug=normalizeSlug(f.get("slug"));
-    const img=(f.get("image_url")||"").trim();
-    const formUrl=(f.get("form_url")||"").trim();
-    if(img&&!safeUrl(img))return toast(t("e_url"));
-    if(formUrl&&!safeUrl(formUrl))return toast(t("e_url"));
+    const rawImg=(f.get("image_url")||"").trim();
+    const rawForm=(f.get("form_url")||"").trim();
+    const img=rawImg?normalizeUrl(rawImg):null;
+    const formUrl=rawForm?normalizeUrl(rawForm):null;
+    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
     const row={type:f.get("type"),title:f.get("title").trim(),date:f.get("date"),heure:f.get("heure")||null,lieu:f.get("lieu").trim(),
-      prix,places,description:(f.get("description")||"").trim()||null,image_url:img||null,form_url:formUrl||null,
+      prix,places,description:(f.get("description")||"").trim()||null,image_url:img,form_url:formUrl,
       helloasso_slug:slug,members_only:f.get("members_only")==="on"};
     const {error}=id==null?await sb.from("events").insert(row):await sb.from("events").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
@@ -1814,8 +1827,8 @@ function adminOrg(){
     <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}">
     <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
     <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div></div>
-    <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="url" value="${esc(cfg("instagram_url")||"")}"></div>
-    <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" value="${esc(cfg("linkedin_url")||"")}"></div></div>
+    <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url")||"")}"></div>
+    <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(cfg("linkedin_url")||"")}"></div></div>
     <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
 
   <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
@@ -1835,7 +1848,19 @@ async function saveSiteSettings(ev){
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=Object.fromEntries(new FormData(ev.target));
-    const rows=Object.entries(f).map(([key,value])=>({key,value:String(value||"").trim()}));
+    const rawIg=String(f.instagram_url||"").trim();
+    const rawLi=String(f.linkedin_url||"").trim();
+    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const payload={
+      hero_img:String(f.hero_img||"").trim(),
+      contact_email:String(f.contact_email||"").trim()||DEFAULT_CONTACT,
+      cotisation:String(f.cotisation||DEFAULT_COTISATION).trim(),
+      instagram_url:ig||"",
+      linkedin_url:li||""
+    };
+    const rows=Object.entries(payload).map(([key,value])=>({key,value}));
     const {error}=await sb.from("site_settings").upsert(rows);
     if(error)return toast(errMsg(error));
     await loadPublic();render(true);toast(t("t_ok"));
@@ -1852,8 +1877,8 @@ function editBoard(id){
     <label>${t("f_photo_url")}</label><input name="photo_url" value="${esc(m.photo_url||"")}" placeholder="photo_pierre_bureau.jpeg ou https://…">
     <label>${t("f_bio_photo_url")}</label><input name="bio_photo_url" value="${esc(m.bio_photo_url||"")}" placeholder="photo_pierre_bio.jpeg ou https://…">
     <div class="row2">
-      <div><label>${t("f_insta")}</label><input name="instagram_url" type="url" placeholder="https://instagram.com/…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
-      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="url" placeholder="https://linkedin.com/in/…" value="${esc(m.linkedin_url||"")}"></div>
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
     </div>
     <label>${t("f_bio")}</label><textarea name="bio" rows="4" maxlength="2000">${esc(m.bio||"")}</textarea>
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
@@ -1871,8 +1896,8 @@ async function saveBoard(ev,id){
     if((rawPhoto&&!photo)||(rawBioPhoto&&!bioPhoto))return toast(t("e_url"));
     const rawIg=String(f.get("instagram_url")||"").trim();
     const rawLi=String(f.get("linkedin_url")||"").trim();
-    const ig=rawIg?safeUrl(rawIg):null;
-    const li=rawLi?safeUrl(rawLi):null;
+    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
     if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
     const baseRow={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
     const fullRow={...baseRow,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
@@ -1893,7 +1918,7 @@ function editPole(id){
     <label>${t("f_icon")}</label><input name="icon" maxlength="8" placeholder="ex : 🎙️" value="${esc(p.icon||"")}">
     <label>${t("f_desc_fr")}</label><input name="desc_fr" maxlength="200" value="${esc(p.desc_fr||"")}">
     <label>${t("f_desc_en")}</label><input name="desc_en" maxlength="200" value="${esc(p.desc_en||"")}">
-    <label>${t("f_drive")}</label><input name="drive_url" type="url" placeholder="https://drive.google.com/…" value="${esc(p.drive_url||"")}">
+    <label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…" value="${esc(p.drive_url||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
@@ -1901,7 +1926,7 @@ async function savePole(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),drv=String(f.get("drive_url")||"").trim(),url=drv?safeUrl(drv):null;
+    const f=new FormData(ev.target),drv=String(f.get("drive_url")||"").trim(),url=drv?normalizeUrl(drv):null;
     if(drv&&!url)return toast(t("e_url"));
     const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,icon:(f.get("icon")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim()||null,desc_en:(f.get("desc_en")||"").trim()||null,drive_url:url};
     const {error}=id==null?await sb.from("poles").insert(row):await sb.from("poles").update(row).eq("id",id);
@@ -1912,7 +1937,7 @@ async function savePole(ev,id){
 function editPartner(){
   openSheet(`<h3>${t("add_partner")}</h3><form onsubmit="savePartner(event)">
     <label>${t("f_title")}</label><input name="name" required maxlength="100">
-    <label>${t("f_site")}</label><input name="url" type="url" placeholder="https://…">
+    <label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
@@ -1920,7 +1945,7 @@ async function savePartner(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),raw=String(f.get("url")||"").trim(),url=raw?safeUrl(raw):null;
+    const f=new FormData(ev.target),raw=String(f.get("url")||"").trim(),url=raw?normalizeUrl(raw):null;
     if(raw&&!url)return toast(t("e_url"));
     const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url});
     if(error)return toast(errMsg(error));
