@@ -334,7 +334,7 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 <div class="sheet-bg" id="sheetbg" role="dialog" aria-modal="true" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script> (function(){   const cdns=[     "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",     "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js",     "https://esm.sh/@supabase/supabase-js@2?bundle"   ];   function loadScript(src,timeoutMs=4000){     return new Promise((resolve,reject)=>{       const s=document.createElement("script");       s.src=src;s.async=true;       const timer=setTimeout(()=>{s.remove();reject(new Error("timeout"))},timeoutMs);       s.onload=()=>{clearTimeout(timer);resolve(true)};       s.onerror=()=>{clearTimeout(timer);s.remove();reject(new Error("err"))};       document.head.appendChild(s);     });   }   window.__supabaseReady=(async()=>{     for(const url of cdns){       try{await loadScript(url);if(typeof supabase!=="undefined")return true}catch(e){}     }     return typeof supabase!=="undefined";   })(); })(); </script>
 <script>
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
