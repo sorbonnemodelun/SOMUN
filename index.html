@@ -1,3 +1,5 @@
+Voici le fichier index.html complet intégrant toutes les corrections (nomination des responsables de pôles en un clic depuis Admin → Membres, édition de l'onglet du pôle par son responsable, et import CSV HelloAsso robuste avec gestion des encodages UTF-8/Windows-1252).
+N'oublie pas d'exécuter également le petit bloc SQL de l'étape précédente dans Supabase si ce n'est pas encore fait afin que la base de données autorise les responsables à modifier la table poles.
 <!doctype html>
 <html lang="fr">
 <head>
@@ -289,7 +291,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  new_task:"Nouvelle tâche…",add:"Ajouter",todo:"À faire",doing:"En cours",done:"Terminé",docs:"Documents",open_docs:"Ouvrir le dossier partagé ↗",
  pole_team:"Équipe du pôle",pole_lead:"Responsable",pole_member:"Membre",add_member_pole:"Ajouter un membre au pôle…",edit_pole:"Modifier les infos du pôle",
  part_t:"Partenaires",part_s:"Ils soutiennent SOMUN.",part_empty:"Aucun partenaire affiché pour le moment.",part_sp:"Devenir partenaire",part_txt:"Vous souhaitez soutenir Sorbonne Model UN ou recevoir notre plaquette partenariats ? Contactez le bureau.",part_contact:"Contacter le bureau",
- pay_note:"Le paiement de {p} € se fait via HelloAsso, versé sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après le paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
+ pay_note:"Le paiement de {p} € se fait via HelloAsso, versé sur le compte de l'association.",free_note:"Inscription gratuite.",go_pay:"Réserver ma place",confirm:"Confirmer mon inscription",cancel:"Annuler",go_ha:"Continuer vers HelloAsso",ha_after:"Ta place est réservée 2 jours. Elle sera confirmée automatiquement après paiement (utilise le même e-mail que ton compte).",open_form:"Remplir le formulaire ↗",
  t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
  t_err_members:"Cet événement est réservé aux adhérents à jour.",t_err_full:"Désolé, c'est complet.",t_err_slug:"Paiement HelloAsso pas encore configuré pour cet événement.",no_res:"Aucun résultat",no_events:"Aucun événement prévu pour le moment.",no_news:"Aucune actualité publiée pour le moment.",
  foot:"Sorbonne Model UN · 2026-2027",autotr:"Contenus publiés traduits automatiquement",
@@ -1236,14 +1238,20 @@ function memListHTML(){
   });
   if(!l.length)return `<div class="empty">${t("no_members")}</div>`;
   return l.map(m=>{
-    const mine=D.memberPoles.filter(x=>x.user_id===m.id).map(x=>x.pole_id),self=m.id===S.user.id,uid=sid(m.id);
+    const links=D.memberPoles.filter(x=>x.user_id===m.id);
+    const byPole=Object.fromEntries(links.map(x=>[String(x.pole_id),x.role||"member"]));
+    const self=m.id===S.user.id,uid=sid(m.id);
     return `<div class="card member"><div class="top"><div><h3>${esc(m.prenom||"")} ${esc(m.nom||"")}</h3><div class="mute">${esc(m.email||"")}${m.helloasso_email?" · HA: "+esc(m.helloasso_email):""}</div>
       <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         ${m.paid?`<span class="tag free">${t("ha_verified")}</span>`:`<span class="tag paid">${t("ha_unverified")}</span>`}
         <button class="chip sm" onclick="togglePaid('${uid}',${!m.paid},this)">${m.paid?t("toggle_paid_off"):t("toggle_paid_on")}</button>
       </div></div>
       <select ${self?"disabled":""} onchange="setRole('${uid}',this.value,this)"><option value="member" ${m.role==="member"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select></div>
-      <div class="pchips">${D.poles.map(p=>`<button class="chip sm ${mine.includes(p.id)?"on":""}" onclick="togglePole('${uid}',${idArg(p.id)},this)">${esc(p.icon||"")} ${esc(poleName(p))}</button>`).join("")}</div></div>`;
+      <div class="pchips">${D.poles.map(p=>{
+        const r=byPole[String(p.id)];
+        const badge=r==="lead"?" ★ (Respo)":r==="member"?" ✓":"";
+        return `<button class="chip sm ${r?"on":""}" title="Cliquer : Membre → Responsable → Retirer" onclick="cyclePoleRole('${uid}',${idArg(p.id)},this)">${esc(p.icon||"")} ${esc(poleName(p))}${badge}</button>`;
+      }).join("")}</div></div>`;
   }).join("");
 }
 async function togglePaid(uid,paid,btn){
@@ -1257,13 +1265,20 @@ async function togglePaid(uid,paid,btn){
     await loadAdmin();render(true);toast(t("t_ok"));
   });
 }
-async function togglePole(uid,pid,btn){
+async function cyclePoleRole(uid,pid,btn){
   await withBusy(btn,async()=>{
-    const has=D.memberPoles.some(m=>m.user_id===uid&&String(m.pole_id)===String(pid));
-    const r=has?await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid)
-               :await sb.from("pole_members").insert({user_id:uid,pole_id:pid,role:"member",assigned_by:S.user.id});
+    const cur=D.memberPoles.find(m=>m.user_id===uid&&String(m.pole_id)===String(pid));
+    let r;
+    if(!cur){
+      r=await sb.from("pole_members").insert({user_id:uid,pole_id:pid,role:"member",assigned_by:S.user.id});
+    }else if((cur.role||"member")==="member"){
+      r=await sb.from("pole_members").update({role:"lead"}).eq("user_id",uid).eq("pole_id",pid);
+    }else{
+      r=await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid);
+    }
     if(r.error)return toast(errMsg(r.error));
-    await loadAdmin();render(true);
+    await Promise.all([loadAdmin(),uid===S.user.id?loadPrivate():Promise.resolve()]);
+    render(true);toast(t("t_ok"));
   });
 }
 async function setRole(uid,role,el){
@@ -1286,17 +1301,40 @@ async function runPassation(btn){
 /* --- Import CSV & Sync API HelloAsso (Option A) --- */
 async function importHelloAssoCSV(input){
   const file=input.files&&input.files[0];input.value="";if(!file)return;
-  const text=await file.text();
+  const buf=await file.arrayBuffer();
+  let text=new TextDecoder("utf-8").decode(buf);
+  if(text.includes("\uFFFD"))text=new TextDecoder("windows-1252").decode(buf);
+
   const lines=text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length<2)return toast(t("no_res"));
-  const sep=lines[0].split(";").length>lines[0].split(",").length?";":",";
-  const parseLine=line=>line.split(sep).map(c=>c.replace(/^"|"$/g,"").trim());
-  const headers=parseLine(lines[0]).map(h=>h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));
-  const emailIdx=headers.findIndex(h=>h.includes("email")||h.includes("e-mail")||h.includes("courriel"));
-  if(emailIdx<0)return toast(t("e_email"));
-  const emails=[...new Set(lines.slice(1).map(l=>parseLine(l)[emailIdx]?.toLowerCase()).filter(e=>e&&e.includes("@")))];
+
+  const sep=(lines[0].split(";").length>lines[0].split(",").length)?";":",";
+  const parseLine=line=>{
+    const out=[];let cur="",inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else inQ=!inQ}
+      else if(c===sep&&!inQ){out.push(cur.trim());cur=""}
+      else cur+=c;
+    }
+    out.push(cur.trim());
+    return out;
+  };
+
+  let headRow=0,emailIdx=-1;
+  for(let i=0;i<Math.min(lines.length,10);i++){
+    const cols=parseLine(lines[i]).map(h=>h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));
+    const idx=cols.findIndex(h=>h.includes("email")||h.includes("e-mail")||h.includes("courriel")||h==="mail");
+    if(idx>=0){headRow=i;emailIdx=idx;break}
+  }
+  if(emailIdx<0)return toast("Colonne e-mail introuvable dans le CSV.");
+
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emails=[...new Set(lines.slice(headRow+1).map(l=>(parseLine(l)[emailIdx]||"").toLowerCase()).filter(e=>emailRe.test(e)))];
+  if(!emails.length)return toast("Aucun e-mail valide trouvé dans ce fichier.");
+
   const until=academicYearEnd(),season=currentSeason();
-  let matched=0,queued=0;
+  let matched=0,queued=0,errCount=0;
   for(const em of emails){
     const m=D.members.find(x=>String(x.email||"").toLowerCase()===em||String(x.helloasso_email||"").toLowerCase()===em);
     if(m){
@@ -1304,15 +1342,18 @@ async function importHelloAssoCSV(input){
         const {error}=await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",m.id);
         if(!error){
           matched++;
-          await sb.from("membership_history").insert({user_id:m.id,season,source:"HelloAsso CSV"}).catch(()=>{});
-        }
+          await sb.from("membership_history").insert({user_id:m.id,season,source:"HelloAsso CSV"});
+        }else{console.error(error);errCount++}
       }
     }else{
       const {error}=await sb.from("helloasso_paid_emails").upsert({email:em,paid_until:until,source:"HelloAsso CSV"});
       if(!error)queued++;
+      else{console.error(error);errCount++}
     }
   }
-  await loadAdmin();render(true);
+  await Promise.all([loadPrivate(),loadAdmin()]);
+  render(true);
+  if(errCount&&!matched&&!queued)return toast("Erreur de droits Supabase (vérifie ton rôle Bureau).");
   toast(t("csv_done",{m:matched,q:queued}));
 }
 async function syncHelloAssoAPI(btn){
@@ -1562,3 +1603,4 @@ init();
 </script>
 </body>
 </html>
+
