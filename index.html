@@ -141,7 +141,8 @@ a{color:var(--bleu)}
 
 /* ---------- Bureau : fond pleine page & portraits ---------- */
 body:has(.bureau-wrap){position:relative}
-body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url('photo_bureau.jpeg') center 22%/cover no-repeat;opacity:.22;z-index:-1;pointer-events:none}
+body:has(.bureau-wrap)::before{content:"";position:fixed;inset:0;background:url('photo_bureau.jpeg') center 18%/cover no-repeat;opacity:.25;z-index:-1;pointer-events:none}
+body:has(.bureau-wrap) header{background:rgba(255,255,255,.35);backdrop-filter:blur(8px);border-bottom-color:rgba(227,228,240,.5)}
 .bureau-wrap{padding:6px 0}
 .board-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-top:4px solid var(--or)}
 .board-photo{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:10px;box-shadow:0 6px 16px rgba(2,2,89,.14)}
