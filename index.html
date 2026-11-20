@@ -189,7 +189,7 @@ body:has(.bureau-wrap) header{background:rgba(255,255,255,.56);backdrop-filter:b
 .bio-modal{position:relative;text-align:center}
 .bio-hero-wrap{position:relative;width:100%;height:330px;overflow:hidden;background:linear-gradient(160deg,var(--marine),var(--bleu))}
 .bio-hero-photo{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block;color:#fff;font-family:var(--f-titre);font-weight:800;font-size:64px;line-height:330px;text-align:center}
-.bio-hero-photo.focus-come{object-position:37% 25%}
+.bio-hero-photo.focus-come{object-position:28% 22%;transform:scale(1.06);transform-origin:28% 22%}
 .bio-hero-fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,2,89,0) 42%,rgba(2,2,89,.35) 74%,rgba(255,255,255,.92) 96%,#ffffff 100%);pointer-events:none}
 .bio-body{position:relative;padding:0 22px 24px;margin-top:-18px}
 .bio-text{position:relative;text-align:left;background:rgba(242,243,250,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-left:4px solid var(--bleu);border-radius:16px;padding:15px 16px;margin:14px 0;white-space:pre-line;font-size:14.5px;line-height:1.65;color:var(--ink)}
@@ -200,7 +200,7 @@ body:has(.bureau-wrap) header{background:rgba(255,255,255,.56);backdrop-filter:b
 .bio-socials-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .bio-socials-links a{font-size:13px;font-weight:600;text-decoration:none}
 .bio-socials-links a:hover{text-decoration:underline}
-.bio-preview{width:156px;height:156px;border-radius:24px;object-fit:cover;object-position:37% 25%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:40px;margin:10px auto 4px;box-shadow:0 10px 24px rgba(2,2,89,.14)}
+.bio-preview{width:156px;height:156px;border-radius:24px;object-fit:cover;object-position:28% 22%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:40px;margin:10px auto 4px;box-shadow:0 10px 24px rgba(2,2,89,.14)}
 
 /* ---------- Formulaires ---------- */
 .search,input,select,textarea{width:100%;padding:11px 15px;min-height:42px;border-radius:13px;border:1.5px solid var(--line);background:#fff;font-size:15px;color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
@@ -390,7 +390,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  foot:"Sorbonne Model UN · 2026-2027",autotr:"Contenus publiés traduits automatiquement",
  about_t:"Qu'est-ce que SOMUN ?",about_txt:"Sorbonne Model UN est l'association de simulation des Nations unies de la Sorbonne. Lors d'une conférence Model UN (MUN), chaque participant représente un pays, défend ses positions, négocie et rédige des résolutions, comme les vrais diplomates.",
  about_1t:"Prise de parole",about_1:"Les trainings t'apprennent à débattre et à convaincre, en français et en anglais.",about_2t:"Conférences",about_2:"Participe à des MUN en France et à l'étranger.",about_3t:"Communauté",about_3:"Visites, soirées, voyages : une association vivante toute l'année.",
- contact:"Contact",follow:"Nous suivre",
+ contact:"Contact",follow:"Échanger",
  details:"Détails",ev_404:"Cet événement n'existe plus.",back_acts:"← Toutes les activités",at:"à",
  registrants:"Inscrits",validate:"Valider",export_csv:"Exporter (CSV)",no_registrants:"Aucun inscrit pour le moment.",st_confirmed:"Confirmé",st_pending:"Paiement en attente",
  col_fn:"Prénom",col_ln:"Nom",col_mail:"E-mail",col_status:"Statut",col_member:"Adhérent",yes:"Oui",no:"Non",
@@ -443,7 +443,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  foot:"Sorbonne Model UN · 2026-2027",autotr:"Published content is automatically translated",
  about_t:"What is SOMUN?",about_txt:"Sorbonne Model UN is the Sorbonne's United Nations simulation society. At a Model UN (MUN) conference, each participant represents a country, defends its positions, negotiates and drafts resolutions, just like real diplomats.",
  about_1t:"Public speaking",about_1:"Trainings teach you to debate and persuade, in French and English.",about_2t:"Conferences",about_2:"Take part in MUNs in France and abroad.",about_3t:"Community",about_3:"Visits, parties, trips: a lively association all year long.",
- contact:"Contact",follow:"Follow us",
+ contact:"Contact",follow:"Connect",
  details:"Details",ev_404:"This event no longer exists.",back_acts:"← All activities",at:"at",
  registrants:"Registrants",validate:"Confirm",export_csv:"Export (CSV)",no_registrants:"No registrants yet.",st_confirmed:"Confirmed",st_pending:"Payment pending",
  col_fn:"First name",col_ln:"Last name",col_mail:"Email",col_status:"Status",col_member:"Member",yes:"Yes",no:"No",
@@ -478,11 +478,14 @@ let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo
 /* ===== TRADUCTION AUTOMATIQUE (TOUS LES TEXTES AJOUTÉS VIA L'INTERFACE) ===== */
 let trCache=ls.get("somun_tr",{});
 const pending=new Set();let flushing=false,nativeT=null,trFailures=0;
+function protectProperNames(str){
+  return String(str).replace(/\bC[ôo]me\b/gi,"Côme");
+}
 function isBadTranslation(res,orig){
   if(!res||typeof res!=="string")return true;
   const u=res.toUpperCase();
   if(u.includes("MYMEMORY WARNING")||u.includes("PLEASE SELECT TWO DISTINCT")||u.includes("QUERY LENGTH LIMIT"))return true;
-  return res.trim()===orig.trim();
+  return protectProperNames(res).trim()===protectProperNames(orig).trim();
 }
 function chunkText(txt,max=450){
   if(txt.length<=max)return [txt];
@@ -500,13 +503,16 @@ function chunkText(txt,max=450){
   return parts;
 }
 function T(txt){
-  if(lang==="fr"||!txt)return txt;
-  const str=String(txt);
-  const cached=trCache[str];
-  if(cached&&!isBadTranslation(cached,str))return cached;
-  if(cached)delete trCache[str];
-  if(trFailures<2&&!pending.has(str)){pending.add(str);if(!flushing)flush()}
-  return str;
+  if(!txt)return txt;
+  const raw=String(txt);
+  if(lang==="fr")return protectProperNames(raw);
+  const cached=trCache[raw];
+  if(cached&&!isBadTranslation(cached,raw)){
+    return protectProperNames(cached.replace(/\bComo\b/g,"Côme"));
+  }
+  if(cached)delete trCache[raw];
+  if(trFailures<2&&!pending.has(raw)){pending.add(raw);if(!flushing)flush()}
+  return protectProperNames(raw);
 }
 async function translateChunk(txt){
   try{
@@ -543,8 +549,10 @@ async function flush(){
     await Promise.all(batch.map(async txt=>{
       try{
         const r=await translateOne(txt);
-        if(!isBadTranslation(r,txt)){trCache[txt]=r;changed=true;trFailures=0}
-        else if(r&&r.toUpperCase().includes("MYMEMORY WARNING")){trFailures=2}
+        if(!isBadTranslation(r,txt)){
+          trCache[txt]=protectProperNames(r.replace(/\bComo\b/g,"Côme"));
+          changed=true;trFailures=0;
+        }else if(r&&r.toUpperCase().includes("MYMEMORY WARNING")){trFailures=2}
       }catch(e){trFailures++}
     }));
   }
@@ -1054,7 +1062,7 @@ function vBureau(){
       return `<div class="card board-card reveal" role="button" tabindex="0" onclick="openBoardBio(${idArg(m.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBoardBio(${idArg(m.id)})}">
         ${avatarMarkup(pUrl,init,"board-photo")}
         <span class="tag">${esc(T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr)))}</span>
-        <h3 style="margin-top:8px">${esc(m.name)}</h3>
+        <h3 style="margin-top:8px">${esc(protectProperNames(m.name))}</h3>
         <span class="board-hint">${t("see_bio")} →</span>
       </div>`;
     }).join("")}</div>
@@ -1084,7 +1092,7 @@ function openBoardBio(id){
     </div>
     <div class="bio-body">
       <span class="tag">${esc(roleLabel)}</span>
-      <h3 style="margin-top:8px">${esc(m.name)}</h3>
+      <h3 style="margin-top:8px">${esc(protectProperNames(m.name))}</h3>
       <div class="bio-text">${esc(bioText)}</div>
       <div class="bio-footer">
         <div class="bio-actions">
@@ -1102,7 +1110,7 @@ function editBoardBio(id){
   const currentBioPhoto=m.bio_photo_url||boardBioPhoto(m)||"";
   const init=((m.name||"?").trim()[0]||"?").toUpperCase();
   openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
-   <h3>✏️ ${esc(m.name)}</h3>
+   <h3>✏️ ${esc(protectProperNames(m.name))}</h3>
    <form onsubmit="saveBoardBio(event,${idArg(m.id)})">
     ${avatarMarkup(currentBioPhoto,init,"bio-preview")}
     <label>${t("f_bio_photo_url")}</label>
@@ -1278,7 +1286,7 @@ function registrantsBlock(e){
   const rows=registrantRows();
   return `<h2>${t("registrants")} (${rows.length}) ${rows.length?`<button onclick="exportCSV(${idArg(e.id)})">⬇ ${t("export_csv")}</button>`:""}</h2>
   ${rows.length?`<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>${t("col_ln")}</th><th>${t("col_fn")}</th><th>${t("col_mail")}</th><th>${t("col_member")}</th><th>${t("col_status")}</th>${isStaff()?"<th></th>":""}</tr></thead><tbody>
-  ${rows.map(r=>`<tr><td>${esc(r.nom)}</td><td>${esc(r.prenom)}</td><td>${esc(r.email)}</td><td>${r.paid?t("yes"):t("no")}</td><td><span class="tag ${r.status==="confirmed"?"free":"paid"}">${stLabel(r.status)}</span></td>${isStaff()?`<td>${r.status==="pending"?`<button class="btn sm" onclick="confirmRegistration(${idArg(e.id)},'${sid(r.uid)}',this)">${t("validate")}</button>`:""}</td>`:""}</tr>`).join("")}
+  ${rows.map(r=>`<tr><td>${esc(protectProperNames(r.nom))}</td><td>${esc(protectProperNames(r.prenom))}</td><td>${esc(r.email)}</td><td>${r.paid?t("yes"):t("no")}</td><td><span class="tag ${r.status==="confirmed"?"free":"paid"}">${stLabel(r.status)}</span></td>${isStaff()?`<td>${r.status==="pending"?`<button class="btn sm" onclick="confirmRegistration(${idArg(e.id)},'${sid(r.uid)}',this)">${t("validate")}</button>`:""}</td>`:""}</tr>`).join("")}
   </tbody></table></div>`:`<div class="card empty">${t("no_registrants")}</div>`}`;
 }
 async function confirmRegistration(eid,uid,btn){
@@ -1371,7 +1379,7 @@ async function submitAuth(ev){
     const f=Object.fromEntries(new FormData(ev.target));f.email=f.email.trim().toLowerCase();
     const back=location.origin+location.pathname;
     if(authMode==="signup"){
-      const {data,error}=await sb.auth.signUp({email:f.email,password:f.password,options:{data:{prenom:f.prenom.trim(),nom:f.nom.trim()},emailRedirectTo:back}});
+      const {data,error}=await sb.auth.signUp({email:f.email,password:f.password,options:{data:{prenom:protectProperNames(f.prenom.trim()),nom:f.nom.trim()},emailRedirectTo:back}});
       if(error)return toast(errMsg(error));
       if(data.session){toast(t("t_welcome"));go("accueil")}
       else{authMode="login";authInfo=t("check_mail");render(true)}
@@ -1411,7 +1419,7 @@ function vAccount(){
   const p=S.profile||{},mine=D.poles.filter(x=>D.myPoles.includes(x.id));
   const regs=D.events.filter(e=>D.myRegs[e.id]==="confirmed"||D.myRegs[e.id]==="pending");
   const histRows=D.myHistory.length?D.myHistory:(hasPaid()?[{season:currentSeason(),created_at:p.paid_until||todayStr(),source:"HelloAsso"}]:[]);
-  return `<h1>${t("account")}</h1><div class="card" style="margin-top:14px"><h3>${esc(p.prenom||"")} ${esc(p.nom||"")}</h3>
+  return `<h1>${t("account")}</h1><div class="card" style="margin-top:14px"><h3>${esc(protectProperNames(p.prenom||""))} ${esc(p.nom||"")}</h3>
    <div class="mute">${esc(S.user.email)} · ${t("acc_role")} : <b>${esc(p.role==="bureau"?t("role_bureau"):t("role_member"))}</b></div>
    <div style="margin-top:10px">${hasPaid()?`<span class="tag free">${t("ha_verified")}</span>`:`<span class="tag paid">${t("ha_unverified")}</span>`}</div>
    <h3 style="margin-top:14px">${t("pole_l")}</h3><div>${mine.length?mine.map(x=>`<span class="tag">${esc(x.icon||"")} ${esc(poleName(x))}${D.myPoleRoles[x.id]==="lead"?" ★":""}</span>`).join(""):`<span class="mute">${t("none")}</span>`}</div>
@@ -1422,7 +1430,7 @@ function vAccount(){
    }).join("")||`<div class="mute">${t("none_yet")}</div>`}
    <br><button class="btn ghost sm" onclick="logout()">${t("logout")}</button></div>
   <div class="card" style="margin-top:14px"><h3>${t("profile_t")}</h3><form onsubmit="saveProfile(event)">
-   <div class="row2"><div><label>${t("fn")}</label><input name="prenom" required maxlength="60" value="${esc(p.prenom||"")}" autocomplete="given-name"></div>
+   <div class="row2"><div><label>${t("fn")}</label><input name="prenom" required maxlength="60" value="${esc(protectProperNames(p.prenom||""))}" autocomplete="given-name"></div>
    <div><label>${t("ln")}</label><input name="nom" required maxlength="60" value="${esc(p.nom||"")}" autocomplete="family-name"></div></div>
    <label>${t("ha_alt_mail")}</label><input name="helloasso_email" type="email" maxlength="120" value="${esc(p.helloasso_email||"")}">
    <div class="mute" style="font-size:12px;margin-top:4px">${t("ha_alt_hint")}</div>
@@ -1434,7 +1442,7 @@ async function saveProfile(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),prenom=String(f.get("prenom")||"").trim(),nom=String(f.get("nom")||"").trim();
+    const f=new FormData(ev.target),prenom=protectProperNames(String(f.get("prenom")||"").trim()),nom=String(f.get("nom")||"").trim();
     const haMail=String(f.get("helloasso_email")||"").trim().toLowerCase()||null;
     if(!prenom||!nom)return;
     const {error}=await sb.from("profiles").update({prenom,nom,helloasso_email:haMail}).eq("id",S.user.id);
@@ -1500,9 +1508,9 @@ function vPole(){
     const inIds=new Set(teamLinks.map(x=>x.user_id));
     const candidates=D.members.filter(m=>!inIds.has(m.id));
     leadPanel=`<h2>${t("pole_team")}</h2><div class="card">
-      ${candidates.length?`<div style="display:flex;gap:8px;margin-bottom:12px"><select id="addPoleMem"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(m.prenom||"")} ${esc(m.nom||"")} (${esc(m.email||"")})</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(p.id)},this)">${t("add")}</button></div>`:""}
+      ${candidates.length?`<div style="display:flex;gap:8px;margin-bottom:12px"><select id="addPoleMem"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")} (${esc(m.email||"")})</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(p.id)},this)">${t("add")}</button></div>`:""}
       ${teamLinks.map(link=>{const m=byId[link.user_id]||{};const uid=sid(link.user_id);return `<div class="foot" style="border-bottom:1px solid var(--line);padding:8px 0;margin:0">
-        <span><b>${esc(m.prenom||"")} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")})</span></span>
+        <span><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")})</span></span>
         <div style="display:flex;gap:6px;align-items:center">
           ${isStaff()?`<select style="width:auto;padding:4px 8px;font-size:12px" onchange="setPoleMemberRole('${uid}',${idArg(p.id)},this.value,this)">
             <option value="member" ${(link.role||"member")==="member"?"selected":""}>${t("pole_member")}</option>
@@ -1620,7 +1628,7 @@ function memListHTML(){
     const links=D.memberPoles.filter(x=>x.user_id===m.id);
     const byPole=Object.fromEntries(links.map(x=>[String(x.pole_id),x.role||"member"]));
     const self=m.id===S.user.id,uid=sid(m.id);
-    return `<div class="card member"><div class="top"><div><h3>${esc(m.prenom||"")} ${esc(m.nom||"")}</h3><div class="mute">${esc(m.email||"")}${m.helloasso_email?" · HA: "+esc(m.helloasso_email):""}</div>
+    return `<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</h3><div class="mute">${esc(m.email||"")}${m.helloasso_email?" · HA: "+esc(m.helloasso_email):""}</div>
       <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         ${m.paid?`<span class="tag free">${t("ha_verified")}</span>`:`<span class="tag paid">${t("ha_unverified")}</span>`}
         <button class="chip sm" onclick="togglePaid('${uid}',${!m.paid},this)">${m.paid?t("toggle_paid_off"):t("toggle_paid_on")}</button>
@@ -1861,7 +1869,7 @@ function adminOrg(){
     <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
 
   <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
-  ${sortedBoard().map(m=>`<div class="card member"><div class="top"><div><h3>${esc(m.name)}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
+  ${sortedBoard().map(m=>`<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.name))}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
     <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`).join("")}
 
   <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
@@ -1900,7 +1908,7 @@ function editBoard(id){
   const isNew=!m||m.id==null;
   openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
     <h3>${isNew?t("add_board"):t("edit")}</h3><form onsubmit="saveBoard(event,${isNew?"null":idArg(m.id)})">
-    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(m.name||"")}">
+    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(protectProperNames(m.name||""))}">
     <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
     <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div></div>
     <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||DEFAULT_CONTACT)}">
@@ -1929,7 +1937,7 @@ async function saveBoard(ev,id){
     const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
     const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
     if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
-    const baseRow={name:f.get("name").trim(),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
+    const baseRow={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
     const fullRow={...baseRow,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
     let res=id==null?await sb.from("board_members").insert(fullRow):await sb.from("board_members").update(fullRow).eq("id",id);
     if(res.error&&/column/i.test(res.error.message||"")){
