@@ -79,20 +79,20 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 .tabbar button.on .ico{filter:none;transform:translateY(-2px) scale(1.08)}
 @media(min-width:860px){.dnav{display:flex}.tabbar{display:none}body{padding-bottom:0}}
 
-/* ---------- Mise en page & transitions latérales bidirectionnelles ---------- */
+/* ---------- Mise en page & glissement bidirectionnel ---------- */
 main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;position:relative}
-.view{animation:slideFromRight .34s var(--ios-ease) both;will-change:transform,opacity}
-.view.dir-left{animation-name:slideFromLeft}
-.view.noanim{animation:none}
-/* Aller vers un onglet à droite (ex: Accueil -> Adhérer) : arrive depuis la droite vers la gauche */
-@keyframes slideFromRight{
-  0%{opacity:0;transform:translate3d(28px,0,0)}
-  100%{opacity:1;transform:translate3d(0,0,0)}
+.view{will-change:transform,opacity}
+.view.anim-right{animation:goRight .34s var(--ios-ease) forwards}
+.view.anim-left{animation:goLeft .34s var(--ios-ease) forwards}
+/* Vers un onglet à droite : arrive depuis la droite (+42px -> 0) */
+@keyframes goRight{
+  from{opacity:0;transform:translateX(42px)}
+  to{opacity:1;transform:translateX(0)}
 }
-/* Aller vers un onglet à gauche (ex: Adhérer -> Accueil) : arrive depuis la gauche vers la droite */
-@keyframes slideFromLeft{
-  0%{opacity:0;transform:translate3d(-28px,0,0)}
-  100%{opacity:1;transform:translate3d(0,0,0)}
+/* Vers un onglet à gauche : arrive depuis la gauche (-42px -> 0) */
+@keyframes goLeft{
+  from{opacity:0;transform:translateX(-42px)}
+  to{opacity:1;transform:translateX(0)}
 }
 h1{font-family:var(--f-titre);font-weight:800;font-size:clamp(30px,4.5vw,42px);line-height:1.06;margin:6px 0 8px;color:var(--bleu);letter-spacing:-.4px}
 h2{font-family:var(--f-titre);font-weight:700;font-size:clamp(20px,2.6vw,24px);color:var(--marine);margin:40px 0 16px;display:flex;justify-content:flex-start;align-items:center;gap:10px}
@@ -449,7 +449,7 @@ const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")f
 let S={user:null,profile:null};
 let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
 let evSel=null,regList={event:null,rows:null};
-let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0,navDir="fwd";
+let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0,navDir="right";
 
 /* ===== TRADUCTION AUTOMATIQUE ===== */
 let trCache=ls.get("somun_tr",{});
@@ -675,13 +675,23 @@ async function refreshAll(){
 
 /* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
 const ROUTES=["accueil","activites","ressources","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
-const NAV_ORDER=["accueil","activites","ressources","adherer","pole","bureau","partenaires","admin"];
-function tabIndexFor(r){
-  if(r==="event")return NAV_ORDER.indexOf("activites")+0.5;
-  if(r==="actus")return NAV_ORDER.indexOf("accueil")+0.5;
-  if(r==="account"||r==="login"||r==="reset")return NAV_ORDER.length;
-  const i=NAV_ORDER.indexOf(r);
-  return i>=0?i:NAV_ORDER.length;
+const ROUTE_RANK={
+  accueil:0,
+  actus:0.5,
+  activites:1,
+  event:1.5,
+  ressources:2,
+  adherer:3,
+  pole:4,
+  bureau:5,
+  partenaires:6,
+  admin:7,
+  account:8,
+  login:8,
+  reset:8
+};
+function rankOf(r){
+  return ROUTE_RANK[r]??8;
 }
 function hashFor(){
   if(route==="event"&&evSel!=null)return "#event-"+sid(evSel);
@@ -695,22 +705,22 @@ function syncHash(replace){
   try{replace?history.replaceState(null,"",url):history.pushState(null,"",url)}catch(e){}
 }
 function readHash(){
-  const prevIdx=tabIndexFor(route);
+  const oldRank=rankOf(route);
   const h=decodeURIComponent(location.hash.slice(1));
   if(h.includes("="))return false;
   let m;
   if((m=h.match(/^event-([\w-]+)$/))){route="event";evSel=m[1];poleSel=null}
   else if((m=h.match(/^pole-([\w-]+)$/))){route="pole";poleSel=m[1]}
   else{route=ROUTES.includes(h)?h:"accueil";poleSel=null;evSel=null}
-  const nextIdx=tabIndexFor(route);
-  navDir=nextIdx<prevIdx?"left":"right";
+  const newRank=rankOf(route);
+  navDir=newRank<oldRank?"left":"right";
   return true;
 }
 function go(r,replace){
-  const prevIdx=tabIndexFor(route);
+  const oldRank=rankOf(route);
+  const newRank=rankOf(r);
+  navDir=newRank<oldRank?"left":"right";
   closeSheet();route=r;if(r!=="pole")poleSel=null;if(r!=="event")evSel=null;
-  const nextIdx=tabIndexFor(route);
-  navDir=nextIdx<prevIdx?"left":"right";
   syncHash(replace);render();
   if(r==="pole"&&poleSel)loadTasks().then(()=>render(true));
   if(r==="event")loadRegistrants();
@@ -764,13 +774,9 @@ function render(keep,instantThumb){
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
   const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
-  const cls=["view",navDir==="left"?"dir-left":"",keep?"noanim":""].filter(Boolean).join(" ");
+  const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
-  appEl.innerHTML="";
-  const wrap=document.createElement("div");
-  wrap.className=cls;
-  wrap.innerHTML=configured?errBox()+(V[route]||vAccueil)():vSetup();
-  appEl.appendChild(wrap);
+  appEl.innerHTML=`<div class="view ${animCls}">${configured?errBox()+(V[route]||vAccueil)():vSetup()}</div>`;
   requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
   if(!keep)window.scrollTo(0,0);
   observe(keep);
