@@ -141,11 +141,9 @@ a{color:var(--bleu)}
 
 /* ---------- Bureau : fond transparent & portraits ---------- */
 .bureau-wrap{position:relative;border-radius:22px;padding:24px 16px;overflow:hidden;isolation:isolate;background:var(--soft);border:1px solid var(--line)}
-.bureau-wrap.has-bg::before{content:"";position:absolute;inset:0;background-image:var(--bg-img);background-size:cover;background-position:center 25%;opacity:.26;z-index:-1;pointer-events:none}
+.bureau-wrap::before{content:"";position:absolute;inset:0;background-image:url('photo_bureau.jpeg');background-size:cover;background-position:center 25%;opacity:.26;z-index:-1;pointer-events:none}
 .board-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-top:4px solid var(--or)}
 .board-photo{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--or);background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-family:var(--f-titre);font-weight:800;font-size:34px;margin-bottom:10px;box-shadow:0 6px 16px rgba(2,2,89,.14)}
-.photo-pick{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:4px 11px;border-radius:99px;border:1.5px dashed var(--bleu);background:var(--bleu-soft);color:var(--bleu);font-size:12px;font-weight:600;cursor:pointer}
-.photo-pick:hover{background:var(--bleu);color:#fff}
 
 /* ---------- Formulaires ---------- */
 .search,input,select,textarea{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:15px;color:var(--ink)}
@@ -259,13 +257,12 @@ const HELLOASSO_MEMBERSHIP_SLUG="adhesion-somun-2026-2027";
 const DEFAULT_COTISATION=15;
 const LOGO_SRC="logo-somun.png";
 const DEFAULT_HERO="";
-const DEFAULT_BUREAU_BG="photo_bureau.jpg";
-const BOARD_LOCAL_PHOTOS={
-  clara:"photo_bureau_clara.jpg",
-  pierre:"photo_pierre_bureau.jpg",
-  servan:"photo_bureau_servan.jpg",
-  emna:"photo_emna_bureau.jpg",
-  come:"photo_come_bureau.jpg"
+const BOARD_PHOTOS={
+  clara:"photo_bureau_clara.jpeg",
+  pierre:"photo_pierre_bureau.jpeg",
+  servan:"photo_bureau_servan.jpeg",
+  emna:"photo_emna_bureau.jpeg",
+  come:"photo_come_bureau.jpeg"
 };
 const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
 const DEFAULT_INSTAGRAM="";
@@ -291,7 +288,6 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  pay:"Payer sur HelloAsso",need_acc:"Se connecter pour adhérer",secure:"Paiement sécurisé par HelloAsso, versé directement sur le compte de l'association.",
  ha_sync:"Important : utilise sur HelloAsso le même e-mail que ton compte ({e}). Ton adhésion sera reconnue automatiquement.",ha_verified:"Adhésion validée ✓",ha_unverified:"Adhésion non encore reconnue",paid_until:"valable jusqu'au {d}",refresh_status:"Actualiser mon statut",ha_soon:"Le paiement de la cotisation en ligne est en cours de configuration.",
  bureau_t:"Membres du Bureau",bureau_s:"L'équipe dirigeante de Sorbonne Model UN 2026-2027.",
- choose_my_photo:"Choisir ma photo",change_bureau_bg:"Photo de fond du Bureau",uploading:"Envoi de la photo…",photo_saved:"Photo mise à jour ✓",
  admin_t:"Administration",admin_s:"Gère les membres, les pôles et le contenu du site.",admin_only:"Accès réservé au Bureau.",
  tab_members:"Membres",tab_content:"Contenu",tab_org:"Organisation & Site",search_member:"Rechercher un membre…",role_member:"Membre",role_bureau:"Bureau",no_members:"Aucun membre",
  filter_all:"Tous",filter_paid:"Adhérents ✓",filter_unpaid:"Non reconnus",filter_bureau:"Bureau",
@@ -321,7 +317,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  edit:"Modifier",edit_ev:"Modifier l'événement",edit_news:"Modifier l'actualité",f_time:"Heure",f_desc:"Description",f_img:"Image (adresse https, facultatif)",
  rop_t:"Ressources & ROP",rop_s:"Règlements intérieurs (Rules of Procedure) et guides généraux accessibles à tous.",no_rop:"Aucune ressource publiée pour le moment.",add_rop:"Ajouter un ROP / guide",edit_rop:"Modifier la ressource",f_lang:"Langue",f_url:"Lien du document (https://…)",open_doc:"Ouvrir le document ↗",
  sg_box:"Study Guide du training",sg_open:"Télécharger / Ouvrir le Study Guide ↗",sg_edit:"Gérer le Study Guide",f_sg_title:"Titre du Study Guide",f_sg_url:"Lien du Study Guide (https://…)",
- site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_bureau_bg:"Photo de fond onglet Bureau",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
+ site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
  manage_board:"Membres du Bureau",add_board:"Ajouter un membre au Bureau",f_role_fr:"Poste (FR)",f_role_en:"Poste (EN)",f_bio:"Présentation",
  manage_poles:"Pôles de l'association",add_pole:"Ajouter un pôle",f_name_fr:"Nom (FR)",f_name_en:"Nom (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icône (emoji)",f_drive:"Lien dossier partagé (Drive)",
  manage_partners:"Partenaires",add_partner:"Ajouter un partenaire",f_site:"Site web (https://…)",
@@ -343,7 +339,6 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  pay:"Pay on HelloAsso",need_acc:"Log in to join",secure:"Secure payment through HelloAsso, paid directly to the association's account.",
  ha_sync:"Important: use the same email on HelloAsso as your account ({e}). Your membership will be recognised automatically.",ha_verified:"Membership verified ✓",ha_unverified:"Membership not recognised yet",paid_until:"valid until {d}",refresh_status:"Refresh status",ha_soon:"Online membership payment is currently being set up.",
  bureau_t:"Board members",bureau_s:"The executive team of Sorbonne Model UN 2026-2027.",
- choose_my_photo:"Choose my photo",change_bureau_bg:"Board background photo",uploading:"Uploading photo…",photo_saved:"Photo updated ✓",
  admin_t:"Administration",admin_s:"Manage members, teams and site content.",admin_only:"Access reserved for the Board.",
  tab_members:"Members",tab_content:"Content",tab_org:"Organisation & Site",search_member:"Search a member…",role_member:"Member",role_bureau:"Board",no_members:"No members",
  filter_all:"All",filter_paid:"Members ✓",filter_unpaid:"Unverified",filter_bureau:"Board",
@@ -373,7 +368,7 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  edit:"Edit",edit_ev:"Edit event",edit_news:"Edit news",f_time:"Time",f_desc:"Description",f_img:"Image (https address, optional)",
  rop_t:"Resources & ROP",rop_s:"Rules of Procedure and general guides open to everyone.",no_rop:"No resources published yet.",add_rop:"Add an ROP / guide",edit_rop:"Edit resource",f_lang:"Language",f_url:"Document link (https://…)",open_doc:"Open document ↗",
  sg_box:"Training Study Guide",sg_open:"Download / Open Study Guide ↗",sg_edit:"Manage Study Guide",f_sg_title:"Study Guide title",f_sg_url:"Study Guide link (https://…)",
- site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_bureau_bg:"Board background photo",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
+ site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
  manage_board:"Board members",add_board:"Add a Board member",f_role_fr:"Role (FR)",f_role_en:"Role (EN)",f_bio:"Bio",
  manage_poles:"Association teams",add_pole:"Add a team",f_name_fr:"Name (FR)",f_name_en:"Name (EN)",f_desc_fr:"Description (FR)",f_desc_en:"Description (EN)",f_icon:"Icon (emoji)",f_drive:"Shared folder link (Drive)",
  manage_partners:"Partners",add_partner:"Add a partner",f_site:"Website (https://…)",
@@ -506,7 +501,7 @@ const daysTo=d=>{const t0=new Date(todayStr()+"T12:00:00");return Math.round((dd
 const cfg=k=>{
   const v=D.settings[k];
   if(v!=null&&String(v).trim()!=="")return v;
-  return {hero_img:DEFAULT_HERO,bureau_bg_img:DEFAULT_BUREAU_BG,contact_email:DEFAULT_CONTACT,instagram_url:DEFAULT_INSTAGRAM,linkedin_url:DEFAULT_LINKEDIN,cotisation:DEFAULT_COTISATION}[k];
+  return {hero_img:DEFAULT_HERO,contact_email:DEFAULT_CONTACT,instagram_url:DEFAULT_INSTAGRAM,linkedin_url:DEFAULT_LINKEDIN,cotisation:DEFAULT_COTISATION}[k];
 };
 const isStaff=()=>Boolean(S.profile&&S.profile.role==="bureau");
 const isPoleLead=pid=>isStaff()||D.myPoleRoles[pid]==="lead";
@@ -555,36 +550,6 @@ async function withBusy(btn,fn){
   try{return await fn()}finally{if(btn)btn.disabled=false}
 }
 const isMissingTableErr=err=>Boolean(err&&(err.code==="42P01"||err.code==="PGRST205"||String(err.message||"").includes("does not exist")));
-
-/* ===== COMPRESSION & UPLOAD PHOTO ===== */
-async function compressImage(file,maxDim=900,quality=0.82){
-  return new Promise((resolve,reject)=>{
-    const img=new Image();
-    const url=URL.createObjectURL(file);
-    img.onload=()=>{
-      URL.revokeObjectURL(url);
-      let {width:w,height:h}=img;
-      if(w>maxDim||h>maxDim){
-        if(w>h){h=Math.round(h*maxDim/w);w=maxDim}
-        else{w=Math.round(w*maxDim/h);h=maxDim}
-      }
-      const c=document.createElement("canvas");
-      c.width=w;c.height=h;
-      c.getContext("2d").drawImage(img,0,0,w,h);
-      c.toBlob(b=>b?resolve(b):reject(new Error("Compression failed")),"image/jpeg",quality);
-    };
-    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Invalid image"))};
-    img.src=url;
-  });
-}
-async function uploadSomunPhoto(file,folder,maxDim=900){
-  const blob=await compressImage(file,maxDim,0.82);
-  const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
-  const {error}=await sb.storage.from("somun-media").upload(path,blob,{contentType:"image/jpeg",upsert:true});
-  if(error)throw error;
-  const {data}=sb.storage.from("somun-media").getPublicUrl(path);
-  return data.publicUrl;
-}
 
 /* ===== CHARGEMENT DES DONNÉES ===== */
 async function loadTaken(){
@@ -875,62 +840,27 @@ function vAdherer(){
    <p class="mute" style="font-size:12px;margin:14px 0 0">${S.user&&!hasPaid()&&u?esc(t("ha_sync",{e:S.user.email}))+"<br>":""}${t("secure")}</p></div>`;
 }
 
-/* --- Onglet Bureau (Photo de fond semi-transparente + Portraits) --- */
-function canEditBoardMember(m){
-  if(isStaff())return true;
-  if(!S.profile)return false;
-  const full=`${S.profile.prenom||""} ${S.profile.nom||""}`.trim().toLowerCase();
-  return Boolean(full)&&String(m.name||"").trim().toLowerCase()===full;
-}
+/* --- Onglet Bureau (Photo de fond photo_bureau.jpeg + Portraits .jpeg en dur) --- */
 function boardMemberPhoto(m){
-  const dbUrl=safeAsset(m.photo_url);
-  if(dbUrl)return dbUrl;
   const first=String(m.name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  return BOARD_LOCAL_PHOTOS[first]||null;
+  return BOARD_PHOTOS[first]||null;
 }
 function vBureau(){
   if(D.loading)return loadingBox();
-  const bgUrl=safeAsset(cfg("bureau_bg_img"))||DEFAULT_BUREAU_BG;
-  const bgStyle=bgUrl?`--bg-img:url('${bgUrl.replace(/['"\\()]/g,"")}')`:"";
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap">
-    <div><h1>${t("bureau_t")}</h1><p class="mute" style="margin:0">${t("bureau_s")}</p></div>
-    ${isStaff()?`<label class="btn ghost sm" style="margin:0;cursor:pointer">🖼️ ${t("change_bureau_bg")}<input type="file" accept="image/*" style="display:none" onchange="uploadBureauBg(this)"></label>`:""}
-  </div>
-  <div class="bureau-wrap ${bgUrl?"has-bg":""}" style="${bgStyle};margin-top:16px">
+  return `<h1>${t("bureau_t")}</h1><p class="mute">${t("bureau_s")}</p>
+  <div class="bureau-wrap" style="margin-top:16px">
     <div class="grid">${D.board.map(m=>{
       const pUrl=boardMemberPhoto(m);
       const init=((m.name||"?").trim()[0]||"?").toUpperCase();
-      const canPhoto=canEditBoardMember(m);
       return `<div class="card board-card reveal">
-        ${pUrl?`<img class="board-photo" src="${esc(pUrl)}" alt="${esc(m.name)}" loading="lazy" onerror="if(!this.dataset.f&&this.src.endsWith('.jpg')){this.dataset.f=1;this.src=this.src.replace(/\\.jpg$/,'.jpeg')}else{this.outerHTML='<div class=\\'board-photo\\'>${esc(init)}</div>'}">`:`<div class="board-photo">${esc(init)}</div>`}
+        ${pUrl?`<img class="board-photo" src="${esc(pUrl)}" alt="${esc(m.name)}" loading="lazy" onerror="this.outerHTML='<div class=\\'board-photo\\'>${esc(init)}</div>'">`:`<div class="board-photo">${esc(init)}</div>`}
         <span class="tag">${esc(lang==="fr"?m.role_fr:(m.role_en||m.role_fr))}</span>
         <h3 style="margin-top:8px">${esc(m.name)}</h3>
         <a class="mute" href="mailto:${esc(DEFAULT_CONTACT)}" style="text-decoration:none">${esc(DEFAULT_CONTACT)}</a>
         ${m.bio?`<p style="font-size:14px;margin-top:8px;margin-bottom:0">${esc(T(m.bio))}</p>`:""}
-        ${canPhoto?`<label class="photo-pick">📷 ${t("choose_my_photo")}<input type="file" accept="image/*" style="display:none" onchange="uploadBoardMemberPhoto(${idArg(m.id)},this)"></label>`:""}
       </div>`;
     }).join("")}</div>
   </div>`;
-}
-async function uploadBureauBg(input){
-  const file=input.files&&input.files[0];input.value="";if(!file)return;
-  toast(t("uploading"));
-  try{
-    const url=await uploadSomunPhoto(file,"bureau-bg",1400);
-    const {error}=await sb.from("site_settings").upsert({key:"bureau_bg_img",value:url});
-    if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("photo_saved"));
-  }catch(e){toast(errMsg(e))}
-}
-async function uploadBoardMemberPhoto(id,input){
-  const file=input.files&&input.files[0];input.value="";if(!file)return;
-  toast(t("uploading"));
-  try{
-    const url=await uploadSomunPhoto(file,"board-portraits",600);
-    const {error}=await sb.from("board_members").update({photo_url:url}).eq("id",id);
-    if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("photo_saved"));
-  }catch(e){toast(errMsg(e))}
 }
 
 function vPartenaires(){
@@ -1562,7 +1492,6 @@ async function delRow(table,id,btn){
 function adminOrg(){
   return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSiteSettings(event)">
     <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}">
-    <label>${t("f_bureau_bg")}</label><input name="bureau_bg_img" value="${esc(cfg("bureau_bg_img")||"")}">
     <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
     <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div></div>
     <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="url" value="${esc(cfg("instagram_url")||"")}"></div>
