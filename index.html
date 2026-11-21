@@ -387,6 +387,104 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
   .reveal .bar-p span{transform:none}
 }
 </style>
+<style id="game">
+/* ===== JEU : QUIZ DES ROP ===== */
+.qz-hero{display:flex;align-items:center;gap:22px;margin:18px 0 14px;padding:22px;border-radius:26px;color:#fff;position:relative;overflow:hidden;isolation:isolate;
+  background:radial-gradient(520px 260px at 90% -20%,rgba(235,192,0,.35),transparent 60%),linear-gradient(135deg,#020259,#00008E 70%,#1a1ae0);box-shadow:0 24px 50px -24px rgba(2,2,89,.6)}
+.qz-ringbox,.qz-endring{position:relative;flex:none;color:#fff}
+.qz-endring{color:var(--bleu);margin:6px auto 0;width:150px}
+.qz-ring-fg{animation:qzRing 1.2s var(--fx,ease) both}
+@keyframes qzRing{from{stroke-dashoffset:var(--c)}}
+.qz-ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1}
+.qz-ringtxt b{font-size:28px;font-weight:800}
+.qz-ringtxt span{font-size:12px;opacity:.75;margin-top:3px}
+.qz-herotxt{min-width:0;flex:1}
+.qz-lv{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;letter-spacing:.3px;color:var(--or)}
+.qz-lvico{font-size:22px}
+.qz-pts{margin-top:2px;font-size:15px;opacity:.9}.qz-pts b{font-size:44px;font-weight:800;line-height:1;margin-right:4px;font-variant-numeric:tabular-nums}
+.qz-lvbar{height:7px;border-radius:9px;background:rgba(255,255,255,.18);margin:10px 0 6px;overflow:hidden}
+.qz-lvbar span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#f7d84e,var(--or));transition:width 1s var(--fx,ease)}
+.qz-lvtxt{font-size:13px;opacity:.85}
+.qz-mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.qz-mini span{font-size:12px;padding:4px 11px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.qz-guest{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0;border-color:rgba(235,192,0,.6);background:#fffbe6}
+.qz-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 0}
+.qz-mode{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:16px;border-radius:20px;border:1px solid rgba(2,2,89,.08);background:#fff;cursor:pointer;font:inherit;color:inherit;box-shadow:0 1px 2px rgba(2,2,89,.05),0 8px 22px -12px rgba(2,2,89,.16);transition:transform .3s var(--ios-ease),box-shadow .3s,border-color .2s}
+.qz-mode:active{transform:scale(.97)}
+.qz-mode-ico{font-size:24px}
+.qz-mode b{font-size:15px;color:var(--bleu)}.qz-mode small{color:#5b5f86;font-size:12.5px}
+@media(hover:hover){.qz-mode:hover{transform:translateY(-4px);border-color:rgba(235,192,0,.7);box-shadow:0 22px 40px -20px rgba(2,2,89,.35)}}
+.qz-ch{display:flex;flex-direction:column}
+.qz-ch-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.qz-ch-ico{font-size:28px}
+.qz-ch h3{margin:0;font-size:17px}
+.qz-ch-meta{display:flex;justify-content:space-between;font-size:12.5px;color:#5b5f86}
+.qz-board{padding:8px 16px}
+.qz-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(2,2,89,.07)}
+.qz-row:last-child{border-bottom:0}
+.qz-row.me{background:linear-gradient(90deg,rgba(235,192,0,.16),transparent);border-radius:12px;padding-left:10px}
+.qz-rank{width:30px;text-align:center;font-weight:700;color:var(--bleu)}
+.qz-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.qz-name em{font-weight:500;color:#5b5f86;font-style:normal;font-size:13px}
+.qz-score{font-weight:700;color:var(--bleu);font-variant-numeric:tabular-nums}
+
+/* partie */
+.qz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 10px}
+.qz-top-r{display:flex;gap:8px;align-items:center}
+.qz-streak{padding:4px 12px;border-radius:99px;background:#fff3d6;color:#8a5a00;font-weight:700;font-size:13px;animation:fxPop .5s var(--fx,ease)}
+.qz-run{padding:4px 12px;border-radius:99px;background:var(--bleu-soft,#eef0ff);color:var(--bleu);font-weight:700;font-size:13px}
+.qz-prog{height:8px;margin-bottom:16px}
+.qz-card{background:#fff;border:1px solid rgba(2,2,89,.07);border-radius:26px;padding:22px;box-shadow:0 2px 4px rgba(2,2,89,.05),0 26px 50px -26px rgba(2,2,89,.3)}
+.qz-in{animation:qzIn .45s var(--ios-ease) both}
+@keyframes qzIn{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+.qz-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.qz-q{font-size:clamp(19px,4.4vw,25px);line-height:1.25;margin:16px 0 18px;letter-spacing:-.01em}
+.qz-q::before{display:none}
+.qz-opts{display:grid;gap:10px}
+.qz-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-radius:18px;border:1.5px solid rgba(2,2,89,.12);background:#fff;font:inherit;font-size:15px;line-height:1.35;color:#16164a;cursor:pointer;transition:transform .25s var(--ios-ease),border-color .2s,background .2s,box-shadow .2s,opacity .2s}
+.qz-opt b{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bleu-soft,#eef0ff);color:var(--bleu);font-size:13px}
+.qz-opt:not(:disabled):active{transform:scale(.985)}
+@media(hover:hover){.qz-opt:not(:disabled):hover{transform:translateX(4px);border-color:var(--bleu);box-shadow:0 10px 22px -14px rgba(0,0,142,.6)}}
+.qz-opt:disabled{cursor:default}
+.qz-opt.good{border-color:#1f9d55;background:#eaf8f0;animation:qzGood .5s var(--ios-ease)}
+.qz-opt.good b{background:#1f9d55;color:#fff}
+.qz-opt.bad{border-color:var(--rouge);background:#fdeceb;animation:qzShake .45s}
+.qz-opt.bad b{background:var(--rouge);color:#fff}
+.qz-opt.dim{opacity:.5}
+@keyframes qzGood{50%{transform:scale(1.025)}}
+@keyframes qzShake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.qz-fb{margin-top:16px;padding:14px 16px;border-radius:16px;animation:fxRise .4s var(--ios-ease) both}
+.qz-fb.ok{background:#eaf8f0;color:#14532d}.qz-fb.ko{background:#fdeceb;color:#7f1d1d}
+.qz-fb-t{font-weight:700}.qz-fb-a{margin-top:6px;font-weight:600}.qz-fb-r{margin-top:6px;font-size:12.5px;opacity:.75}
+
+/* fin de partie */
+.qz-end{text-align:center}
+.qz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0}
+.qz-stat{padding:14px 8px;border-radius:18px;background:var(--bleu-soft,#eef0ff)}
+.qz-stat b{display:block;font-size:26px;color:var(--bleu);font-variant-numeric:tabular-nums}
+.qz-stat span{font-size:12px;color:#5b5f86}
+.qz-stat.gold{background:linear-gradient(135deg,#fff3b5,#ffe27a)}.qz-stat.gold b{color:#7a5a00}
+.qz-up{margin:14px 0;padding:12px 16px;border-radius:16px;font-weight:700;color:#020259;background:linear-gradient(90deg,#fff3b5,#ffe27a);animation:fxPop .6s var(--ios-ease)}
+.qz-wrong{text-align:left;margin:16px 0;border:1px solid rgba(2,2,89,.08);border-radius:18px;padding:4px 14px}
+.qz-wrong summary{cursor:pointer;font-weight:700;padding:12px 0;color:var(--bleu)}
+.qz-wq{padding:12px 0;border-top:1px solid rgba(2,2,89,.07);font-size:14px;line-height:1.4}
+.qz-wq div{margin-top:5px;color:#14532d;font-weight:600}.qz-wq small{color:#5b5f86}
+.qz-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+
+@media(max-width:620px){
+  .qz-hero{flex-direction:column;text-align:center;gap:14px;padding:22px 18px}
+  .qz-lv{justify-content:center}.qz-mini{justify-content:center}
+  .qz-modes{grid-template-columns:1fr}
+  .qz-mode{flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap}.qz-mode small{flex-basis:100%;padding-left:36px;margin-top:-6px}
+  .qz-card{padding:18px;border-radius:22px}
+  .qz-actions .btn{flex:1 1 100%}
+}
+
+/* confettis */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:500;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;opacity:0;animation:cfFall 2.4s ease-in forwards}
+@keyframes cfFall{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),105vh) rotate(var(--rot))}}
+@media(prefers-reduced-motion:reduce){.qz-in,.qz-ring-fg,.qz-opt,.qz-fb,.qz-up,.qz-streak{animation:none!important}}
+</style>
 </head>
 <body>
 <div id="sp"></div>
@@ -423,6 +521,351 @@ const BOARD_BIO_PHOTOS={
 };
 const BOARD_ORDER=["come","servan","pierre","emna","clara"];
 const BOARD_ORDER_MOBILE=["servan","pierre","come","emna","clara"]; /* ordre de haut en bas sur téléphone */
+
+/* ===== JEU : 100 QCM tirés des Rules of Procedure (ROP) de SOMUN — UNGA =====
+   Convention d'écriture : la PREMIÈRE réponse de chaque liste est la bonne.
+   L'ordre des réponses est mélangé à l'affichage. */
+const QUIZ_CH=[
+  {id:1,ico:"📜",rop:"I",  fr:"Dispositions générales",     en:"General provisions"},
+  {id:2,ico:"🧑‍⚖️",rop:"II", fr:"Les chairs",                en:"Chairpersons"},
+  {id:3,ico:"🏛️",rop:"III",fr:"Procédure parlementaire",    en:"Parliamentary procedure"},
+  {id:4,ico:"🎤",rop:"IV", fr:"Conduite du débat",          en:"Conduct of debate"},
+  {id:5,ico:"✋",rop:"V",  fr:"Points pendant le débat",    en:"Points during debate"},
+  {id:6,ico:"📣",rop:"VI", fr:"Motions",                    en:"Motions during debate"},
+  {id:7,ico:"📝",rop:"VII",fr:"Projets de résolution",      en:"Draft resolutions"},
+  {id:8,ico:"✏️",rop:"VIII",fr:"Amendements",               en:"Amendments"},
+  {id:9,ico:"🗳️",rop:"IX", fr:"Vote",                       en:"Voting"}
+];
+const QUIZ=[];
+/* Q : options différentes selon la langue — QN : mêmes options dans les deux langues */
+const Q=(ch,ref,fr,en)=>QUIZ.push({id:QUIZ.length+1,ch,ref,fr,en});
+const QN=(ch,ref,frq,enq,o)=>QUIZ.push({id:QUIZ.length+1,ch,ref,fr:[frq,...o],en:[enq,...o]});
+
+/* ---------- I. GENERAL PROVISIONS (5) ---------- */
+Q(1,"I.a",
+ ["Quelle est la langue officielle et de travail de la conférence ?","L'anglais","Le français","L'anglais et le français","Au choix de chaque délégué"],
+ ["What is the official and working language of the conference?","English","French","English and French","Each delegate's choice"]);
+Q(1,"I.b",
+ ["Comment les délégués doivent-ils s'adresser aux autres délégués et aux officiers du Conseil ?","À la troisième personne (singulier ou pluriel)","À la première personne du singulier","À la deuxième personne (tutoiement)","Comme ils le souhaitent, en informel"],
+ ["How must delegates address each other and the Council officers?","In the third person (singular or plural)","In the first person singular","In the second person (“you”)","However they like, in informal sessions"]);
+Q(1,"I.b",
+ ["Laquelle de ces formulations respecte la courtoisie diplomatique ?","« La délégation de la France estime que… »","« Je pense que… »","« Nous, on trouve que… »","« Vous vous trompez, Chair. »"],
+ ["Which of these sentences respects diplomatic courtesy?","“The delegation of France believes that…”","“I think that…”","“We find that…”","“You are wrong, Chair.”"]);
+Q(1,"I.b",
+ ["À qui s'applique la règle de courtoisie diplomatique ?","Aux autres délégués ET aux officiers du Conseil","Uniquement aux autres délégués","Uniquement aux chairs","Uniquement au discours d'ouverture"],
+ ["Who does the diplomatic courtesy rule apply to?","Other delegates AND the Council officers","Other delegates only","The chairs only","The opening speech only"]);
+Q(1,"I.b",
+ ["Quand la courtoisie diplomatique est-elle attendue des délégués ?","Pendant les sessions du Conseil","Uniquement pendant les votes","Uniquement face aux chairs","Uniquement pendant les discours officiels"],
+ ["When are delegates expected to exercise diplomatic courtesy?","During Council sessions","Only during votes","Only towards the chairs","Only during formal speeches"]);
+
+/* ---------- II. CHAIRPERSONS (10) ---------- */
+Q(2,"II",
+ ["Qui préside toutes les sessions du Conseil ?","Les présidents de l'Assemblée générale (les chairs)","Le Secrétaire général","Les délégués, à tour de rôle","Les sponsors de la résolution"],
+ ["Who chairs all Council sessions?","The General Assembly presidents (the chairs)","The Secretary-General","The delegates, in turn","The sponsors of the resolution"]);
+Q(2,"II",
+ ["Qui déclare l'ouverture et la clôture de chaque réunion ?","Les chairs","Le Secrétaire général","Un vote du Conseil","Les sponsors"],
+ ["Who declares the opening and closing of each meeting?","The chairs","The Secretary-General","A vote of the Council","The sponsors"]);
+Q(2,"II",
+ ["Qui décide de l'ordre dans lequel les résolutions sont débattues ?","Les chairs","Les sponsors","Le Conseil, par un vote à la majorité simple","L'ordre alphabétique des pays"],
+ ["Who decides the order in which resolutions are debated?","The chairs","The sponsors","The Council, by simple majority vote","The alphabetical order of countries"]);
+Q(2,"II",
+ ["Qui est habilité à déclarer des pauses (recesses), des ajournements ou à suspendre les règles ?","Uniquement les chairs","N'importe quel délégué","Les sponsors","Les observateurs"],
+ ["Who is empowered to call recesses or adjournments or to suspend the rules?","Only the chairs","Any delegate","The sponsors","The observers"]);
+Q(2,"II",
+ ["Laquelle de ces limitations les chairs peuvent-elles proposer ?","Le temps de débat, le nombre d'interventions par délégué, la clôture du débat","Le nombre de pays membres de l'ONU","La durée du mandat des chairs","La langue utilisée dans les discours"],
+ ["Which of these limitations may the chairs propose?","Debate time, the number of times each delegate may speak, the closure of debate","The number of UN member states","The chairs' term of office","The language used in speeches"]);
+Q(2,"II",
+ ["Dans quel but les chairs peuvent-elles donner la parole à une délégation qui ne l'a pas demandée ?","Dans l'intérêt du débat ou pour avancer vers le consensus","Pour sanctionner une délégation","Pour gagner du temps avant un vote","Elles ne peuvent jamais le faire"],
+ ["Why may the chairs call upon a delegation that has not requested the floor?","In the interest of debate, or to work towards consensus","To sanction a delegation","To save time before a vote","They may never do so"]);
+Q(2,"II",
+ ["Que peuvent faire les chairs pour un délégué donné dans l'intérêt du débat ?","Restreindre son temps de parole","Lui retirer son droit de vote","L'exclure définitivement du Conseil","Lui imposer une langue de travail"],
+ ["What may the chairs do regarding an individual delegate, in the interest of debate?","Restrict his or her speaking time","Remove his or her right to vote","Permanently exclude him or her from the Council","Impose a working language"]);
+Q(2,"II",
+ ["Qui statue sur les points d'ordre (points of order) ?","Les chairs","Le Conseil, par un vote","Le délégué qui l'a soulevé","Les sponsors de la résolution"],
+ ["Who rules on points of order?","The chairs","The Council, by vote","The delegate who raised it","The sponsors of the resolution"]);
+Q(2,"II",
+ ["Qui a le contrôle complet des débats et le maintien de l'ordre lors des réunions formelles ?","Les chairs","Les observateurs","Les délégations les plus nombreuses","Les sponsors"],
+ ["Who has complete control over the proceedings and the maintenance of order at formal meetings?","The chairs","The observers","The largest delegations","The sponsors"]);
+Q(2,"II / IX.a",
+ ["Parmi ces actions, laquelle n'est PAS un pouvoir des chairs ?","Voter à la place d'une délégation absente","Accorder le droit de parole","Mettre les questions au vote et annoncer les décisions","Statuer sur les points d'ordre"],
+ ["Which of these is NOT a power of the chairs?","Casting a vote on behalf of an absent delegation","Accord the right to speak","Put questions to vote and announce decisions","Rule on points of order"]);
+
+/* ---------- III. PARLIAMENTARY PROCEDURE (15) ---------- */
+Q(3,"III.a",
+ ["Par quoi les chairs commencent-elles une session après son ouverture ?","Par l'appel (roll call)","Par le vote de l'ordre du jour","Par l'ouverture de la liste des orateurs","Par un caucus non modéré"],
+ ["How do the chairs begin once the session is open?","With a roll call","With a vote on the agenda","By opening the speakers' list","With an unmoderated caucus"]);
+Q(3,"III.a",
+ ["Dans quel ordre les chairs appellent-elles les nations lors du roll call ?","Dans l'ordre alphabétique","Dans l'ordre d'arrivée","Au hasard","Par taille de délégation"],
+ ["In which order do the chairs call the nations during the roll call?","In alphabetical order","In order of arrival","At random","By size of delegation"]);
+Q(3,"III.a",
+ ["Que peut déclarer un État membre lors du roll call ?","« Present » ou « Present and Voting »","« Yes » ou « No »","« Present », « Absent » ou « Pass »","« Sponsor » ou « Signatory »"],
+ ["What may a Member State declare during the roll call?","“Present” or “Present and Voting”","“Yes” or “No”","“Present”, “Absent” or “Pass”","“Sponsor” or “Signatory”"]);
+Q(3,"III.a",
+ ["Que implique le fait de se déclarer « Present and Voting » ?","On ne peut pas s'abstenir lors des votes de fond","On est obligé de prendre la parole","On a deux voix","On est dispensé des votes procéduraux"],
+ ["What does declaring yourself “Present and Voting” imply?","You may not abstain during substantive votes","You must take the floor","You have two votes","You are exempt from procedural votes"]);
+QN(3,"III.b",
+ "Quelle proportion du total des représentants doit être présente pour ouvrir une session du Conseil (quorum) ?",
+ "What proportion of the total number of representatives must be present to begin a Council session (quorum)?",
+ ["Au moins un tiers","Au moins la moitié","Au moins deux tiers","Au moins trois quarts"]);
+Q(3,"III.b",
+ ["Quelle majorité faut-il pour passer à la procédure de vote sur un projet de résolution ?","Une majorité des trois quarts","Une majorité simple","Une majorité des deux tiers","L'unanimité"],
+ ["What majority is needed to move to the voting procedure on a draft resolution?","A three-quarter majority","A simple majority","A two-thirds majority","Unanimity"]);
+Q(3,"III.c",
+ ["Quand les délégués peuvent-ils déposer une motion pour fixer l'ordre du jour (Agenda) ?","Après le roll call","Avant le roll call","Pendant la procédure de vote","Seulement à la clôture du débat"],
+ ["When may delegates submit a motion to set the Agenda?","After a roll call","Before the roll call","During the voting procedure","Only at the closure of debate"]);
+Q(3,"III.d",
+ ["Quels votes sont dits « procéduraux » ?","Tous sauf le vote sur la résolution finale et ses amendements","Uniquement le vote sur l'ordre du jour","Uniquement les votes sur les motions de caucus","Uniquement les votes à main levée"],
+ ["Which votes are “procedural”?","All votes except the vote on the final draft resolution and its amendments","Only the vote on the agenda","Only the votes on caucus motions","Only votes by show of hands"]);
+Q(3,"III.d",
+ ["Lors d'un vote procédural, que peut voter un représentant ?","Uniquement pour ou contre : l'abstention n'est pas recevable","Pour, contre ou abstention","Pour, contre, ou « with rights »","Il ne peut pas voter"],
+ ["In a procedural vote, how may a representative vote?","Only in favor or against: abstentions are not in order","In favor, against or abstain","In favor, against, or “with rights”","He or she may not vote"]);
+Q(3,"III.e",
+ ["Que comprend le vote de fond (substantive vote) ?","Le vote sur les projets de résolution et les amendements","Le vote sur l'ordre du jour","Le vote sur les motions de caucus","Le vote sur la clôture de la liste des orateurs"],
+ ["What does the substantive vote include?","Voting on draft resolutions and amendments","Voting on the agenda","Voting on caucus motions","Voting on closing the speakers' list"]);
+Q(3,"III.e",
+ ["Quelle majorité faut-il pour qu'un vote de fond soit adopté ?","Une majorité simple","Les deux tiers","Les trois quarts","L'unanimité"],
+ ["What majority is needed to pass a substantive vote?","A simple majority","Two thirds","Three quarters","Unanimity"]);
+Q(3,"III.e",
+ ["Quelles sont les cinq options de vote lors d'un vote de fond ?","Yes, No, Abstain, Yes with rights, No with rights","Yes, No, Abstain, Pass, Absent","Yes, No, Present, Absent, Pass","Yes, No, Abstain, Veto, Pass"],
+ ["What are the five voting options during a substantive vote?","Yes, No, Abstain, Yes with rights, No with rights","Yes, No, Abstain, Pass, Absent","Yes, No, Present, Absent, Pass","Yes, No, Abstain, Veto, Pass"]);
+Q(3,"III.e",
+ ["Comment sont considérés les membres qui s'abstiennent ?","Ils ne sont pas considérés comme votants","Ils comptent comme votant « Yes »","Ils comptent comme votant « No »","Ils sont exclus de la salle"],
+ ["How are abstaining members considered?","They are not considered to be voting","They count as voting “Yes”","They count as voting “No”","They are asked to leave the room"]);
+QN(3,"III.f",
+ "Quelle majorité faut-il pour adopter une motion d'ajournement de la réunion ?",
+ "What majority is needed to pass a motion of adjournment?",
+ ["Deux tiers","Majorité simple","Trois quarts","Unanimité"]);
+Q(3,"III.f",
+ ["Que signifie une motion d'ajournement (adjournment) ?","Toutes les affaires du Conseil sont terminées et il ne se réunira plus avant la prochaine session","Le débat est suspendu pour quelques minutes","Le Conseil passe à un caucus non modéré","Le débat reprend sur un autre sujet"],
+ ["What does a motion of adjournment mean?","All the business of the Council has been completed and it will not reconvene until the next session","The debate is paused for a few minutes","The Council moves to an unmoderated caucus","The debate resumes on another topic"]);
+
+/* ---------- IV. CONDUCT OF DEBATE (18) ---------- */
+Q(4,"IV.a",
+ ["Quand les délégués peuvent-ils déposer une motion pour ouvrir la General Speakers' List (GSL) ?","Après les discours d'ouverture (Opening Speeches)","Avant le roll call","Après le vote de la résolution","Seulement à la demande des chairs"],
+ ["When may delegates submit a motion to open the General Speakers' List (GSL)?","After the Opening Speeches","Before the roll call","After the resolution has been voted","Only at the chairs' request"]);
+QN(4,"IV.a",
+ "Quel est le temps de parole par défaut dans la GSL ?",
+ "What is the default speaker's time in the GSL?",
+ ["90 secondes","60 secondes","120 secondes","30 secondes"]);
+Q(4,"IV.a",
+ ["Comment modifier le temps de parole par défaut ?","Par une motion pour changer le temps de parole","Par une décision d'un seul délégué","Par un point d'ordre","On ne peut pas le modifier"],
+ ["How can the default speaker's time be changed?","By a motion to change the speaker's time","By a single delegate's decision","By a point of order","It cannot be changed"]);
+Q(4,"IV.a",
+ ["Que font les chairs lorsqu'un délégué dépasse son temps de parole ?","Elles le rappellent immédiatement à l'ordre","Elles le laissent finir sa phrase puis votent","Elles lui retirent son droit de vote","Elles ne font rien"],
+ ["What do the chairs do when a delegate exceeds his or her allotted time?","They call him or her to order immediately","They let him or her finish and then hold a vote","They remove his or her voting right","Nothing"]);
+Q(4,"IV.a",
+ ["Quelle est l'activité par défaut du Comité ?","La liste des orateurs (Speakers' List)","Le caucus non modéré","La procédure de vote","La suspension de la réunion"],
+ ["What is the default activity of the Committee?","The Speakers' List","The unmoderated caucus","The voting procedure","The suspension of the meeting"]);
+Q(4,"IV.a",
+ ["Que doit-on faire de la GSL avant d'introduire un projet de résolution ?","La clore","L'étendre à tous les délégués","La suspendre à jamais","Rien : les deux peuvent coexister"],
+ ["What must happen to the GSL before any draft resolution is introduced?","It must be closed","It must be extended to all delegates","It must be suspended forever","Nothing: both can run together"]);
+Q(4,"IV.a",
+ ["Dans quel cas le débat se clôt-il automatiquement ?","Quand la GSL est épuisée et qu'il n'y a plus de projet de résolution à introduire","Dès que le premier projet est introduit","Après 30 minutes de débat","Quand les chairs le décident seules sans raison"],
+ ["When does the debate close automatically?","As soon as the GSL runs out and there are no draft resolutions to be introduced","As soon as the first draft is introduced","After 30 minutes of debate","When the chairs decide so, with no reason"]);
+Q(4,"IV.b",
+ ["Comment une délégation signale-t-elle qu'elle veut prendre la parole ?","En levant son placard","En se levant sans rien dire","En envoyant un e-mail aux chairs","En prenant la parole directement"],
+ ["How does a delegation signify that it wants to speak?","By raising its placard","By standing up silently","By sending an e-mail to the chairs","By speaking right away"]);
+Q(4,"IV.b",
+ ["Un délégué peut-il s'adresser au Conseil sans autorisation préalable ?","Non, il doit obtenir la permission des chairs","Oui, s'il parle moins de 30 secondes","Oui, s'il est sponsor","Oui, s'il lève son placard"],
+ ["May a delegate address the Council without prior permission?","No, he or she must obtain the chairs' permission","Yes, if he or she speaks less than 30 seconds","Yes, if he or she is a sponsor","Yes, if he or she raises a placard"]);
+Q(4,"IV.b",
+ ["Dans quel cas les chairs peuvent-elles rappeler un orateur à l'ordre ?","Si ses propos ne sont pas pertinents par rapport au sujet débattu","Si son discours est trop long de plus de 5 minutes","S'il est d'un autre bloc","Uniquement s'il utilise le français"],
+ ["When may the chairs call a speaker to order?","If his or her remarks are not relevant to the subject under discussion","If his or her speech is more than 5 minutes too long","If he or she belongs to another bloc","Only if he or she uses French"]);
+Q(4,"IV.c",
+ ["Lequel n'est PAS un type de yield prévu par les ROP ?","Yield to the secretariat","Yield to the chairs","Yield to questions","Yield to another delegate"],
+ ["Which of these is NOT a type of yield provided by the ROP?","Yield to the secretariat","Yield to the chairs","Yield to questions","Yield to another delegate"]);
+Q(4,"IV.c",
+ ["Comment fonctionne le « yield to questions » ?","Une question par délégué ; seules les réponses de l'orateur comptent dans le temps","Les questions sont illimitées","Les questions comptent dans le temps de l'orateur","Seul le chair peut poser des questions"],
+ ["How does a “yield to questions” work?","One question per delegate; only the speaker's answers count towards the time limit","Questions are unlimited","Questions count towards the speaker's time","Only the chair may ask questions"]);
+Q(4,"IV.c",
+ ["Quelle règle s'applique au « yield to another delegate » ?","Le délégué qui reçoit le yield ne peut pas faire de nouveau yield ; un seul yield de ce type par orateur","Il peut en faire autant qu'il veut","Il faut un vote du Conseil","Il est interdit"],
+ ["Which rule applies to a “yield to another delegate”?","The receiving delegate may not make any further yields; only one such yield per speaker","He or she may yield as many times as he or she wants","A Council vote is needed","It is forbidden"]);
+Q(4,"IV.d",
+ ["Quelles sont les caractéristiques principales du débat informel (caucus non modéré) ?","Pas de liste d'orateurs et pas de limite sur les réponses et commentaires de chaque délégué","Une liste d'orateurs stricte, avec 30 secondes par délégué","Les chairs désignent chaque orateur","Un yield est obligatoire à chaque discours"],
+ ["What are the main features of informal debate (unmoderated caucus)?","No list of speakers and no limitation on replies and comments per speaking delegate","A strict speakers' list, with 30 seconds per delegate","The chairs appoint each speaker","A yield is mandatory after each speech"]);
+Q(4,"IV.d",
+ ["Quelle est la durée maximale d'une prolongation d'un caucus non modéré ?","Pas plus de la moitié de la durée initiale, et une seule fois","Autant que la durée initiale, plusieurs fois","Le double de la durée initiale","10 minutes exactement"],
+ ["What is the maximum extension of an unmoderated caucus?","Once, and no more than half of its original time","As long as its original time, several times","Twice its original time","Exactly 10 minutes"]);
+Q(4,"IV.e",
+ ["Si plusieurs motions de caucus modéré sont sur la table, dans quel ordre sont-elles votées ?","De la plus disruptive à la moins disruptive","De la plus courte à la plus longue","Dans l'ordre alphabétique des pays","Par tirage au sort"],
+ ["If several motions for a moderated caucus are on the floor, in which order are they voted?","From the most disruptive to the least disruptive","From the shortest to the longest","In alphabetical order of countries","By lot"]);
+Q(4,"IV.e",
+ ["Qui décide quel caucus modéré est le plus ou le moins disruptif ?","Les chairs, à leur discrétion","Le Conseil, par un vote","Le délégué à l'origine de la motion","Le Secrétaire général"],
+ ["Who decides which moderated caucus is more or less disruptive?","The chairs, at their discretion","The Council, by vote","The delegate who made the motion","The Secretary-General"]);
+Q(4,"IV.e",
+ ["Peut-on faire un yield pendant un caucus modéré ?","Non, il n'y a pas de yield dans les caucus modérés","Oui, uniquement au chair","Oui, uniquement à un autre délégué","Oui, sans limite"],
+ ["May a delegate yield time during a moderated caucus?","No, there is no yielding of time in moderated caucuses","Yes, only to the chairs","Yes, only to another delegate","Yes, without limit"]);
+
+/* ---------- V. POINTS DURING DEBATE (11) ---------- */
+Q(5,"V.a",
+ ["Quand un délégué peut-il lever un point d'ordre (Point of Order) ?","S'il estime que les chairs ne respectent pas les Rules of Procedure","S'il n'entend pas l'orateur","S'il veut une précision sur le sujet débattu","S'il est insulté par un autre délégué"],
+ ["When may a delegate raise a Point of Order?","If he or she believes the chairs are not following the Rules of Procedure","If he or she cannot hear the speaker","If he or she wants clarification on the matter before the Council","If he or she is insulted by another delegate"]);
+Q(5,"V.a",
+ ["Un point d'ordre peut-il interrompre un orateur ?","Non","Oui, toujours","Oui, si les chairs sont d'accord","Oui, s'il dure moins de 10 secondes"],
+ ["May a Point of Order interrupt a speaker?","No","Yes, always","Yes, if the chairs agree","Yes, if it lasts less than 10 seconds"]);
+Q(5,"V.a",
+ ["Un délégué qui lève un point d'ordre peut-il parler sur le fond du sujet débattu ?","Non","Oui, pendant 30 secondes","Oui, si les chairs l'y autorisent","Oui, toujours"],
+ ["May a delegate rising to a Point of Order speak on the substance of the matter under discussion?","No","Yes, for 30 seconds","Yes, if the chairs allow it","Yes, always"]);
+Q(5,"V.b",
+ ["Quand lève-t-on un Point of Personal Privilege ?","Pour signaler un inconfort physique qui gêne la participation (chaleur, mauvaise audition…)","Pour contester une décision des chairs","Pour demander une précision procédurale","Pour répondre à une insulte"],
+ ["When is a Point of Personal Privilege raised?","To report a physical discomfort that impairs participation (heat, inability to hear…)","To challenge a chairs' decision","To ask for a clarification of procedure","To answer an insult"]);
+Q(5,"V.b",
+ ["Un Point of Personal Privilege peut-il interrompre un orateur ?","Oui, si c'est inévitablement nécessaire","Non, jamais","Oui, toujours et sans réserve","Seulement pendant un vote"],
+ ["May a Point of Personal Privilege interrupt a speaker?","Yes, if unavoidably necessary","No, never","Yes, always and without restriction","Only during a vote"]);
+Q(5,"V.c",
+ ["Quel est l'objet d'un Point of Information ?","Obtenir une clarification de la procédure ou un état des questions soumises au Conseil","Signaler un inconfort physique","Contester le règlement","Répondre à un propos insultant"],
+ ["What is the purpose of a Point of Information?","To obtain a clarification of procedure or a statement of the matters before the Council","To report a physical discomfort","To challenge the rules","To reply to an insulting remark"]);
+Q(5,"V.c",
+ ["Un Point of Information peut-il interrompre un orateur ?","Non","Oui","Oui, si les chairs l'autorisent","Oui, une fois par session"],
+ ["May a Point of Information interrupt a speaker?","No","Yes","Yes, if the chairs allow it","Yes, once per session"]);
+Q(5,"V.d",
+ ["Dans quel cas les chairs peuvent-elles accorder un Right of Reply ?","Si un discours contient des propos clairement insultants pour la dignité personnelle ou nationale","Si une délégation n'est pas d'accord avec un discours","Si un orateur dépasse son temps","Si une délégation veut ajouter un argument"],
+ ["When may the chairs accord a Right of Reply?","If a speech contains language clearly insulting to personal or national dignity","If a delegation disagrees with a speech","If a speaker exceeds his or her time","If a delegation wants to add an argument"]);
+Q(5,"V.d",
+ ["Comment un délégué demande-t-il un Right of Reply ?","En envoyant une note aux chairs","En levant son placard","En interrompant l'orateur","En déposant une motion"],
+ ["How does a delegate request a Right of Reply?","By sending a note to the chairs","By raising his or her placard","By interrupting the speaker","By submitting a motion"]);
+QN(5,"V.d",
+ "Quelle est la durée maximale d'un Right of Reply ?",
+ "What is the time limit of a Right of Reply?",
+ ["30 secondes","15 secondes","60 secondes","90 secondes"]);
+Q(5,"V.d",
+ ["Peut-on demander un Right of Reply à un Right of Reply ?","Non, il n'y a pas de droit de réponse à un droit de réponse","Oui, une seule fois","Oui, avec l'accord des sponsors","Oui, sans limite"],
+ ["May a Right of Reply be requested in answer to a Right of Reply?","No, there shall be no Right of Reply to a Right of Reply","Yes, once","Yes, with the sponsors' agreement","Yes, without limit"]);
+
+/* ---------- VI. MOTIONS DURING DEBATE (12) ---------- */
+Q(6,"VI.A",
+ ["Quand peut-on déposer des motions procédurales ?","Pendant le débat formel, quand la parole est libre, avant la clôture du débat","À tout moment, y compris pendant un discours","Uniquement en procédure de vote","Uniquement avant le roll call"],
+ ["When may procedural motions be raised?","During formal debate, when the floor is open, prior to the closure of debate","At any time, including during a speech","Only during the voting procedure","Only before the roll call"]);
+Q(6,"VI.A",
+ ["Une motion peut-elle interrompre un orateur ?","Non","Oui, si elle est urgente","Oui, avec un second","Oui, si les chairs sont d'accord"],
+ ["May a motion interrupt a speaker?","No","Yes, if urgent","Yes, with a second","Yes, if the chairs agree"]);
+Q(6,"VI.A",
+ ["De quoi une motion a-t-elle besoin pour avancer, et que se passe-t-il en cas d'objection ?","De seconds ; en cas d'objection, on vote","D'un vote préalable systématique","De l'accord écrit des chairs ; pas de vote possible","De l'unanimité"],
+ ["What does a motion need, and what happens if there are objections?","Seconds; in case of objections, a vote is necessary","A systematic prior vote","Written agreement of the chairs; no vote possible","Unanimity"]);
+Q(6,"VI.A.iii",
+ ["En quoi consiste une consultation of the whole ?","Un caucus avec un temps global fixé mais où le tour de parole est informel","Un vote de tous les membres","Un caucus avec liste d'orateurs et temps individuel imposé","Une suspension de la réunion"],
+ ["What is a consultation of the whole?","A caucus where an overall time is set but the moderating of who speaks is informal","A vote of all members","A caucus with a speakers' list and imposed individual time","A suspension of the meeting"]);
+Q(6,"VI.A.iii",
+ ["Dans une consultation of the whole, que peut faire le délégué à l'origine de la motion ?","Parler aussi longtemps qu'il veut puis céder (yield) le temps restant à un délégué de son choix","Parler 30 secondes exactement","Désigner un chair","Voter pour tout le Conseil"],
+ ["In a consultation of the whole, what may the delegate who made the motion do?","Speak as long as he or she wants, then yield the remaining time to whichever delegate he or she wants","Speak exactly 30 seconds","Appoint a chair","Vote for the whole Council"]);
+Q(6,"VI.A.iii",
+ ["Si une délégation limite ses yields par favoritisme contre la volonté du comité, que peuvent faire les chairs ?","Demander que le temps soit cédé à d'autres délégués","Exclure la délégation","Annuler la motion sans vote","Rien"],
+ ["If a delegate limits yields out of favouritism against the will of the committee, what may the chairs do?","Ask for the time to be yielded to other delegates","Expel the delegation","Cancel the motion without vote","Nothing"]);
+Q(6,"VI.A.iv",
+ ["Que fait une motion de suspension de la réunion si elle passe ?","Elle suspend la séance plénière jusqu'à la prochaine séance plénière","Elle met fin définitivement à la conférence","Elle ouvre un caucus non modéré","Elle clôt le débat"],
+ ["What does a motion to suspend the meeting do if it passes?","It suspends the plenary meeting until its next plenary meeting","It ends the conference for good","It opens an unmoderated caucus","It closes the debate"]);
+Q(6,"VI.A.iv",
+ ["Quelle majorité est requise pour la suspension de la réunion en cas d'objection ?","Majorité simple","Deux tiers","Trois quarts","Unanimité"],
+ ["Which majority is required for a suspension of the meeting in the event of an objection?","Simple majority","Two thirds","Three quarters","Unanimity"]);
+Q(6,"VI.A.v",
+ ["Qu'exige une motion pour reprendre le débat (resume debate) ?","Un second et une majorité simple","Une majorité des deux tiers","Les trois quarts du Conseil","Aucun vote"],
+ ["What does a motion to resume debate require?","A second and a simple majority","A two-thirds majority","Three quarters of the Council","No vote"]);
+Q(6,"VI.A.vi",
+ ["Quelle proportion du Conseil doit être en faveur de la clôture du débat pour que les chairs la déclarent ?","Trois quarts","Une moitié","Deux tiers","Un tiers"],
+ ["What proportion of the Council must be in favour of the closure of debate for the chairs to declare it?","Three quarters","One half","Two thirds","One third"]);
+Q(6,"VI.A.vi",
+ ["Que se passe-t-il après la clôture du débat sur un sujet de fond ?","Le Conseil entre en procédure de vote sur tous les amendements et projets de résolution","Le Conseil est ajourné","Un nouveau débat s'ouvre","Les chairs choisissent la résolution gagnante"],
+ ["What happens after the closure of debate on a substantive issue?","The Council enters the voting procedure on all amendments and draft resolutions","The Council is adjourned","A new debate opens","The chairs choose the winning resolution"]);
+Q(6,"VI.B",
+ ["Quand peut-on retirer une motion ?","À tout moment avant le début du vote, par son auteur","Uniquement avant le second","Jamais","Uniquement avec l'accord des chairs"],
+ ["When may a motion be withdrawn?","At any time before voting has commenced, by its proposer","Only before it is seconded","Never","Only with the chairs' agreement"]);
+
+/* ---------- VII. DRAFT RESOLUTION (10) ---------- */
+Q(7,"VII.a",
+ ["De quoi un projet de résolution est-il au minimum composé ?","D'au moins un paragraphe préambulaire et une clause opérative","D'au moins trois clauses opératives","D'un préambule et de cinq clauses","D'une seule clause opérative"],
+ ["What does a Draft Resolution consist of at minimum?","At least one preambular and one operative clause","At least three operative clauses","A preamble and five clauses","A single operative clause"]);
+Q(7,"VII.a",
+ ["Dans quel cas les chairs approuvent-elles un projet de résolution ?","S'il est lisible, organisé dans son contenu et son enchaînement, et au bon format","S'il est signé par tous les délégués","S'il a été voté par le Conseil","S'il est écrit en moins de dix lignes"],
+ ["When do the chairs approve a Draft Resolution?","If it is legible, organized in content and flow, and in the proper format","If it is signed by all delegates","If the Council has voted for it","If it is shorter than ten lines"]);
+QN(7,"VII.b",
+ "Combien de sponsors doit avoir un projet de résolution ?",
+ "How many sponsors must a Draft Resolution have?",
+ ["Au moins 2 et au plus 5","Au moins 1 et au plus 3","Au moins 3 et au plus 8","Au moins 5 et au plus 10"]);
+QN(7,"VII.c",
+ "Combien de délégations doivent être signatories d'un projet de résolution ?",
+ "How many delegations must be Signatories of a Draft Resolution?",
+ ["Au moins 2 et au plus 8","Au moins 1 et au plus 5","Au moins 5 et au plus 12","Exactement 10"]);
+Q(7,"VII.b-c",
+ ["Quelle est la différence entre sponsors et signatories ?","Les sponsors sont les auteurs principaux ; les signatories (co-submitters) sont les soutiens","Les sponsors votent, les signatories non","Les sponsors sont les chairs, les signatories les délégués","Il n'y en a pas"],
+ ["What is the difference between sponsors and signatories?","Sponsors are the principal authors; signatories (co-submitters) are the supporters","Sponsors vote, signatories do not","Sponsors are the chairs, signatories the delegates","There is none"]);
+Q(7,"VII.d",
+ ["Une fois le projet approuvé, qui l'introduit ?","L'un des sponsors, appelé par les chairs","Un signatory tiré au sort","Les chairs elles-mêmes","Le Secrétaire général"],
+ ["Once a Draft Resolution is approved, who introduces it?","One of the Sponsors, called by the chairs","A signatory drawn by lot","The chairs themselves","The Secretary-General"]);
+Q(7,"VII.d",
+ ["Combien de temps la délégation a-t-elle pour introduire le projet de résolution ?","4 minutes : 3 pour le présenter et 1 pour les questions","3 minutes : 2 pour le présenter et 1 pour les questions","5 minutes : 4 pour le présenter et 1 pour les questions","2 minutes au total"],
+ ["How much time does the delegation have to introduce the Draft Resolution?","4 minutes: 3 to present it and 1 for questions","3 minutes: 2 to present it and 1 for questions","5 minutes: 4 to present it and 1 for questions","2 minutes in total"]);
+Q(7,"VII.d",
+ ["Quelles questions peut-on poser pendant la minute de questions après l'introduction ?","Des questions non substantielles : abréviations, terminologie, sens général d'une partie du texte","Des questions sur la position politique de chaque pays","Des questions sur la vie privée des délégués","Toute question, sans limite"],
+ ["What may be asked during the minute of questions following the introduction?","Non-substantive questions: abbreviations, terminology, general meaning of a part of the text","Questions on each country's political position","Questions on delegates' private lives","Any question, without limit"]);
+Q(7,"VII.e",
+ ["Comment débat-on d'un projet de résolution après son introduction ?","Les délégués peuvent déposer une motion pour ouvrir une general speakers' list sur la résolution","Les chairs ouvrent un vote immédiat","On passe directement aux amendements","On suspend la réunion"],
+ ["How is a Draft Resolution debated after its introduction?","Delegates may introduce a motion to open a general speakers' list on the resolution","The chairs open an immediate vote","The amendments come straight away","The meeting is suspended"]);
+Q(7,"VII.f",
+ ["Dans quel cas un projet de résolution ne peut-il PAS être retiré ?","Si un amendement inamical (unfriendly) est sur la table","S'il a plus de 5 sponsors","S'il est déjà introduit","S'il n'a pas de préambule"],
+ ["In which case may a Draft Resolution NOT be withdrawn?","If an Unfriendly Amendment to it is on the floor","If it has more than 5 sponsors","If it has already been introduced","If it has no preamble"]);
+
+/* ---------- VIII. AMENDMENTS (10) ---------- */
+Q(8,"VIII.a",
+ ["Qu'est-ce qu'un amendement ?","Une motion écrite qui ajoute, supprime ou révise une partie du projet de résolution","Un vote sur une clause","Une question aux sponsors","Une nouvelle résolution complète"],
+ ["What is an amendment?","A written motion that adds to, deletes from or revises any part of the Draft Resolution","A vote on a clause","A question to the sponsors","A whole new resolution"]);
+Q(8,"VIII.a",
+ ["Quelle mention ne faut-il pas oublier dans un amendement ?","Le numéro de ligne où il doit être apporté","La date de la séance","Le nom de chaque signataire du projet","Le temps de parole prévu"],
+ ["What must not be forgotten in an amendment?","The line number in which the amendment should be made","The date of the session","The name of each signatory of the draft","The planned speaking time"]);
+Q(8,"VIII.a",
+ ["Combien de sponsors et de signatories faut-il pour un amendement ?","Un sponsor et deux signatories","Deux sponsors et un signatory","Cinq sponsors","Un sponsor, sans signatory"],
+ ["How many sponsors and signatories must an amendment have?","One sponsor and two signatories","Two sponsors and one signatory","Five sponsors","One sponsor, no signatory"]);
+Q(8,"VIII.a",
+ ["Comment un amendement est-il soumis aux chairs ?","Sur un formulaire officiel d'amendement, pour approbation","Oralement, en séance","Par e-mail à tous les délégués","Il n'a pas besoin d'approbation"],
+ ["How is an amendment submitted to the chairs?","On an official amendment form, for approval","Orally, in session","By e-mail to all delegates","It needs no approval"]);
+Q(8,"VIII.b",
+ ["Quand un amendement est présenté, sur quoi vote-t-on en premier ?","Sur l'amendement","Sur la résolution complète","Sur l'ordre du jour","Sur la clôture du débat"],
+ ["When an amendment is moved to a proposal, what is voted on first?","The amendment","The whole resolution","The agenda","The closure of debate"]);
+Q(8,"VIII.b",
+ ["Un amendement à l'amendement à l'amendement est-il recevable ?","Non, il n'est pas en ordre","Oui, avec l'accord des sponsors","Oui, avec les deux tiers","Oui, sans limite"],
+ ["Is an amendment to the amendment to the amendment in order?","No, it will not be in order","Yes, with the sponsors' agreement","Yes, with two thirds","Yes, without limit"]);
+Q(8,"VIII.c",
+ ["Quand un amendement est-il « friendly » ?","Si tous les sponsors l'approuvent et s'il ne change pas fondamentalement l'intention du projet","Si une majorité simple des délégués l'approuve","Si les chairs le trouvent court","Si un seul sponsor l'approuve"],
+ ["When is an amendment “friendly”?","If all Sponsors agree with it and it does not fundamentally change the intent of the Draft Resolution","If a simple majority of delegates agree","If the chairs find it short","If only one Sponsor agrees"]);
+Q(8,"VIII.c",
+ ["Faut-il un vote pour ajouter un amendement friendly au projet ?","Non, aucun vote n'est requis","Oui, à la majorité simple","Oui, aux deux tiers","Oui, à l'unanimité"],
+ ["Is a vote required to add a friendly amendment to a Draft Resolution?","No vote is required","Yes, by simple majority","Yes, by two thirds","Yes, by unanimity"]);
+Q(8,"VIII.d",
+ ["Comment un amendement « unfriendly » est-il débattu ?","Deux orateurs pour et deux contre, chaque discours d'une minute maximum","Une liste d'orateurs complète","Un seul orateur pour et un contre, deux minutes chacun","Sans débat, vote immédiat"],
+ ["How is an unfriendly amendment debated?","Two speakers in favor and two against, each speech not exceeding one minute","A full speakers' list","One speaker for and one against, two minutes each","No debate, immediate vote"]);
+QN(8,"VIII.d",
+ "Quelle majorité faut-il pour incorporer un amendement unfriendly au projet de résolution ?",
+ "What majority is required to incorporate an unfriendly amendment into the Draft Resolution?",
+ ["Deux tiers","Majorité simple","Trois quarts","Unanimité"]);
+
+/* ---------- IX. VOTING (9) ---------- */
+Q(9,"IX.a",
+ ["Combien de voix chaque membre du Conseil a-t-il sur les questions de fond et de procédure ?","Une voix","Deux voix sur le fond, une sur la procédure","Une voix sur le fond seulement","Autant que de délégués dans sa délégation"],
+ ["How many votes does each Council member have on substantive and procedural matters?","One vote","Two votes on substance, one on procedure","One vote on substance only","As many as delegates in the delegation"]);
+Q(9,"IX.a",
+ ["Une délégation peut-elle voter au nom d'un autre pays ?","Non, jamais","Oui, si les deux délégations sont alliées","Oui, avec l'accord des chairs","Oui, si l'autre pays est absent"],
+ ["May a delegation cast a vote on behalf of another country?","No, never","Yes, if the two delegations are allies","Yes, with the chairs' agreement","Yes, if the other country is absent"]);
+Q(9,"IX.a",
+ ["Les observateurs ont-ils le droit de vote ?","Non","Oui, uniquement sur la procédure","Oui, sur les résolutions","Oui, avec droits (« with rights »)"],
+ ["Do observers have voting rights?","No","Yes, on procedural matters only","Yes, on resolutions","Yes, “with rights”"]);
+Q(9,"IX.c",
+ ["Que doit faire un délégué qui a déjà « passé » une fois pendant un vote par appel nominal ?","Confirmer son vote : il ne peut plus passer, s'abstenir ni voter « with rights »","Passer de nouveau","S'abstenir","Voter « with rights »"],
+ ["What must a delegate do who has already passed once during a roll call vote?","Ascertain his or her vote: he or she may not pass again, nor abstain, nor vote “with rights”","Pass again","Abstain","Vote “with rights”"]);
+Q(9,"IX.c",
+ ["Quand la procédure de vote commence-t-elle et se termine-t-elle ?","Elle commence à la déclaration « we are in voting procedure » des chairs et finit à l'annonce des résultats","Elle commence au roll call et finit à la fin de la session","Elle commence avec la première motion et finit avec le dernier discours","Elle commence à la clôture de la GSL et finit à l'ajournement"],
+ ["When does the voting procedure begin and end?","It begins with the chairs' declaration “we are in voting procedure” and ends when the results are announced","It begins at the roll call and ends with the session","It begins with the first motion and ends with the last speech","It begins when the GSL is closed and ends at adjournment"]);
+Q(9,"IX.c",
+ ["Pendant la procédure de vote, que se passe-t-il dans la salle ?","Les chambres sont scellées et aucune interruption n'est autorisée","Les délégués peuvent circuler librement","Un caucus modéré est autorisé","Les débats continuent"],
+ ["During the voting procedure, what happens in the chamber?","The chambers are sealed and no interruptions are allowed","Delegates may move around freely","A moderated caucus is allowed","The debate continues"]);
+Q(9,"IX.c",
+ ["Lequel de ces points ou motions est recevable pendant la procédure de vote ?","Point of Personal Privilege","Motion pour un caucus modéré","Motion pour un caucus non modéré","Right of Reply"],
+ ["Which of these points or motions is in order during the voting procedure?","Point of Personal Privilege","Motion for a moderated caucus","Motion for an unmoderated caucus","Right of Reply"]);
+Q(9,"IX.c",
+ ["Comment se déroule un vote « clause par clause » ?","Chaque clause opérative est votée séparément à la majorité simple, puis on vote sur l'ensemble de la résolution","On vote uniquement l'ensemble de la résolution","Chaque clause nécessite les deux tiers","Seuls les sponsors votent par clause"],
+ ["How does a “clause by clause” vote work?","Each operative clause is voted separately by simple majority, then the entire resolution is voted","Only the entire resolution is voted","Each clause requires two thirds","Only the sponsors vote by clause"]);
+Q(9,"IX.c",
+ ["Que signifie voter « with rights » lors d'un vote par appel nominal ?","La délégation dispose de 30 secondes à la fin de l'appel pour expliquer sa décision","La délégation a un droit de veto","La délégation vote deux fois","La délégation peut modifier le texte"],
+ ["What does voting “with rights” mean in a roll call vote?","The delegation has thirty seconds at the end of the roll call to explain its decision","The delegation has a veto","The delegation votes twice","The delegation may modify the text"]);
+
 const DEFAULT_CONTACT="sorbonnemodelun@gmail.com";
 const DEFAULT_INSTAGRAM="";
 const DEFAULT_LINKEDIN="";
@@ -476,6 +919,18 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  cancel_reg:"Annuler mon inscription",confirm_cancel:"Annuler ton inscription à cet événement ?",t_cancelled:"Inscription annulée",
  paid_cancel:"Pour annuler une inscription déjà payée, contacte le Bureau.",
  edit:"Modifier",edit_ev:"Modifier l'événement",edit_news:"Modifier l'actualité",f_time:"Heure",f_desc:"Description",f_img:"Image (adresse https, facultatif)",
+ game:"Jeu",game_t:"Quiz des ROP",game_s:"100 questions sur les Rules of Procedure de SOMUN. Chaque question maîtrisée rapporte 10 points.",
+ qz_points:"points",qz_mastered:"maîtrisées",qz_accuracy:"de précision",qz_next_level:"Encore {n} pts pour devenir {l}",qz_max:"Niveau maximum atteint !",
+ qz_guest:"Connecte-toi pour enregistrer ta progression et apparaître au classement.",
+ qz_mix:"Mix express",qz_mix_d:"20 questions au hasard",qz_weak:"À revoir",qz_weak_d:"{n} pas encore maîtrisées",qz_all:"Défi complet",qz_all_d:"Les 100 questions",
+ qz_chapters:"Chapitres",qz_play:"Jouer",qz_replay:"Rejouer",qz_questions:"{n} questions",
+ qz_q:"Question {i}/{n}",qz_quit:"Quitter",qz_good:"Bonne réponse !",qz_bad:"Raté. La bonne réponse :",qz_next:"Question suivante",qz_finish:"Voir mon score",qz_rule:"Règle",
+ qz_end_t:"Partie terminée",qz_gain:"points gagnés",qz_total:"points au total",qz_streak:"meilleure série",qz_levelup:"Nouveau niveau : {l} !",qz_gain0:"Aucun nouveau point : ces questions étaient déjà maîtrisées.",
+ qz_review:"À revoir ({n})",qz_again:"Rejouer",qz_back:"Chapitres",qz_open_rop:"Ouvrir les ROP",
+ qz_m100:"Parfait ! Tu pourrais présider le Conseil.",qz_m80:"Excellent travail, tu maîtrises le règlement.",qz_m50:"Bien joué, encore un petit effort.",qz_m0:"Relis les ROP et retente ta chance !",
+ qz_lb:"Classement",qz_lb_empty:"Personne au classement pour l'instant : sois le premier !",qz_you:"toi",
+ qz_reset:"Réinitialiser ma progression",qz_reset_ask:"Effacer toute ta progression et tes points ?",qz_reset_done:"Progression réinitialisée",
+ qz_save_err:"Ta progression n'a pas pu être enregistrée (le SQL du jeu n'est pas installé).",qz_all_mastered:"Bravo, tout est déjà maîtrisé !",
  rop_t:"Ressources & ROP",rop_s:"Règlements intérieurs (Rules of Procedure) et guides généraux accessibles à tous.",no_rop:"Aucune ressource publiée pour le moment.",add_rop:"Ajouter un ROP / guide",edit_rop:"Modifier la ressource",f_lang:"Langue",f_url:"Lien du document (https://…)",open_doc:"Ouvrir le document ↗",
  sg_box:"Study Guide du training",sg_open:"Télécharger / Ouvrir le Study Guide ↗",sg_edit:"Gérer le Study Guide",f_sg_title:"Titre du Study Guide",f_sg_url:"Lien du Study Guide (https://…)",
  site_settings:"Identité & liens du site",f_hero:"Photo d'accueil (adresse https ou nom de fichier)",f_contact:"E-mail de contact",f_insta:"Lien Instagram",f_linkedin:"Lien LinkedIn",f_cotisation:"Montant cotisation (€)",
@@ -529,6 +984,18 @@ en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:
  cancel_reg:"Cancel my registration",confirm_cancel:"Cancel your registration for this event?",t_cancelled:"Registration cancelled",
  paid_cancel:"To cancel a registration you've already paid for, contact the Board.",
  edit:"Edit",edit_ev:"Edit event",edit_news:"Edit news",f_time:"Time",f_desc:"Description",f_img:"Image (https address, optional)",
+ game:"Game",game_t:"ROP Quiz",game_s:"100 questions on SOMUN's Rules of Procedure. Every mastered question earns 10 points.",
+ qz_points:"points",qz_mastered:"mastered",qz_accuracy:"accuracy",qz_next_level:"{n} more pts to become {l}",qz_max:"Top level reached!",
+ qz_guest:"Log in to save your progress and appear on the leaderboard.",
+ qz_mix:"Quick mix",qz_mix_d:"20 random questions",qz_weak:"To review",qz_weak_d:"{n} not yet mastered",qz_all:"Full challenge",qz_all_d:"All 100 questions",
+ qz_chapters:"Chapters",qz_play:"Play",qz_replay:"Replay",qz_questions:"{n} questions",
+ qz_q:"Question {i}/{n}",qz_quit:"Quit",qz_good:"Correct!",qz_bad:"Not quite. The right answer:",qz_next:"Next question",qz_finish:"See my score",qz_rule:"Rule",
+ qz_end_t:"Game over",qz_gain:"points earned",qz_total:"points in total",qz_streak:"best streak",qz_levelup:"New level: {l}!",qz_gain0:"No new points: you had already mastered these questions.",
+ qz_review:"To review ({n})",qz_again:"Play again",qz_back:"Chapters",qz_open_rop:"Open the ROP",
+ qz_m100:"Perfect! You could chair the Council.",qz_m80:"Excellent work, you know the rules.",qz_m50:"Well played, a little more effort.",qz_m0:"Re-read the ROP and try again!",
+ qz_lb:"Leaderboard",qz_lb_empty:"Nobody on the board yet: be the first!",qz_you:"you",
+ qz_reset:"Reset my progress",qz_reset_ask:"Erase all your progress and points?",qz_reset_done:"Progress reset",
+ qz_save_err:"Your progress could not be saved (the game SQL is not installed).",qz_all_mastered:"Well done, everything is already mastered!",
  rop_t:"Resources & ROP",rop_s:"Rules of Procedure and general guides open to everyone.",no_rop:"No resources published yet.",add_rop:"Add an ROP / guide",edit_rop:"Edit resource",f_lang:"Language",f_url:"Document link (https://…)",open_doc:"Open document ↗",
  sg_box:"Training Study Guide",sg_open:"Download / Open Study Guide ↗",sg_edit:"Manage Study Guide",f_sg_title:"Study Guide title",f_sg_url:"Study Guide link (https://…)",
  site_settings:"Site identity & links",f_hero:"Hero photo (https address or filename)",f_contact:"Contact email",f_insta:"Instagram link",f_linkedin:"LinkedIn link",f_cotisation:"Membership fee (€)",
@@ -550,7 +1017,7 @@ const t=(k,v)=>{let s=(I18N[lang][k]??I18N.fr[k]??k);if(v&&typeof s==="string")f
 
 /* ===== ÉTAT ===== */
 let S={user:null,profile:null};
-let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],members:[],memberPoles:[],tasks:[],loading:true,err:""};
+let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},taken:{},myPoles:[],myPoleRoles:{},myRegs:{},myHistory:[],quiz:{},lb:null,members:[],memberPoles:[],tasks:[],loading:true,err:""};
 let evSel=null,regList={event:null,rows:null};
 let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0,navDir="right";
 
@@ -763,13 +1230,15 @@ async function loadPublic(){
   lastSync=Date.now();
 }
 async function loadPrivate(){
-  if(!S.user){S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];return}
-  const [pr,mp,rg,hi]=await Promise.all([
+  if(!S.user){S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.quiz={};D.lb=null;return}
+  const [pr,mp,rg,hi,qz]=await Promise.all([
     sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle(),
     sb.from("pole_members").select("*").eq("user_id",S.user.id),
     sb.from("registrations").select("event_id,status").eq("user_id",S.user.id),
-    sb.from("membership_history").select("*").eq("user_id",S.user.id).order("created_at",{ascending:false})
+    sb.from("membership_history").select("*").eq("user_id",S.user.id).order("created_at",{ascending:false}),
+    sb.from("quiz_progress").select("q_id,attempts,correct,mastered").eq("user_id",S.user.id)
   ]);
+  if(!qz.error)D.quiz=Object.fromEntries((qz.data||[]).map(x=>[x.q_id,{attempts:x.attempts,correct:x.correct,mastered:x.mastered}]));
   S.profile=pr.data||null;
   D.myPoles=(mp.data||[]).map(x=>x.pole_id);
   D.myPoleRoles=Object.fromEntries((mp.data||[]).map(x=>[x.pole_id,x.role||"member"]));
@@ -803,13 +1272,14 @@ async function refreshAll(){
 }
 
 /* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
-const ROUTES=["accueil","activites","ressources","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
+const ROUTES=["accueil","activites","ressources","jeu","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
 const ROUTE_RANK={
   accueil:0,
   actus:0.5,
   activites:1,
   event:1.5,
   ressources:2,
+  jeu:2.5,
   adherer:3,
   pole:4,
   bureau:5,
@@ -894,7 +1364,7 @@ function render(keep,instantThumb){
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":route;
-  const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
+  const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
   $("#dnav").innerHTML=`<span class="nav-thumb" id="nav-thumb" aria-hidden="true"></span>`+nav.map(([k,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')">${t(l)}</button>`).join("");
   const main=[["accueil","home","home"],["activites","cal","activities"],["adherer","ticket","join"],["pole","users","poles"]];
@@ -902,7 +1372,7 @@ function render(keep,instantThumb){
   $("#tabbar").innerHTML=main.map(([k,i,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')"><span class="ico" aria-hidden="true">${TABICON[i]}</span>${t(l)}</button>`).join("")+`<button class="${inMore?"on":""}" onclick="openMore()"><span class="ico" aria-hidden="true">${TABICON.menu}</span>${t("more")}</button>`;
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
-  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeu,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
   /* glissement "poussé" : l'ancienne page part dans le sens opposé à la nouvelle */
@@ -940,7 +1410,7 @@ function closeSheet(){
   document.body.style.overflow="";
 }
 function openMore(){
-  const items=[["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")]];
+  const items=[["jeu","🎮",t("game")],["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")]];
   if(isStaff())items.push(["admin","⚙️",t("admin")]);
   openSheet(`<h3>${t("more")}</h3><div class="more-list">${items.map(([k,i,l])=>`<button onclick="go('${k}')">${i}  ${esc(l)}</button>`).join("")}</div>`);
 }
@@ -1507,7 +1977,7 @@ async function logout(){
   try{await sb.auth.signOut()}catch(e){console.error(e)}
   clearUser();toast(t("t_bye"));go("accueil");
 }
-function clearUser(){S.user=null;S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.tasks=[];poleSel=null;regList={event:null,rows:null}}
+function clearUser(){D.quiz={};D.lb=null;G.run=null;S.user=null;S.profile=null;D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.tasks=[];poleSel=null;regList={event:null,rows:null}}
 
 /* --- Compte & Historique des cotisations --- */
 function vAccount(){
@@ -2137,6 +2607,219 @@ async function init(){
     if(!document.hidden&&S.user&&Date.now()-lastSync>60000)refreshAll().catch(console.error);
   });
 }
+/* ===== JEU : QUIZ DES ROP (100 QCM, points, niveaux, progression par compte) ===== */
+const QZ_PTS=10;
+const QZ_LEVELS=[
+  {min:0,   ico:"👀",fr:"Observateur",        en:"Observer"},
+  {min:100, ico:"🪪",fr:"Délégué",            en:"Delegate"},
+  {min:300, ico:"🤝",fr:"Sponsor",            en:"Sponsor"},
+  {min:500, ico:"🔨",fr:"Chair",              en:"Chairperson"},
+  {min:800, ico:"🌍",fr:"Ambassadeur",        en:"Ambassador"},
+  {min:1000,ico:"👑",fr:"Secrétaire général", en:"Secretary-General"}
+];
+const G={run:null,lbBusy:false,saveWarned:false};
+const qzShuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const qzIsMastered=id=>Boolean(D.quiz[id]&&D.quiz[id].mastered);
+const qzMastered=()=>QUIZ.filter(q=>qzIsMastered(q.id)).length;
+const qzPoints=()=>qzMastered()*QZ_PTS;
+const qzChap=id=>QUIZ_CH.find(c=>c.id===id);
+function qzLevel(p){let i=0;QZ_LEVELS.forEach((l,k)=>{if(p>=l.min)i=k});return{i,cur:QZ_LEVELS[i],next:QZ_LEVELS[i+1]||null}}
+function qzRing(pct,size,stroke){
+  const r=(size-stroke)/2,c=2*Math.PI*r,h=size/2;
+  return `<svg class="qz-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="${stroke}"/><circle class="qz-ring-fg" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct/100)).toFixed(1)}" style="--c:${c.toFixed(1)}" transform="rotate(-90 ${h} ${h})"/></svg>`;
+}
+
+/* ----- données : classement ----- */
+async function loadLeaderboard(){
+  if(!S.user){D.lb=[];return}
+  const {data,error}=await sb.rpc("quiz_leaderboard");
+  D.lb=error?[]:(data||[]);
+}
+function qzEnsureLb(){
+  if(!S.user||D.lb!==null||G.lbBusy)return;
+  G.lbBusy=true;
+  loadLeaderboard().then(()=>{G.lbBusy=false;if(route==="jeu"&&!G.run)qzRefresh()});
+}
+
+/* ----- lancer / terminer une partie ----- */
+function startQuiz(mode){
+  let list;
+  if(mode==="mix")list=qzShuffle(QUIZ).slice(0,20);
+  else if(mode==="all")list=qzShuffle(QUIZ);
+  else if(mode==="weak"){
+    list=qzShuffle(QUIZ.filter(q=>!qzIsMastered(q.id))).slice(0,20);
+    if(!list.length){toast(t("qz_all_mastered"));return}
+  }else list=qzShuffle(QUIZ.filter(q=>q.ch===Number(mode)));
+  G.run={mode:String(mode),list,i:0,ok:0,gain:0,streak:0,best:0,wrong:[],picked:null,order:qzShuffle([0,1,2,3]),done:false,lvl0:qzLevel(qzPoints()).i,saveErr:false};
+  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
+}
+function qzPick(k){
+  const r=G.run;if(!r||r.done||r.picked!==null||k<0||k>3)return;
+  const q=r.list[r.i],ok=r.order[k]===0;
+  r.picked=k;
+  const prev=D.quiz[q.id]||{attempts:0,correct:0,mastered:false};
+  if(ok&&!prev.mastered)r.gain+=QZ_PTS;
+  D.quiz[q.id]={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:prev.mastered||ok};
+  if(ok){r.ok++;r.streak++;r.best=Math.max(r.best,r.streak)}else{r.streak=0;r.wrong.push(q)}
+  if(S.user){
+    sb.rpc("quiz_answer",{p_q:q.id,p_ok:ok}).then(({error})=>{
+      if(error){r.saveErr=true;if(!G.saveWarned){G.saveWarned=true;toast(t("qz_save_err"))}}
+    });
+  }
+  qzRefresh();
+}
+function qzNext(){
+  const r=G.run;if(!r||r.picked===null)return;
+  r.i++;
+  if(r.i>=r.list.length){
+    r.done=true;D.lb=null;
+    if(r.ok/r.list.length>=.8)qzConfetti();
+  }else{r.picked=null;r.order=qzShuffle([0,1,2,3])}
+  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
+}
+function qzQuit(){G.run=null;qzRefresh();window.scrollTo({top:0})}
+async function qzReset(btn){
+  if(!confirm(t("qz_reset_ask")))return;
+  await withBusy(btn,async()=>{
+    if(S.user){const {error}=await sb.rpc("quiz_reset");if(error)return toast(errMsg(error))}
+    D.quiz={};D.lb=null;toast(t("qz_reset_done"));qzRefresh();
+  });
+}
+function qzRefresh(){
+  const el=$("#qz");
+  if(!el){render(true);return}
+  el.innerHTML=qzBody();
+  observe(Boolean(G.run));if(!G.run)stagger();
+  const card=el.querySelector(".qz-card");
+  if(card&&!reduceMotionGlobe()){card.classList.remove("qz-in");void card.offsetWidth;card.classList.add("qz-in")}
+}
+function qzConfetti(){
+  if(reduceMotionGlobe())return;
+  const box=document.createElement("div");box.className="confetti";box.setAttribute("aria-hidden","true");
+  const cols=["#EBC000","#00008E","#fff0a8","#4b4bd6","#020259"];
+  for(let i=0;i<40;i++){
+    const s=document.createElement("i");
+    s.style.cssText=`left:${Math.random()*100}%;background:${cols[i%5]};--dx:${((Math.random()-.5)*180).toFixed(0)}px;--rot:${(Math.random()*720).toFixed(0)}deg;animation-delay:${(Math.random()*.4).toFixed(2)}s;animation-duration:${(1.7+Math.random()*1.2).toFixed(2)}s`;
+    box.appendChild(s);
+  }
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3600);
+}
+document.addEventListener("keydown",e=>{
+  const r=G.run;
+  if(route!=="jeu"||!r||r.done||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=({"1":0,"2":1,"3":2,"4":3,a:0,b:1,c:2,d:3})[String(e.key).toLowerCase()];
+  if(k!==undefined&&r.picked===null){qzPick(k);return}
+  if((e.key==="Enter"||e.key===" ")&&r.picked!==null){e.preventDefault();qzNext()}
+});
+
+/* ----- affichage ----- */
+function vJeu(){
+  qzEnsureLb();
+  return `<div id="qz">${qzBody()}</div>`;
+}
+function qzBody(){
+  if(!G.run)return qzHome();
+  return G.run.done?qzEnd():qzPlay();
+}
+function qzHome(){
+  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),lv=qzLevel(pts);
+  let att=0,cor=0;Object.values(D.quiz).forEach(x=>{att+=x.attempts||0;cor+=x.correct||0});
+  const acc=att?Math.round(cor/att*100):0;
+  const weakN=total-m;
+  const nextTxt=lv.next?t("qz_next_level",{n:lv.next.min-pts,l:lv.next[lang]}):t("qz_max");
+  const lvPct=lv.next?Math.round((pts-lv.cur.min)/(lv.next.min-lv.cur.min)*100):100;
+  const modes=[
+    ["mix","⚡",t("qz_mix"),t("qz_mix_d")],
+    ["weak","🎯",t("qz_weak"),t("qz_weak_d",{n:weakN})],
+    ["all","🏆",t("qz_all"),t("qz_all_d")]
+  ];
+  return `<h1>${t("game_t")}</h1><p class="mute">${t("game_s")}</p>
+  <div class="qz-hero reveal">
+    <div class="qz-ringbox">${qzRing(Math.round(m/total*100),112,10)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
+    <div class="qz-herotxt">
+      <div class="qz-lv"><span class="qz-lvico">${lv.cur.ico}</span><span>${esc(lv.cur[lang])}</span></div>
+      <div class="qz-pts"><b>${pts}</b> ${t("qz_points")}</div>
+      <div class="qz-lvbar" aria-hidden="true"><span style="width:${lvPct}%"></span></div>
+      <div class="qz-lvtxt">${esc(nextTxt)}</div>
+      <div class="qz-mini"><span>${m} ${t("qz_mastered")}</span><span>${acc}% ${t("qz_accuracy")}</span></div>
+    </div>
+  </div>
+  ${S.user?"":`<div class="card qz-guest reveal"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+  <div class="qz-modes">${modes.map(([k,i,a,b])=>`<button class="qz-mode reveal" onclick="startQuiz('${k}')"><span class="qz-mode-ico">${i}</span><b>${esc(a)}</b><small>${esc(b)}</small></button>`).join("")}</div>
+  <h2>${t("qz_chapters")}</h2>
+  <div class="grid">${QUIZ_CH.map(c=>{
+    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>qzIsMastered(q.id)).length,p=Math.round(done/qs.length*100);
+    return `<div class="card qz-ch reveal">
+      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">ROP ${c.rop}</span></div>
+      <h3>${esc(c[lang])}</h3>
+      <div class="bar-p" style="margin:10px 0 6px"><span style="width:${p}%"></span></div>
+      <div class="qz-ch-meta"><span>${done}/${qs.length} ${t("qz_mastered")}</span><span>${t("qz_questions",{n:qs.length})}</span></div>
+      <button class="btn sm" style="margin-top:12px;width:100%" onclick="startQuiz(${c.id})">${done?t("qz_replay"):t("qz_play")}</button>
+    </div>`}).join("")}</div>
+  ${S.user?qzBoard():""}
+  <div style="margin-top:26px;text-align:center"><button class="btn ghost sm" onclick="qzReset(this)">${t("qz_reset")}</button></div>`;
+}
+function qzBoard(){
+  const rows=D.lb;
+  return `<h2>${t("qz_lb")}</h2><div class="card qz-board reveal">${
+    rows===null?`<div class="sk" style="min-height:120px"></div>`:
+    rows.length?rows.map((r,i)=>`<div class="qz-row ${r.me?"me":""}"><span class="qz-rank">${["🥇","🥈","🥉"][i]||i+1}</span><span class="qz-name">${esc(r.name)}${r.me?` <em>(${t("qz_you")})</em>`:""}</span><span class="qz-score">${r.points} ${t("qz_points")}</span></div>`).join(""):
+    `<p class="mute" style="margin:6px 0">${t("qz_lb_empty")}</p>`}</div>`;
+}
+function qzPlay(){
+  const r=G.run,q=r.list[r.i],txt=q[lang]||q.fr,c=qzChap(q.ch),n=r.list.length,L="ABCD";
+  const answered=r.picked!==null,ok=answered&&r.order[r.picked]===0;
+  const pct=Math.round((r.i+(answered?1:0))/n*100);
+  const opts=r.order.map((oi,k)=>{
+    let cls="qz-opt";
+    if(answered){if(oi===0)cls+=" good";else if(k===r.picked)cls+=" bad";else cls+=" dim"}
+    return `<button class="${cls}" ${answered?"disabled":""} onclick="qzPick(${k})"><b>${L[k]}</b><span>${esc(txt[oi+1])}</span></button>`;
+  }).join("");
+  const fb=answered?`<div class="qz-fb ${ok?"ok":"ko"}" role="status">
+      <div class="qz-fb-t">${ok?"✅ "+t("qz_good"):"❌ "+t("qz_bad")}</div>
+      ${ok?"":`<div class="qz-fb-a">${esc(txt[1])}</div>`}
+      <div class="qz-fb-r">${t("qz_rule")} · ROP ${esc(q.ref)}</div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="qzNext()">${r.i+1>=n?t("qz_finish"):t("qz_next")} →</button>`:"";
+  return `<div class="qz-top">
+      <button class="btn ghost sm" onclick="qzQuit()">✕ ${t("qz_quit")}</button>
+      <div class="qz-top-r">${r.streak>=2?`<span class="qz-streak">🔥 ${r.streak}</span>`:""}<span class="qz-run">${r.ok}/${r.i+(answered?1:0)}</span></div>
+    </div>
+    <div class="bar-p qz-prog" aria-hidden="true"><span style="width:${pct}%"></span></div>
+    <div class="qz-card qz-in">
+      <div class="qz-meta"><span class="tag">${c.ico} ${esc(c[lang])}</span><span class="mute">${t("qz_q",{i:r.i+1,n})}</span></div>
+      <h2 class="qz-q">${esc(txt[0])}</h2>
+      <div class="qz-opts">${opts}</div>
+      ${fb}
+    </div>`;
+}
+function qzEnd(){
+  const r=G.run,n=r.list.length,pct=Math.round(r.ok/n*100),pts=qzPoints(),lv=qzLevel(pts);
+  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
+  const up=lv.i>r.lvl0;
+  const L="ABCD";
+  return `<div class="qz-card qz-in qz-end">
+    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${r.ok}/${n}</b><span>${pct}%</span></div></div>
+    <h1 style="margin:10px 0 4px">${t("qz_end_t")}</h1>
+    <p class="mute" style="margin:0 0 14px">${msg}</p>
+    <div class="qz-stats">
+      <div class="qz-stat gold"><b>${r.gain?"+"+r.gain:"0"}</b><span>${t("qz_gain")}</span></div>
+      <div class="qz-stat"><b>${pts}</b><span>${t("qz_total",{n:pts})}</span></div>
+      <div class="qz-stat"><b>${r.best}</b><span>${t("qz_streak",{n:r.best})}</span></div>
+    </div>
+    ${r.gain?"":`<p class="mute" style="margin:10px 0">${t("qz_gain0")}</p>`}
+    ${up?`<div class="qz-up">${lv.cur.ico} ${t("qz_levelup",{l:lv.cur[lang]})}</div>`:""}
+    ${S.user?"":`<div class="card qz-guest"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+    ${r.saveErr?`<div class="card qz-guest" style="border-color:var(--rouge)"><span>⚠️ ${t("qz_save_err")}</span></div>`:""}
+    ${r.wrong.length?`<details class="qz-wrong" open><summary>${t("qz_review",{n:r.wrong.length})}</summary>${r.wrong.map(q=>{const x=q[lang]||q.fr;return `<div class="qz-wq"><b>${esc(x[0])}</b><div>✅ ${esc(x[1])}</div><small>ROP ${esc(q.ref)}</small></div>`}).join("")}</details>`:""}
+    <div class="qz-actions">
+      <button class="btn" onclick="startQuiz('${r.mode}')">${t("qz_again")}</button>
+      <button class="btn ghost" onclick="qzQuit()">${t("qz_back")}</button>
+      <button class="btn ghost" onclick="go('ressources')">${t("qz_open_rop")}</button>
+    </div>
+  </div>`;
+}
+
 /* ===== EFFETS D'INTERFACE (visuels uniquement) ===== */
 const TABICON={
   home:'<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
