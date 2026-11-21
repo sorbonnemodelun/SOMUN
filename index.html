@@ -111,10 +111,9 @@ a{color:var(--bleu);transition:color .2s var(--ease)}
 /* ---------- Bandeau d'accueil & Logo mis en évidence ---------- */
 .hero{position:relative;display:grid;background:linear-gradient(125deg,var(--marine) 0%,var(--bleu) 62%,#1212b5 100%);color:#fff;border-radius:26px;overflow:hidden;isolation:isolate;box-shadow:var(--shadow-lg)}
 .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 85%,rgba(235,192,0,.14),transparent 45%);pointer-events:none;z-index:0}
-.hero-visual{position:relative;min-height:230px;display:grid;place-items:center;padding:30px 22px;background:radial-gradient(circle at 60% 35%,rgba(235,192,0,.22) 0%,rgba(2,2,89,.45) 75%);background-size:cover;background-position:center 30%;clip-path:polygon(0 0,100% 0,100% 85%,0 100%);z-index:1;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.hero-visual.dragging{cursor:grabbing}
+.hero-visual{position:relative;min-height:230px;display:grid;place-items:center;padding:30px 22px;background:radial-gradient(circle at 60% 35%,rgba(235,192,0,.22) 0%,rgba(2,2,89,.45) 75%);background-size:cover;background-position:center 30%;clip-path:polygon(0 0,100% 0,100% 85%,0 100%);z-index:1}
 .hero-visual.has-photo::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(2,2,89,.72),rgba(0,0,142,.45));z-index:0}
-.hero-crest{position:relative;z-index:1;background:#ffffff;border:3px solid var(--or);border-radius:24px;padding:18px 26px;box-shadow:0 18px 40px rgba(0,0,0,.28);display:grid;place-items:center;max-width:236px;pointer-events:none;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.hero-crest{position:relative;z-index:1;background:#ffffff;border:3px solid var(--or);border-radius:24px;padding:18px 26px;box-shadow:0 18px 40px rgba(0,0,0,.28);display:grid;place-items:center;max-width:236px;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
 .hero:hover .hero-crest{transform:translateY(-4px) scale(1.02);box-shadow:0 24px 48px rgba(0,0,0,.35)}
 .hero-crest img{width:168px;max-width:100%;height:auto;display:block}
 .hero-txt{padding:16px 24px 30px;position:relative;z-index:1}
@@ -376,9 +375,9 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 @keyframes fxShim{to{background-position:-150% 0}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* ---------- Globe doré en filigrane dans le bandeau d'accueil, qui tourne au glisser ---------- */
-.hero-globe{position:absolute;left:50%;top:50%;width:min(540px,135%);aspect-ratio:1;color:var(--or);opacity:.26;z-index:0;pointer-events:none;transform:translate(-50%,-50%);overflow:visible}
-.hero-globe svg{width:100%;height:100%;display:block;overflow:visible}
+/* ---------- Globe doré en filigrane dans le bandeau d'accueil, qui suit la souris ---------- */
+:root{--globe:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='none' stroke='%23EBC000' stroke-width='1.3'%3E%3Ccircle cx='200' cy='200' r='190'/%3E%3Ccircle cx='200' cy='200' r='198' stroke-dasharray='1.5 7'/%3E%3Cellipse cx='200' cy='200' rx='150' ry='190'/%3E%3Cellipse cx='200' cy='200' rx='95' ry='190'/%3E%3Cellipse cx='200' cy='200' rx='40' ry='190'/%3E%3Cpath d='M200 10v380M10 200h380M27.7 120h344.6M27.7 280h344.6M83.4 50h233.2M83.4 350h233.2'/%3E%3C/svg%3E")}
+.hero-globe{position:absolute;left:50%;top:50%;width:min(540px,135%);aspect-ratio:1;background:var(--globe) center/contain no-repeat;opacity:.2;z-index:0;pointer-events:none;transform:translate(-50%,-50%) translate(calc(var(--mx,0) * -24px),calc(var(--my,0) * -16px));transition:transform .5s ease-out}
 .hero-crest,.hero:hover .hero-crest{transform:perspective(800px) rotateX(calc(var(--my,0) * -9deg)) rotateY(calc(var(--mx,0) * 11deg));transition:transform .35s ease-out}
 .hero:hover .hero-crest{box-shadow:0 24px 48px rgba(0,0,0,.35)}
 @media (prefers-reduced-motion:reduce){
@@ -1392,7 +1391,6 @@ function render(keep,instantThumb){
   requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
   if(!keep)window.scrollTo(0,0);
   observe(keep);if(!keep)stagger();animateStats();
-  if(route==="accueil")initHeroGlobe();
 }
 function observe(keep){
   if(keep||!("IntersectionObserver" in window)){document.querySelectorAll(".reveal").forEach(e=>e.classList.add("show"));return}
@@ -1470,8 +1468,8 @@ function vAccueil(){
   const name=S.profile&&S.profile.prenom,hImg=safeAsset(cfg("hero_img"));
   const heroBg=hImg?`background-image:url('${hImg.replace(/['"\\()]/g,"")}')`:"";
   return `<section class="hero">
-   <div class="hero-visual ${hImg?"has-photo":""}" id="heroVisual" style="${heroBg}">
-     <div class="hero-globe" id="heroGlobe" aria-hidden="true"></div>
+   <div class="hero-visual ${hImg?"has-photo":""}" style="${heroBg}">
+     <div class="hero-globe" aria-hidden="true"></div>
      <div class="hero-crest">${logoImg()}</div>
    </div>
    <div class="hero-txt">
@@ -2418,7 +2416,7 @@ async function delEventFromView(id,btn){
   });
 }
 async function delRow(table,id,btn){
-  if(!isStaff())return toast(t("admin_only"));
+  if(table==="events"&&!isStaff())return toast(t("admin_only"));
   if(!confirm(t("confirm_del")))return;
   await withBusy(btn,async()=>{
     const {error}=await sb.from(table).delete().eq("id",id);
@@ -2427,113 +2425,105 @@ async function delRow(table,id,btn){
   });
 }
 
-/* --- Organisation & Site (Bureau + Responsable de pôle) --- */
+/* --- Administration Organisation & Passation --- */
 function adminOrg(){
-  const boardSorted=sortedBoard();
-  return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSettings(event)">
-    <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}" placeholder="photo.jpg ou https://…">
-    <div class="row2">
-      <div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
-      <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" step="1" value="${esc(cfg("cotisation")||DEFAULT_COTISATION)}"></div>
-    </div>
-    <div class="row2">
-      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url")||"")}"></div>
-      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(cfg("linkedin_url")||"")}"></div>
-    </div>
-    <h3 style="margin-top:16px">Drive — Relations Externes</h3>
-    <div class="row2">
-      <div><label>Drive Culturel</label><input name="drive_re_culturel" type="text" placeholder="https://drive.google.com/…" value="${esc(cfg("drive_re_culturel")||"")}"></div>
-      <div><label>Drive Partenariats</label><input name="drive_re_partenariats" type="text" placeholder="https://drive.google.com/…" value="${esc(cfg("drive_re_partenariats")||"")}"></div>
-    </div>
-    <label>Drive Alumni</label><input name="drive_re_alumni" type="text" placeholder="https://drive.google.com/…" value="${esc(cfg("drive_re_alumni")||"")}">
-    <br><button class="btn sm" type="submit">${t("save")}</button>
-  </form></div>
+  return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSiteSettings(event)">
+    <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}">
+    <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
+    <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div></div>
+    <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url")||"")}"></div>
+    <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(cfg("linkedin_url")||"")}"></div></div>
+    <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
 
-  <div class="card" style="margin-top:14px"><h3>${t("add_board")}</h3><form onsubmit="addBoardMember(event)">
-    <div class="row2"><div><label>${t("fn")+" / "+t("ln")}</label><input name="name" required maxlength="100"></div>
-    <div><label>${t("f_photo_url")}</label><input name="photo_url" placeholder="photo.jpg ou https://…"></div></div>
-    <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="100"></div>
-    <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="100"></div></div>
-    <label>${t("f_bio")}</label><textarea name="bio" rows="2" maxlength="2000"></textarea>
-    <br><button class="btn sm" type="submit">${t("add")}</button>
-  </form></div>
-  ${boardSorted.map(m=>{const pUrl=boardMemberPhoto(m);return `<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.name))}</h3><div class="mute">${esc(T(lang==="fr"?m.role_fr:(m.role_en||m.role_fr)))}${pUrl?" · "+esc(pUrl):""}</div></div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoardBio(${idArg(m.id)})">✏️ ${t("edit_bio_photo")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`}).join("")}
+  <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
+  ${sortedBoard().map(m=>`<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.name))}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
+    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`).join("")}
 
-  <div class="card" style="margin-top:14px"><h3>${t("add_pole")}</h3><form onsubmit="addPole(event)">
-    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="100"></div>
-    <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="100"></div></div>
-    <div class="row2"><div><label>${t("f_desc_fr")}</label><input name="desc_fr" maxlength="300"></div>
-    <div><label>${t("f_desc_en")}</label><input name="desc_en" maxlength="300"></div></div>
-    <div class="row2"><div><label>${t("f_icon")}</label><input name="icon" maxlength="10" placeholder="🌍"></div>
-    <div><label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…"></div></div>
-    <br><button class="btn sm" type="submit">${t("add")}</button>
-  </form></div>
-  ${D.poles.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.icon||"")} ${esc(poleName(p))}</h3><div class="mute">${esc(poleDesc(p))}</div></div>
+  <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
+  ${D.poles.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.icon||"")} ${esc(p.name_fr)}</h3><div class="mute">${esc(p.desc_fr||"")}</div></div>
     <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></div></div></div>`).join("")}
 
-  <div class="card" style="margin-top:14px"><h3>${t("add_partner")}</h3><form onsubmit="addPartner(event)">
-    <div class="row2"><div><label>${t("f_title")}</label><input name="name" required maxlength="120"></div>
-    <div><label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…"></div></div>
-    <br><button class="btn sm" type="submit">${t("add")}</button>
-  </form></div>
+  <h2>${t("manage_partners")} <button onclick="editPartner()">+ ${t("add_partner")}</button></h2>
   ${D.partners.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.name)}</h3><div class="mute">${esc(p.url||"")}</div></div>
-    <button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div></div>`).join("")}`;
+    <button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div></div></div>`).join("")}`;
 }
-
-async function saveSettings(ev){
+async function saveSiteSettings(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target);
-    const rawHero=String(f.get("hero_img")||"").trim();
-    const rawIg=String(f.get("instagram_url")||"").trim();
-    const rawLi=String(f.get("linkedin_url")||"").trim();
-    const rawDc=String(f.get("drive_re_culturel")||"").trim();
-    const rawDp=String(f.get("drive_re_partenariats")||"").trim();
-    const rawDa=String(f.get("drive_re_alumni")||"").trim();
-    const hero=rawHero?safeAsset(rawHero):null;
+    const f=Object.fromEntries(new FormData(ev.target));
+    const rawIg=String(f.instagram_url||"").trim();
+    const rawLi=String(f.linkedin_url||"").trim();
     const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
     const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
-    const dc=rawDc?normalizeUrl(rawDc):null;
-    const dp=rawDp?normalizeUrl(rawDp):null;
-    const da=rawDa?normalizeUrl(rawDa):null;
-    if((rawHero&&!hero)||(rawIg&&!ig)||(rawLi&&!li)||(rawDc&&!dc)||(rawDp&&!dp)||(rawDa&&!da))return toast(t("e_url"));
-    const entries=[
-      ["hero_img",hero],["contact_email",String(f.get("contact_email")||"").trim()||DEFAULT_CONTACT],
-      ["cotisation",String(Math.max(0,Number(f.get("cotisation"))||DEFAULT_COTISATION))],
-      ["instagram_url",ig],["linkedin_url",li],
-      ["drive_re_culturel",dc],["drive_re_partenariats",dp],["drive_re_alumni",da]
-    ];
-    for(const [key,value] of entries){
-      const {error}=await sb.from("site_settings").upsert({key,value},{onConflict:"key"});
-      if(error)return toast(errMsg(error));
-    }
-    await loadPublic();render(true);toast(t("t_ok"));
-  });
-}
-async function addBoardMember(ev){
-  ev.preventDefault();
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawP=String(f.get("photo_url")||"").trim(),photo=rawP?safeAsset(rawP):null;
-    if(rawP&&!photo)return toast(t("e_url"));
-    const row={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||f.get("role_fr")).trim(),bio:(f.get("bio")||"").trim()||null,photo_url:photo,sort:D.board.length+1};
-    const {error}=await sb.from("board_members").insert(row);
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const payload={
+      hero_img:String(f.hero_img||"").trim(),
+      contact_email:String(f.contact_email||"").trim()||DEFAULT_CONTACT,
+      cotisation:String(f.cotisation||DEFAULT_COTISATION).trim(),
+      instagram_url:ig||"",
+      linkedin_url:li||""
+    };
+    const rows=Object.entries(payload).map(([key,value])=>({key,value}));
+    const {error}=await sb.from("site_settings").upsert(rows);
     if(error)return toast(errMsg(error));
     await loadPublic();render(true);toast(t("t_ok"));
   });
 }
+function editBoard(id){
+  const m=id!=null?D.board.find(x=>String(x.id)===String(id)):{};
+  const isNew=!m||m.id==null;
+  openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
+    <h3>${isNew?t("add_board"):t("edit")}</h3><form onsubmit="saveBoard(event,${isNew?"null":idArg(m.id)})">
+    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(protectProperNames(m.name||""))}">
+    <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
+    <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div></div>
+    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||DEFAULT_CONTACT)}">
+    <label>${t("f_photo_url")}</label><input name="photo_url" value="${esc(m.photo_url||"")}" placeholder="photo_pierre_bureau.jpeg ou https://…">
+    <label>${t("f_bio_photo_url")}</label><input name="bio_photo_url" value="${esc(m.bio_photo_url||"")}" placeholder="photo_bio_come.jpeg ou https://…">
+    <div class="row2">
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
+    </div>
+    <label>${t("f_bio")}</label><textarea name="bio" rows="4" maxlength="2000">${esc(m.bio||"")}</textarea>
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button></div>`,"bio-sheet");
+}
+async function saveBoard(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const rawPhoto=String(f.get("photo_url")||"").trim();
+    const rawBioPhoto=String(f.get("bio_photo_url")||"").trim();
+    const photo=rawPhoto?safeAsset(rawPhoto):null;
+    const bioPhoto=rawBioPhoto?safeAsset(rawBioPhoto):null;
+    if((rawPhoto&&!photo)||(rawBioPhoto&&!bioPhoto))return toast(t("e_url"));
+    const rawIg=String(f.get("instagram_url")||"").trim();
+    const rawLi=String(f.get("linkedin_url")||"").trim();
+    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const baseRow={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
+    const fullRow={...baseRow,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
+    let res=id==null?await sb.from("board_members").insert(fullRow):await sb.from("board_members").update(fullRow).eq("id",id);
+    if(res.error&&/column/i.test(res.error.message||"")){
+      res=id==null?await sb.from("board_members").insert(baseRow):await sb.from("board_members").update(baseRow).eq("id",id);
+    }
+    if(res.error)return toast(errMsg(res.error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
 function editPole(id){
-  const p=D.poles.find(x=>String(x.id)===String(id));if(!p)return;
-  const rawDrive=p.drive_url||p.doc_url||"";
-  openSheet(`<h3>${t("edit_pole")}</h3><form onsubmit="savePole(event,${idArg(p.id)})">
-    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="100" value="${esc(p.name_fr||"")}"></div>
-    <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="100" value="${esc(p.name_en||"")}"></div></div>
-    <label>${t("f_desc_fr")}</label><input name="desc_fr" maxlength="300" value="${esc(p.desc_fr||"")}">
-    <label>${t("f_desc_en")}</label><input name="desc_en" maxlength="300" value="${esc(p.desc_en||"")}">
-    <div class="row2"><div><label>${t("f_icon")}</label><input name="icon" maxlength="10" value="${esc(p.icon||"")}"></div>
-    <div><label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…" value="${esc(rawDrive)}"></div></div>
+  const p=id!=null?D.poles.find(x=>String(x.id)===String(id)):{};
+  const isNew=!p||p.id==null;
+  openSheet(`<h3>${isNew?t("add_pole"):t("edit_pole")}</h3><form onsubmit="savePole(event,${isNew?"null":idArg(p.id)})">
+    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}"></div>
+    <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}"></div></div>
+    <label>${t("f_icon")}</label><input name="icon" maxlength="8" placeholder="ex : 🎙️" value="${esc(p.icon||"")}">
+    <label>${t("f_desc_fr")}</label><input name="desc_fr" maxlength="200" value="${esc(p.desc_fr||"")}">
+    <label>${t("f_desc_en")}</label><input name="desc_en" maxlength="200" value="${esc(p.desc_en||"")}">
+    <label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…" value="${esc(p.drive_url||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
@@ -2541,574 +2531,349 @@ async function savePole(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawD=String(f.get("drive_url")||"").trim(),drive=rawD?normalizeUrl(rawD):null;
-    if(rawD&&!drive)return toast(t("e_url"));
-    const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||f.get("name_fr")).trim(),desc_fr:(f.get("desc_fr")||"").trim(),desc_en:(f.get("desc_en")||f.get("desc_fr")||"").trim(),icon:(f.get("icon")||"").trim()||null,drive_url:drive};
-    const {error}=await sb.from("poles").update(row).eq("id",id);
+    const f=new FormData(ev.target),drv=String(f.get("drive_url")||"").trim(),url=drv?normalizeUrl(drv):null;
+    if(drv&&!url)return toast(t("e_url"));
+    const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,icon:(f.get("icon")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim()||null,desc_en:(f.get("desc_en")||"").trim()||null,drive_url:url};
+    const {error}=id==null?await sb.from("poles").insert(row):await sb.from("poles").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
-async function addPole(ev){
+function editPartner(){
+  openSheet(`<h3>${t("add_partner")}</h3><form onsubmit="savePartner(event)">
+    <label>${t("f_title")}</label><input name="name" required maxlength="100">
+    <label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…">
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function savePartner(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawD=String(f.get("drive_url")||"").trim(),drive=rawD?normalizeUrl(rawD):null;
-    if(rawD&&!drive)return toast(t("e_url"));
-    const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||f.get("name_fr")).trim(),desc_fr:(f.get("desc_fr")||"").trim(),desc_en:(f.get("desc_en")||f.get("desc_fr")||"").trim(),icon:(f.get("icon")||"").trim()||null,drive_url:drive,sort:D.poles.length+1};
-    const {error}=await sb.from("poles").insert(row);
+    const f=new FormData(ev.target),raw=String(f.get("url")||"").trim(),url=raw?normalizeUrl(raw):null;
+    if(raw&&!url)return toast(t("e_url"));
+    const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url});
     if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("t_ok"));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
-}
-async function addPartner(ev){
-  ev.preventDefault();
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawU=String(f.get("url")||"").trim(),url=rawU?normalizeUrl(rawU):null;
-    if(rawU&&!url)return toast(t("e_url"));
-    const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url,sort:D.partners.length+1});
-    if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("t_ok"));
-  });
-}
-
-/* ===== JEU : QUIZ DES ROP ===== */
-const G={run:null,ans:null,wrong:[],streak:0,best:0,gain:0,prevLv:0,lastErr:false};
-const QZ_LEVELS=[
-  [0,  "🌱", {fr:"Délégué novice",         en:"Novice Delegate"}],
-  [100,"🕊️", {fr:"Jeune diplomate",        en:"Junior Diplomat"}],
-  [250,"📜", {fr:"Maître des amendements", en:"Amendment Ace"}],
-  [450,"🏛️", {fr:"Stratège de comité",     en:"Committee Strategist"}],
-  [700,"⚖️", {fr:"Chair du Conseil",       en:"Council Chair"}],
-  [900,"🌍", {fr:"Secrétaire général",     en:"Secretary-General"}]
-];
-const qzPoints=()=>Object.entries(D.quiz||{}).reduce((s,[,v])=>s+(v&&v.mastered?10:0),0);
-const qzLevel=pts=>{let i=0;for(let k=0;k<QZ_LEVELS.length;k++)if(pts>=QZ_LEVELS[k][0])i=k;return i};
-const qzAccuracy=()=>{
-  const vals=Object.values(D.quiz||{});
-  const att=vals.reduce((s,v)=>s+(Number(v&&v.attempts)||0),0);
-  const ok=vals.reduce((s,v)=>s+(Number(v&&v.correct)||0),0);
-  return att?Math.round(ok/att*100):0;
-};
-const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const qText=q=>q[lang][0];
-const qRule=q=>`ROP ${q.ref}`;
-
-function buildChoices(q){
-  const list=q[lang];
-  const right=list[1];
-  const pairs=shuffle(list.slice(1).map((txt,k)=>({txt,ok:k===0})));
-  const cIdx=pairs.findIndex(x=>x.ok);
-  return {options:pairs.map(x=>x.txt),correctIdx:cIdx,rightText:right};
-}
-function startQuiz(list,label){
-  const pool=shuffle(list);
-  if(!pool.length)return toast(t("qz_all_mastered"));
-  G.run={list:pool,idx:0,label,pointsAtStart:qzPoints(),correctCount:0};
-  G.ans=null;G.wrong=[];G.streak=0;G.best=0;G.gain=0;G.prevLv=qzLevel(qzPoints());G.lastErr=false;
-  render(true);
-}
-function startChapter(cid){
-  const ch=QUIZ_CH.find(c=>c.id===cid);
-  startQuiz(QUIZ.filter(q=>q.ch===cid),ch?`${ch.ico} ${ch[lang]}`:"");
-}
-function startMix(){startQuiz(QUIZ.slice(0),t("qz_mix"))}
-function startWeak(){startQuiz(QUIZ.filter(q=>!(D.quiz&&D.quiz[q.id]&&D.quiz[q.id].mastered)),t("qz_weak"))}
-function startAll(){startQuiz(QUIZ,t("qz_all"))}
-
-async function answerQuiz(choiceIdx){
-  if(!G.run||G.ans)return;
-  const q=G.run.list[G.run.idx];
-  const ok=choiceIdx===G.run.curChoices.correctIdx;
-  G.ans={choiceIdx,ok,rightText:G.run.curChoices.rightText};
-  if(ok){
-    G.run.correctCount++;G.streak++;if(G.streak>G.best)G.best=G.streak;
-    if(G.streak>=3&&G.streak%3===0)confetti();
-  }else{
-    G.streak=0;
-    G.wrong.push({q,chosen:G.run.curChoices.options[choiceIdx],right:G.run.curChoices.rightText});
-  }
-  const prev=D.quiz[q.id]||{attempts:0,correct:0,mastered:false};
-  const next={attempts:(Number(prev.attempts)||0)+1,correct:(Number(prev.correct)||0)+(ok?1:0),mastered:prev.mastered||ok};
-  const wasMastered=Boolean(prev.mastered);
-  D.quiz[q.id]=next;
-  if(ok&&!wasMastered)G.gain+=10;
-  render(true);
-
-  if(S.user){
-    const {error}=await sb.from("quiz_progress").upsert({
-      user_id:S.user.id,q_id:q.id,attempts:next.attempts,correct:next.correct,mastered:next.mastered,updated_at:new Date().toISOString()
-    },{onConflict:"user_id,q_id"});
-    if(error){
-      console.error(error);
-      if(!G.lastErr){G.lastErr=true;toast(t("qz_save_err"))}
-    }
-  }
-}
-function nextQuiz(){
-  if(!G.run)return;
-  if(G.run.idx+1<G.run.list.length){G.run.idx++;G.ans=null;render(true)}
-  else{
-    G.run.finished=true;G.ans=null;
-    const nowLv=qzLevel(qzPoints());
-    if(nowLv>G.prevLv||G.run.correctCount===G.run.list.length)confetti();
-    if(S.user)loadLeaderboard().then(()=>render(true));
-    render(true);
-  }
-}
-function quitQuiz(){G.run=null;G.ans=null;render(true)}
-
-async function loadLeaderboard(){
-  if(!configured||!S.user)return;
-  const {data,error}=await sb.rpc("quiz_leaderboard");
-  if(!error&&Array.isArray(data)){D.lb=data;render(true)}
-}
-async function resetQuizProgress(btn){
-  if(!confirm(t("qz_reset_ask")))return;
-  await withBusy(btn,async()=>{
-    D.quiz={};G.run=null;
-    if(S.user){
-      const {error}=await sb.from("quiz_progress").delete().eq("user_id",S.user.id);
-      if(error)toast(errMsg(error));
-      await loadLeaderboard();
-    }
-    render(true);toast(t("qz_reset_done"));
-  });
-}
-function confetti(){
-  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  const box=document.createElement("div");box.className="confetti";
-  const cols=["#EBC000","#00008E","#22c55e","#38bdf8","#f43f5e"];
-  for(let i=0;i<36;i++){
-    const el=document.createElement("i");
-    el.style.left=(Math.random()*100)+"%";
-    el.style.background=cols[i%cols.length];
-    el.style.setProperty("--dx",(Math.random()*180-90)+"px");
-    el.style.setProperty("--rot",(Math.random()*720-360)+"deg");
-    el.style.animationDelay=(Math.random()*.45)+"s";
-    el.style.animationDuration=(1.8+Math.random()*1.1)+"s";
-    box.appendChild(el);
-  }
-  document.body.appendChild(box);
-  setTimeout(()=>box.remove(),3200);
-}
-
-function vJeu(){
-  if(D.loading)return loadingBox();
-  if(S.user&&D.lb===null)loadLeaderboard();
-
-  if(G.run&&!G.run.finished){
-    const r=G.run,q=r.list[r.idx];
-    if(!r.curChoices||r.curChoices.qId!==q.id){r.curChoices={qId:q.id,...buildChoices(q)}}
-    const pct=Math.round(((r.idx+(G.ans?1:0))/r.list.length)*100);
-    const letters=["A","B","C","D"];
-    return `<div class="qz-top">
-      <button class="chip sm" onclick="quitQuiz()">← ${t("qz_quit")}</button>
-      <span class="mute">${esc(r.label)} · ${t("qz_q",{i:r.idx+1,n:r.list.length})}</span>
-      <div class="qz-top-r">
-        ${G.streak>=2?`<span class="qz-streak">🔥 ${G.streak}</span>`:""}
-        <span class="qz-run">${r.correctCount}/${r.idx+(G.ans?1:0)}</span>
-      </div>
-    </div>
-    <div class="bar-p qz-prog"><span style="width:${pct}%"></span></div>
-    <div class="qz-card qz-in" key="${r.idx}">
-      <div class="qz-meta"><span class="tag">${esc(qRule(q))}</span><span class="mute">${esc(QUIZ_CH.find(c=>c.id===q.ch)?.[lang]||"")}</span></div>
-      <h2 class="qz-q">${esc(qText(q))}</h2>
-      <div class="qz-opts">${r.curChoices.options.map((opt,i)=>{
-        let cls="qz-opt";
-        if(G.ans){
-          if(i===r.curChoices.correctIdx)cls+=" good";
-          else if(i===G.ans.choiceIdx)cls+=" bad";
-          else cls+=" dim";
-        }
-        return `<button class="${cls}" ${G.ans?"disabled":""} onclick="answerQuiz(${i})"><b>${letters[i]}</b><span>${esc(opt)}</span></button>`;
-      }).join("")}</div>
-      ${G.ans?`<div class="qz-fb ${G.ans.ok?"ok":"ko"}">
-        <div class="qz-fb-t">${G.ans.ok?"✓ "+t("qz_good"):"✕ "+t("qz_bad")}</div>
-        ${!G.ans.ok?`<div class="qz-fb-a">${esc(G.ans.rightText)}</div>`:""}
-        <div class="qz-fb-r">${esc(qRule(q))}</div>
-      </div>
-      <div class="qz-actions"><button class="btn" onclick="nextQuiz()">${r.idx+1<r.list.length?t("qz_next"):t("qz_finish")} →</button></div>`:""}
-    </div>`;
-  }
-
-  if(G.run&&G.run.finished){
-    const r=G.run,n=r.list.length,pct=Math.round(r.correctCount/n*100);
-    const totalPts=qzPoints(),lvIdx=qzLevel(totalPts),lv=QZ_LEVELS[lvIdx];
-    const circ=2*Math.PI*54,off=circ*(1-pct/100);
-    const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
-    return `<div class="card qz-end qz-in">
-      <div class="qz-endring">
-        <svg viewBox="0 0 120 120" width="140" height="140">
-          <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(2,2,89,.1)" stroke-width="10"/>
-          <circle class="qz-ring-fg" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"
-            stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" style="--c:${circ.toFixed(1)}" transform="rotate(-90 60 60)"/>
-        </svg>
-        <div class="qz-ringtxt"><b>${pct}%</b><span>${r.correctCount}/${n}</span></div>
-      </div>
-      <h2 style="justify-content:center;margin:10px 0 4px">${t("qz_end_t")}</h2>
-      <p class="mute" style="margin:0 0 14px">${esc(msg)}</p>
-      <div class="qz-stats">
-        <div class="qz-stat gold"><b>+${G.gain}</b><span>${t("qz_gain")}</span></div>
-        <div class="qz-stat"><b>${totalPts}</b><span>${t("qz_total")}</span></div>
-        <div class="qz-stat"><b>🔥 ${G.best}</b><span>${t("qz_streak")}</span></div>
-      </div>
-      ${lvIdx>G.prevLv?`<div class="qz-up">🏆 ${esc(t("qz_levelup",{l:lv[1]+" "+lv[2][lang]}))}</div>`:""}
-      ${!G.gain&&r.correctCount>0?`<p class="mute">${t("qz_gain0")}</p>`:""}
-      ${G.wrong.length?`<details class="qz-wrong" open><summary>${t("qz_review",{n:G.wrong.length})}</summary>${G.wrong.map(w=>`<div class="qz-wq">
-        <div>${esc(qText(w.q))}</div>
-        <div>✓ ${esc(w.right)}</div>
-        <small>${esc(qRule(w.q))}</small>
-      </div>`).join("")}</details>`:""}
-      <div class="qz-actions">
-        <button class="btn" onclick="startQuiz(G.run.list,G.run.label)">↻ ${t("qz_again")}</button>
-        <button class="btn ghost" onclick="quitQuiz()">${t("qz_back")}</button>
-        <button class="btn ghost" onclick="go('ressources')">${t("qz_open_rop")}</button>
-      </div>
-    </div>`;
-  }
-
-  const pts=qzPoints(),lvIdx=qzLevel(pts),lv=QZ_LEVELS[lvIdx],nextLv=QZ_LEVELS[lvIdx+1];
-  const barPct=nextLv?Math.min(100,Math.max(0,Math.round((pts-lv[0])/(nextLv[0]-lv[0])*100))):100;
-  const masteredCount=Object.values(D.quiz||{}).filter(v=>v&&v.mastered).length;
-  const unmastered=QUIZ.length-masteredCount;
-  const acc=qzAccuracy();
-  const circ=2*Math.PI*46,off=circ*(1-masteredCount/QUIZ.length);
-
-  return `<h1>${t("game_t")}</h1><p class="mute">${t("game_s")}</p>
-
-  <div class="qz-hero">
-    <div class="qz-ringbox">
-      <svg viewBox="0 0 104 104" width="112" height="112">
-        <circle cx="52" cy="52" r="46" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="8"/>
-        <circle class="qz-ring-fg" cx="52" cy="52" r="46" fill="none" stroke="#EBC000" stroke-width="8" stroke-linecap="round"
-          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" style="--c:${circ.toFixed(1)}" transform="rotate(-90 52 52)"/>
-      </svg>
-      <div class="qz-ringtxt"><b>${masteredCount}</b><span>/${QUIZ.length}</span></div>
-    </div>
-    <div class="qz-herotxt">
-      <div class="qz-lv"><span class="qz-lvico">${lv[1]}</span><span>${esc(lv[2][lang])}</span></div>
-      <div class="qz-pts"><b>${pts}</b><span>${t("qz_points")}</span></div>
-      <div class="qz-lvbar"><span style="width:${barPct}%"></span></div>
-      <div class="qz-lvtxt">${nextLv?esc(t("qz_next_level",{n:nextLv[0]-pts,l:nextLv[2][lang]})):esc(t("qz_max"))}</div>
-      <div class="qz-mini">
-        <span>✓ ${masteredCount}/${QUIZ.length} ${t("qz_mastered")}</span>
-        <span>🎯 ${acc}% ${t("qz_accuracy")}</span>
-      </div>
-    </div>
-  </div>
-
-  ${!S.user?`<div class="card qz-guest"><span>${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`:""}
-
-  <div class="qz-modes">
-    <button class="qz-mode" onclick="startMix()"><span class="qz-mode-ico">⚡</span><b>${t("qz_mix")}</b><small>${t("qz_mix_d")}</small></button>
-    <button class="qz-mode" onclick="startWeak()"><span class="qz-mode-ico">🎯</span><b>${t("qz_weak")}</b><small>${esc(t("qz_weak_d",{n:unmastered}))}</small></button>
-    <button class="qz-mode" onclick="startAll()"><span class="qz-mode-ico">🏆</span><b>${t("qz_all")}</b><small>${t("qz_all_d")}</small></button>
-  </div>
-
-  <h2>${t("qz_chapters")}</h2>
-  <div class="grid">${QUIZ_CH.map(c=>{
-    const qs=QUIZ.filter(q=>q.ch===c.id);
-    const done=qs.filter(q=>D.quiz&&D.quiz[q.id]&&D.quiz[q.id].mastered).length;
-    const pct=Math.round(done/qs.length*100);
-    return `<div class="card qz-ch reveal">
-      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">ROP ${c.rop}</span></div>
-      <h3>${esc(c[lang])}</h3>
-      <div class="bar-p"><span style="width:${pct}%"></span></div>
-      <div class="qz-ch-meta" style="margin-top:8px"><span>${done}/${qs.length} ${t("qz_mastered")}</span><span>${t("qz_questions",{n:qs.length})}</span></div>
-      <button class="btn sm ${done===qs.length?"ghost":""}" style="margin-top:12px;width:100%" onclick="startChapter(${c.id})">${done>0?t("qz_replay"):t("qz_play")} →</button>
-    </div>`;
-  }).join("")}</div>
-
-  ${S.user?`<h2>${t("qz_lb")}</h2>
-  <div class="card qz-board">${Array.isArray(D.lb)&&D.lb.length?D.lb.map((row,i)=>{
-    const isMe=row.user_id===S.user.id;
-    const rPts=Number(row.points)||0;
-    const rLv=QZ_LEVELS[qzLevel(rPts)];
-    const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":String(i+1);
-    const fullName=protectProperNames(`${row.prenom||""} ${row.nom||""}`.trim())||t("role_member");
-    return `<div class="qz-row ${isMe?"me":""}">
-      <span class="qz-rank">${medal}</span>
-      <span class="qz-name">${esc(fullName)} ${isMe?`<em>(${t("qz_you")})</em>`:""}</span>
-      <span class="tag">${rLv[1]} ${esc(rLv[2][lang])}</span>
-      <span class="qz-score">${rPts} pts</span>
-    </div>`;
-  }).join(""):`<div class="empty">${t("qz_lb_empty")}</div>`}</div>`:""}
-
-  ${pts>0?`<div style="margin-top:24px;text-align:center"><button class="btn ghost sm" onclick="resetQuizProgress(this)">${t("qz_reset")}</button></div>`:""}`;
 }
 
 /* ===== DÉMARRAGE ===== */
-async function init(){
-  readHash();syncHash(true);render();
-  if(!configured){D.loading=false;render(true);return}
-  const {data:{session}}=await sb.auth.getSession();
-  S.user=session&&session.user||null;
-  await Promise.all([loadPublic(),loadPrivate()]);
-  if(route==="pole"&&poleSel)await loadTasks();
-  if(route==="event")await loadRegistrants();
-  D.loading=false;render();
-  sb.auth.onAuthStateChange((event,sess)=>{
-    if(event==="PASSWORD_RECOVERY"){go("reset");return}
-    if(event==="SIGNED_IN"&&location.hash.includes("type=signup"))toast(t("t_mail_confirmed"));
-    const next=sess&&sess.user||null;
-    if((next&&next.id)!==(S.user&&S.user.id)){
-      S.user=next;
-      if(!next)clearUser();
-      loadPrivate().then(()=>{if(route==="pole"&&poleSel)return loadTasks()}).then(()=>render(true));
-    }
+const withTimeout=(p,ms,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+" : pas de réponse après "+ms/1000+" s")),ms))]);
+function checkRedirectNotice(){
+  const raw=[location.hash.slice(1),location.search.slice(1)].filter(Boolean).join("&");
+  if(!raw)return;
+  const params=new URLSearchParams(raw);
+  const errDesc=params.get("error_description");
+  const rType=params.get("type");
+  if(errDesc){
+    authInfo=errDesc.replace(/\+/g," ");
+    route="login";
+    history.replaceState(null,"",location.pathname);
+  }else if(rType==="signup"||rType==="email"){
+    setTimeout(()=>toast(t("t_mail_confirmed")),400);
+  }
+}
+if(configured){
+  sb.auth.onAuthStateChange((evt,session)=>{
+    if(evt==="INITIAL_SESSION")return;
+    S.user=session?session.user:null;
+    if(evt==="PASSWORD_RECOVERY"){route="reset";syncHash(true)}
+    setTimeout(async()=>{try{await loadPrivate()}catch(e){console.error(e)}softRender()},0);
   });
 }
-window.addEventListener("pageshow",e=>{if(e.persisted&&configured&&Date.now()-lastSync>15000)refreshAll()});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&configured&&Date.now()-lastSync>15000)refreshAll()});
-init();
-</script>
-<script id="fx-js">
-/* =====================================================================
-   COUCHE « DYNAMISME » — scripts (barre, parallaxe, compteurs, halo, globe)
-   ===================================================================== */
-var TABICON={
-  home:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
-  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
-  ticket:'<svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M12 7v2m0 3v2m0 3v2" stroke-dasharray="1 2"/></svg>',
-  users:'<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
-};
-
-function reduceMotionGlobe(){
-  return Boolean(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);
+async function init(){
+  readHash();
+  checkRedirectNotice();
+  render(false,true);
+  if(!configured)return;
+  const pubTask=withTimeout(loadPublic(),10000,"Base de données")
+    .catch(e=>{console.error(e);D.err=(e&&e.message)||String(e)})
+    .finally(()=>{D.loading=false;softRender()});
+  const authTask=(async()=>{
+    try{
+      const {data}=await withTimeout(sb.auth.getSession(),5000,"Session");
+      S.user=data&&data.session?data.session.user:null;
+      if(S.user){
+        await withTimeout(loadPrivate(),8000,"Profil");
+        softRender();
+        if(route==="event")loadRegistrants();
+        if(route==="pole"&&poleSel)loadTasks().then(()=>softRender());
+      }
+    }catch(e){console.error(e)}
+  })();
+  await Promise.all([pubTask,authTask]);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden&&S.user&&Date.now()-lastSync>60000)refreshAll().catch(console.error);
+  });
+}
+/* ===== JEU : QUIZ DES ROP (100 QCM, points, niveaux, progression par compte) ===== */
+const QZ_PTS=10;
+const QZ_LEVELS=[
+  {min:0,   ico:"👀",fr:"Observateur",        en:"Observer"},
+  {min:100, ico:"🪪",fr:"Délégué",            en:"Delegate"},
+  {min:300, ico:"🤝",fr:"Sponsor",            en:"Sponsor"},
+  {min:500, ico:"🔨",fr:"Chair",              en:"Chairperson"},
+  {min:800, ico:"🌍",fr:"Ambassadeur",        en:"Ambassador"},
+  {min:1000,ico:"👑",fr:"Secrétaire général", en:"Secretary-General"}
+];
+const G={run:null,lbBusy:false,saveWarned:false};
+const qzShuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const qzIsMastered=id=>Boolean(D.quiz[id]&&D.quiz[id].mastered);
+const qzMastered=()=>QUIZ.filter(q=>qzIsMastered(q.id)).length;
+const qzPoints=()=>qzMastered()*QZ_PTS;
+const qzChap=id=>QUIZ_CH.find(c=>c.id===id);
+function qzLevel(p){let i=0;QZ_LEVELS.forEach((l,k)=>{if(p>=l.min)i=k});return{i,cur:QZ_LEVELS[i],next:QZ_LEVELS[i+1]||null}}
+function qzRing(pct,size,stroke){
+  const r=(size-stroke)/2,c=2*Math.PI*r,h=size/2;
+  return `<svg class="qz-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="${stroke}"/><circle class="qz-ring-fg" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct/100)).toFixed(1)}" style="--c:${c.toFixed(1)}" transform="rotate(-90 ${h} ${h})"/></svg>`;
 }
 
-/* barre de progression en haut de l'écran */
-(function(){
-  const bar=document.getElementById("sp");
-  let raf=0;
-  function upd(){
-    raf=0;
-    const h=document.documentElement.scrollHeight-window.innerHeight;
-    bar.style.transform="scaleX("+(h>0?Math.min(1,Math.max(0,window.scrollY/h)):0)+")";
-  }
-  window.addEventListener("scroll",()=>{if(!raf)raf=requestAnimationFrame(upd)},{passive:true});
-  window.addEventListener("resize",()=>{if(!raf)raf=requestAnimationFrame(upd)},{passive:true});
-})();
+/* ----- données : classement ----- */
+async function loadLeaderboard(){
+  if(!S.user){D.lb=[];return}
+  const {data,error}=await sb.rpc("quiz_leaderboard");
+  D.lb=error?[]:(data||[]);
+}
+function qzEnsureLb(){
+  if(!S.user||D.lb!==null||G.lbBusy)return;
+  G.lbBusy=true;
+  loadLeaderboard().then(()=>{G.lbBusy=false;if(route==="jeu"&&!G.run)qzRefresh()});
+}
 
-/* parallaxe douce du bandeau d'accueil */
-(function(){
-  if(reduceMotionGlobe())return;
-  let raf=0;
-  window.addEventListener("scroll",()=>{
-    if(raf)return;
-    raf=requestAnimationFrame(()=>{
-      raf=0;
-      const hero=document.querySelector(".hero");
-      if(!hero)return;
-      const r=hero.getBoundingClientRect();
-      if(r.bottom<0||r.top>window.innerHeight)return;
-      hero.style.setProperty("--py",Math.max(-36,Math.min(36,-r.top*.14)).toFixed(1)+"px");
+/* ----- lancer / terminer une partie ----- */
+function startQuiz(mode){
+  let list;
+  if(mode==="mix")list=qzShuffle(QUIZ).slice(0,20);
+  else if(mode==="all")list=qzShuffle(QUIZ);
+  else if(mode==="weak"){
+    list=qzShuffle(QUIZ.filter(q=>!qzIsMastered(q.id))).slice(0,20);
+    if(!list.length){toast(t("qz_all_mastered"));return}
+  }else list=qzShuffle(QUIZ.filter(q=>q.ch===Number(mode)));
+  G.run={mode:String(mode),list,i:0,ok:0,gain:0,streak:0,best:0,wrong:[],picked:null,order:qzShuffle([0,1,2,3]),done:false,lvl0:qzLevel(qzPoints()).i,saveErr:false};
+  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
+}
+function qzPick(k){
+  const r=G.run;if(!r||r.done||r.picked!==null||k<0||k>3)return;
+  const q=r.list[r.i],ok=r.order[k]===0;
+  r.picked=k;
+  const prev=D.quiz[q.id]||{attempts:0,correct:0,mastered:false};
+  if(ok&&!prev.mastered)r.gain+=QZ_PTS;
+  D.quiz[q.id]={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:prev.mastered||ok};
+  if(ok){r.ok++;r.streak++;r.best=Math.max(r.best,r.streak)}else{r.streak=0;r.wrong.push(q)}
+  if(S.user){
+    sb.rpc("quiz_answer",{p_q:q.id,p_ok:ok}).then(({error})=>{
+      if(error){r.saveErr=true;if(!G.saveWarned){G.saveWarned=true;toast(t("qz_save_err"))}}
     });
+  }
+  qzRefresh();
+}
+function qzNext(){
+  const r=G.run;if(!r||r.picked===null)return;
+  r.i++;
+  if(r.i>=r.list.length){
+    r.done=true;D.lb=null;
+    if(r.ok/r.list.length>=.8)qzConfetti();
+  }else{r.picked=null;r.order=qzShuffle([0,1,2,3])}
+  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
+}
+function qzQuit(){G.run=null;qzRefresh();window.scrollTo({top:0})}
+async function qzReset(btn){
+  if(!confirm(t("qz_reset_ask")))return;
+  await withBusy(btn,async()=>{
+    if(S.user){const {error}=await sb.rpc("quiz_reset");if(error)return toast(errMsg(error))}
+    D.quiz={};D.lb=null;toast(t("qz_reset_done"));qzRefresh();
+  });
+}
+function qzRefresh(){
+  const el=$("#qz");
+  if(!el){render(true);return}
+  el.innerHTML=qzBody();
+  observe(Boolean(G.run));if(!G.run)stagger();
+  const card=el.querySelector(".qz-card");
+  if(card&&!reduceMotionGlobe()){card.classList.remove("qz-in");void card.offsetWidth;card.classList.add("qz-in")}
+}
+function qzConfetti(){
+  if(reduceMotionGlobe())return;
+  const box=document.createElement("div");box.className="confetti";box.setAttribute("aria-hidden","true");
+  const cols=["#EBC000","#00008E","#fff0a8","#4b4bd6","#020259"];
+  for(let i=0;i<40;i++){
+    const s=document.createElement("i");
+    s.style.cssText=`left:${Math.random()*100}%;background:${cols[i%5]};--dx:${((Math.random()-.5)*180).toFixed(0)}px;--rot:${(Math.random()*720).toFixed(0)}deg;animation-delay:${(Math.random()*.4).toFixed(2)}s;animation-duration:${(1.7+Math.random()*1.2).toFixed(2)}s`;
+    box.appendChild(s);
+  }
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3600);
+}
+document.addEventListener("keydown",e=>{
+  const r=G.run;
+  if(route!=="jeu"||!r||r.done||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=({"1":0,"2":1,"3":2,"4":3,a:0,b:1,c:2,d:3})[String(e.key).toLowerCase()];
+  if(k!==undefined&&r.picked===null){qzPick(k);return}
+  if((e.key==="Enter"||e.key===" ")&&r.picked!==null){e.preventDefault();qzNext()}
+});
+
+/* ----- affichage ----- */
+function vJeu(){
+  qzEnsureLb();
+  return `<div id="qz">${qzBody()}</div>`;
+}
+function qzBody(){
+  if(!G.run)return qzHome();
+  return G.run.done?qzEnd():qzPlay();
+}
+function qzHome(){
+  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),lv=qzLevel(pts);
+  let att=0,cor=0;Object.values(D.quiz).forEach(x=>{att+=x.attempts||0;cor+=x.correct||0});
+  const acc=att?Math.round(cor/att*100):0;
+  const weakN=total-m;
+  const nextTxt=lv.next?t("qz_next_level",{n:lv.next.min-pts,l:lv.next[lang]}):t("qz_max");
+  const lvPct=lv.next?Math.round((pts-lv.cur.min)/(lv.next.min-lv.cur.min)*100):100;
+  const modes=[
+    ["mix","⚡",t("qz_mix"),t("qz_mix_d")],
+    ["weak","🎯",t("qz_weak"),t("qz_weak_d",{n:weakN})],
+    ["all","🏆",t("qz_all"),t("qz_all_d")]
+  ];
+  return `<h1>${t("game_t")}</h1><p class="mute">${t("game_s")}</p>
+  <div class="qz-hero reveal">
+    <div class="qz-ringbox">${qzRing(Math.round(m/total*100),112,10)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
+    <div class="qz-herotxt">
+      <div class="qz-lv"><span class="qz-lvico">${lv.cur.ico}</span><span>${esc(lv.cur[lang])}</span></div>
+      <div class="qz-pts"><b>${pts}</b> ${t("qz_points")}</div>
+      <div class="qz-lvbar" aria-hidden="true"><span style="width:${lvPct}%"></span></div>
+      <div class="qz-lvtxt">${esc(nextTxt)}</div>
+      <div class="qz-mini"><span>${m} ${t("qz_mastered")}</span><span>${acc}% ${t("qz_accuracy")}</span></div>
+    </div>
+  </div>
+  ${S.user?"":`<div class="card qz-guest reveal"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+  <div class="qz-modes">${modes.map(([k,i,a,b])=>`<button class="qz-mode reveal" onclick="startQuiz('${k}')"><span class="qz-mode-ico">${i}</span><b>${esc(a)}</b><small>${esc(b)}</small></button>`).join("")}</div>
+  <h2>${t("qz_chapters")}</h2>
+  <div class="grid">${QUIZ_CH.map(c=>{
+    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>qzIsMastered(q.id)).length,p=Math.round(done/qs.length*100);
+    return `<div class="card qz-ch reveal">
+      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">ROP ${c.rop}</span></div>
+      <h3>${esc(c[lang])}</h3>
+      <div class="bar-p" style="margin:10px 0 6px"><span style="width:${p}%"></span></div>
+      <div class="qz-ch-meta"><span>${done}/${qs.length} ${t("qz_mastered")}</span><span>${t("qz_questions",{n:qs.length})}</span></div>
+      <button class="btn sm" style="margin-top:12px;width:100%" onclick="startQuiz(${c.id})">${done?t("qz_replay"):t("qz_play")}</button>
+    </div>`}).join("")}</div>
+  ${S.user?qzBoard():""}
+  <div style="margin-top:26px;text-align:center"><button class="btn ghost sm" onclick="qzReset(this)">${t("qz_reset")}</button></div>`;
+}
+function qzBoard(){
+  const rows=D.lb;
+  return `<h2>${t("qz_lb")}</h2><div class="card qz-board reveal">${
+    rows===null?`<div class="sk" style="min-height:120px"></div>`:
+    rows.length?rows.map((r,i)=>`<div class="qz-row ${r.me?"me":""}"><span class="qz-rank">${["🥇","🥈","🥉"][i]||i+1}</span><span class="qz-name">${esc(r.name)}${r.me?` <em>(${t("qz_you")})</em>`:""}</span><span class="qz-score">${r.points} ${t("qz_points")}</span></div>`).join(""):
+    `<p class="mute" style="margin:6px 0">${t("qz_lb_empty")}</p>`}</div>`;
+}
+function qzPlay(){
+  const r=G.run,q=r.list[r.i],txt=q[lang]||q.fr,c=qzChap(q.ch),n=r.list.length,L="ABCD";
+  const answered=r.picked!==null,ok=answered&&r.order[r.picked]===0;
+  const pct=Math.round((r.i+(answered?1:0))/n*100);
+  const opts=r.order.map((oi,k)=>{
+    let cls="qz-opt";
+    if(answered){if(oi===0)cls+=" good";else if(k===r.picked)cls+=" bad";else cls+=" dim"}
+    return `<button class="${cls}" ${answered?"disabled":""} onclick="qzPick(${k})"><b>${L[k]}</b><span>${esc(txt[oi+1])}</span></button>`;
+  }).join("");
+  const fb=answered?`<div class="qz-fb ${ok?"ok":"ko"}" role="status">
+      <div class="qz-fb-t">${ok?"✅ "+t("qz_good"):"❌ "+t("qz_bad")}</div>
+      ${ok?"":`<div class="qz-fb-a">${esc(txt[1])}</div>`}
+      <div class="qz-fb-r">${t("qz_rule")} · ROP ${esc(q.ref)}</div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="qzNext()">${r.i+1>=n?t("qz_finish"):t("qz_next")} →</button>`:"";
+  return `<div class="qz-top">
+      <button class="btn ghost sm" onclick="qzQuit()">✕ ${t("qz_quit")}</button>
+      <div class="qz-top-r">${r.streak>=2?`<span class="qz-streak">🔥 ${r.streak}</span>`:""}<span class="qz-run">${r.ok}/${r.i+(answered?1:0)}</span></div>
+    </div>
+    <div class="bar-p qz-prog" aria-hidden="true"><span style="width:${pct}%"></span></div>
+    <div class="qz-card qz-in">
+      <div class="qz-meta"><span class="tag">${c.ico} ${esc(c[lang])}</span><span class="mute">${t("qz_q",{i:r.i+1,n})}</span></div>
+      <h2 class="qz-q">${esc(txt[0])}</h2>
+      <div class="qz-opts">${opts}</div>
+      ${fb}
+    </div>`;
+}
+function qzEnd(){
+  const r=G.run,n=r.list.length,pct=Math.round(r.ok/n*100),pts=qzPoints(),lv=qzLevel(pts);
+  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
+  const up=lv.i>r.lvl0;
+  const L="ABCD";
+  return `<div class="qz-card qz-in qz-end">
+    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${r.ok}/${n}</b><span>${pct}%</span></div></div>
+    <h1 style="margin:10px 0 4px">${t("qz_end_t")}</h1>
+    <p class="mute" style="margin:0 0 14px">${msg}</p>
+    <div class="qz-stats">
+      <div class="qz-stat gold"><b>${r.gain?"+"+r.gain:"0"}</b><span>${t("qz_gain")}</span></div>
+      <div class="qz-stat"><b>${pts}</b><span>${t("qz_total",{n:pts})}</span></div>
+      <div class="qz-stat"><b>${r.best}</b><span>${t("qz_streak",{n:r.best})}</span></div>
+    </div>
+    ${r.gain?"":`<p class="mute" style="margin:10px 0">${t("qz_gain0")}</p>`}
+    ${up?`<div class="qz-up">${lv.cur.ico} ${t("qz_levelup",{l:lv.cur[lang]})}</div>`:""}
+    ${S.user?"":`<div class="card qz-guest"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+    ${r.saveErr?`<div class="card qz-guest" style="border-color:var(--rouge)"><span>⚠️ ${t("qz_save_err")}</span></div>`:""}
+    ${r.wrong.length?`<details class="qz-wrong" open><summary>${t("qz_review",{n:r.wrong.length})}</summary>${r.wrong.map(q=>{const x=q[lang]||q.fr;return `<div class="qz-wq"><b>${esc(x[0])}</b><div>✅ ${esc(x[1])}</div><small>ROP ${esc(q.ref)}</small></div>`}).join("")}</details>`:""}
+    <div class="qz-actions">
+      <button class="btn" onclick="startQuiz('${r.mode}')">${t("qz_again")}</button>
+      <button class="btn ghost" onclick="qzQuit()">${t("qz_back")}</button>
+      <button class="btn ghost" onclick="go('ressources')">${t("qz_open_rop")}</button>
+    </div>
+  </div>`;
+}
+
+/* ===== EFFETS D'INTERFACE (visuels uniquement) ===== */
+const TABICON={
+  home:'<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M8 3v4M16 3v4M3.5 10.2h17"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24"><path d="M4 9.4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1.4a2.6 2.6 0 0 0 0 5.2V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.4a2.6 2.6 0 0 0 0-5.2z"/><path d="M14.5 7.5v9" stroke-dasharray="1.6 2.6"/></svg>',
+  users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><circle cx="17.3" cy="9.4" r="2.4"/><path d="M16.6 14.1c2.3.2 3.9 1.5 4.4 4"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><path d="M4 7.5h16M4 12h16M4 16.5h10"/></svg>'
+};
+function stagger(){
+  document.querySelectorAll(".grid").forEach(g=>{
+    [...g.children].filter(c=>c.classList.contains("reveal")).forEach((c,i)=>{
+      if(i>0){c.style.transitionDelay=Math.min(i,6)*70+"ms";setTimeout(()=>{c.style.transitionDelay=""},1500)}
+    });
+  });
+}
+function animateStats(){
+  if(reduceMotionGlobe())return;
+  document.querySelectorAll(".stat b").forEach(el=>{
+    const n=parseInt(el.textContent,10);
+    if(!isFinite(n)||n<=0||el.dataset.done)return;
+    el.dataset.done=1;const t0=performance.now(),d=1000;
+    (function f(now){const k=Math.min(1,(now-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(n*e);if(k<1)requestAnimationFrame(f)})(t0);
+  });
+}
+(function(){
+  const sp=document.getElementById("sp"),root=document.documentElement;let tick=false;
+  function upd(){
+    tick=false;const y=window.scrollY||0,max=root.scrollHeight-innerHeight;
+    sp.style.transform="scaleX("+(max>0?Math.min(1,y/max):0)+")";
+    root.style.setProperty("--py",Math.min(y,700)*.07+"px");
+  }
+  addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(upd)}},{passive:true});
+  addEventListener("resize",upd);upd();
+  document.addEventListener("pointermove",e=>{
+    const c=e.target.closest&&e.target.closest(".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button");
+    if(!c)return;const r=c.getBoundingClientRect();
+    c.style.setProperty("--gx",(e.clientX-r.left)+"px");c.style.setProperty("--gy",(e.clientY-r.top)+"px");
   },{passive:true});
 })();
 
-/* halo doré qui suit le pointeur sur les cartes */
+/* Le blason et le globe suivent légèrement la souris */
+const reduceMotionGlobe=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+let tiltHero=null;
 document.addEventListener("pointermove",e=>{
   if(e.pointerType&&e.pointerType!=="mouse")return;
-  const card=e.target.closest(".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button");
-  if(!card)return;
-  const r=card.getBoundingClientRect();
-  card.style.setProperty("--gx",(e.clientX-r.left)+"px");
-  card.style.setProperty("--gy",(e.clientY-r.top)+"px");
+  const h=e.target&&e.target.closest?e.target.closest(".hero"):null;
+  if(h!==tiltHero){if(tiltHero){tiltHero.style.removeProperty("--mx");tiltHero.style.removeProperty("--my")}tiltHero=h}
+  if(!h||reduceMotionGlobe())return;
+  const r=h.getBoundingClientRect();
+  h.style.setProperty("--mx",((e.clientX-r.left)/r.width-.5).toFixed(3));
+  h.style.setProperty("--my",((e.clientY-r.top)/r.height-.5).toFixed(3));
 },{passive:true});
 
-/* compteurs animés sur les chiffres clés */
-function animateStats(){
-  const nums=document.querySelectorAll(".hero .stat b");
-  if(!nums.length||reduceMotionGlobe())return;
-  nums.forEach(el=>{
-    const target=parseInt(el.textContent,10);
-    if(!Number.isFinite(target)||target<=0)return;
-    const t0=performance.now(),dur=650;
-    function step(now){
-      const p=Math.min(1,(now-t0)/dur);
-      const ease=1-Math.pow(1-p,3);
-      el.textContent=String(Math.round(target*ease));
-      if(p<1)requestAnimationFrame(step);
-    }
-    el.textContent="0";
-    requestAnimationFrame(step);
-  });
-}
-
-/* cascade automatique sur les grilles */
-function stagger(){
-  document.querySelectorAll(".grid,.board-grid,.partners,.pole-pick").forEach(g=>{
-    [...g.children].forEach((c,i)=>c.style.transitionDelay=Math.min(i,8)*55+"ms");
-  });
-}
-
-/* ---------- Globe SVG 3D interactif (glisser souris / doigt iPad & inertie) ---------- */
-function initHeroGlobe(){
-  const host=document.getElementById("heroGlobe");
-  const zone=document.getElementById("heroVisual");
-  if(!host)return;
-
-  const R=128;
-  const CITIES=[
-    {lat:48.85,lon:2.35},    // Paris (Sorbonne)
-    {lat:40.71,lon:-74.00},  // New York (ONU)
-    {lat:46.20,lon:6.14},    // Genève
-    {lat:40.41,lon:-3.70},   // Madrid
-    {lat:51.50,lon:-0.12},   // Londres
-    {lat:48.20,lon:16.37},   // Vienne
-    {lat:-1.29,lon:36.82},   // Nairobi
-    {lat:35.67,lon:139.65},  // Tokyo
-    {lat:30.04,lon:31.23},   // Le Caire
-    {lat:-22.90,lon:-43.17}  // Rio de Janeiro
-  ];
-
-  function projectPt(latDeg,lonDeg,yaw,pitch){
-    const lat=(latDeg*Math.PI)/180;
-    const lon=(lonDeg*Math.PI)/180+yaw;
-    const x0=R*Math.cos(lat)*Math.sin(lon);
-    const y0=-R*Math.sin(lat);
-    const z0=R*Math.cos(lat)*Math.cos(lon);
-    const y1=y0*Math.cos(pitch)-z0*Math.sin(pitch);
-    const z1=y0*Math.sin(pitch)+z0*Math.cos(pitch);
-    return {x:x0,y:y1,z:z1};
-  }
-
-  function buildGlobeMarkup(yaw,pitch){
-    let paths="";
-    for(let lon=0;lon<360;lon+=30){
-      let d="";
-      for(let lat=-90;lat<=90;lat+=6){
-        const p=projectPt(lat,lon,yaw,pitch);
-        if(p.z>=0){
-          d+=(d===""?`M${p.x.toFixed(1)},${p.y.toFixed(1)}`:` L${p.x.toFixed(1)},${p.y.toFixed(1)}`);
-        }else if(d!==""){
-          paths+=`<path d="${d}" stroke-width="1" stroke-opacity=".65"/>`;
-          d="";
-        }
-      }
-      if(d!=="")paths+=`<path d="${d}" stroke-width="1" stroke-opacity=".65"/>`;
-    }
-    for(let lat=-60;lat<=60;lat+=30){
-      let d="";
-      for(let lon=0;lon<=360;lon+=6){
-        const p=projectPt(lat,lon,yaw,pitch);
-        if(p.z>=0){
-          d+=(d===""?`M${p.x.toFixed(1)},${p.y.toFixed(1)}`:` L${p.x.toFixed(1)},${p.y.toFixed(1)}`);
-        }else if(d!==""){
-          paths+=`<path d="${d}" stroke-width="${lat===0?"1.35":".85"}" stroke-opacity="${lat===0?".8":".55"}"/>`;
-          d="";
-        }
-      }
-      if(d!=="")paths+=`<path d="${d}" stroke-width="${lat===0?"1.35":".85"}" stroke-opacity="${lat===0?".8":".55"}"/>`;
-    }
-
-    let nodes="";
-    for(let i=0;i<CITIES.length;i++){
-      const p=projectPt(CITIES[i].lat,CITIES[i].lon,yaw,pitch);
-      if(p.z>8){
-        const k=0.55+(p.z/R)*0.45;
-        nodes+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(3.1*k).toFixed(1)}" opacity="${Math.min(1,k).toFixed(2)}"/>`;
-      }
-    }
-
-    return `<svg viewBox="-142 -142 284 284" fill="none" stroke="currentColor">
-      <circle cx="0" cy="0" r="${R}" stroke-width="1.35" stroke-opacity=".75"/>
-      <g id="globe-meridians">${paths}</g>
-      <g id="globe-nodes" fill="currentColor" stroke="none">${nodes}</g>
-    </svg>`;
-  }
-
-  let yaw=0.35;
-  let pitch=0.22;
-  const baseSpeed=0.0028;
-  let vx=baseSpeed;
-  let vy=0;
-  const friction=0.952;
-  let isDragging=false;
-  let lastX=0;
-  let lastY=0;
-  let rafId=0;
-
-  function renderFrame(){
-    host.innerHTML=buildGlobeMarkup(yaw,pitch);
-  }
-
-  function tick(){
-    if(!isDragging){
-      yaw+=vx;
-      pitch+=vy;
-      pitch=Math.max(-1.05,Math.min(1.05,pitch));
-      vx=vx*friction+baseSpeed*(1-friction);
-      vy*=friction;
-    }
-    renderFrame();
-    if(!reduceMotionGlobe()){
-      rafId=requestAnimationFrame(tick);
-    }
-  }
-
-  renderFrame();
-  if(reduceMotionGlobe())return;
-
-  if(zone&&!zone.dataset.globeBound){
-    zone.dataset.globeBound="1";
-
-    zone.addEventListener("pointerdown",e=>{
-      if(e.pointerType==="mouse"&&e.button!==0)return;
-      isDragging=true;
-      lastX=e.clientX;
-      lastY=e.clientY;
-      vx=0;
-      vy=0;
-      zone.classList.add("dragging");
-      try{zone.setPointerCapture(e.pointerId)}catch(_){}
-    });
-
-    zone.addEventListener("pointermove",e=>{
-      const r=zone.getBoundingClientRect();
-      if(r.width>0&&r.height>0){
-        const mx=((e.clientX-r.left)/r.width-.5)*2;
-        const my=((e.clientY-r.top)/r.height-.5)*2;
-        zone.style.setProperty("--mx",mx.toFixed(3));
-        zone.style.setProperty("--my",my.toFixed(3));
-      }
-      if(!isDragging)return;
-      const dx=e.clientX-lastX;
-      const dy=e.clientY-lastY;
-      lastX=e.clientX;
-      lastY=e.clientY;
-
-      vx=dx*0.0075;
-      vy=dy*0.0065;
-      yaw+=vx;
-      pitch=Math.max(-1.05,Math.min(1.05,pitch+vy));
-      renderFrame();
-    });
-
-    const releaseDrag=e=>{
-      if(!isDragging)return;
-      isDragging=false;
-      zone.classList.remove("dragging");
-      if(e&&e.pointerId!=null){
-        try{if(zone.hasPointerCapture(e.pointerId))zone.releasePointerCapture(e.pointerId)}catch(_){}
-      }
-    };
-
-    zone.addEventListener("pointerup",releaseDrag);
-    zone.addEventListener("pointercancel",releaseDrag);
-    zone.addEventListener("pointerleave",()=>{
-      zone.style.setProperty("--mx","0");
-      zone.style.setProperty("--my","0");
-    });
-  }
-
-  cancelAnimationFrame(rafId);
-  rafId=requestAnimationFrame(tick);
-}
+init();
 </script>
 </body>
 </html>
