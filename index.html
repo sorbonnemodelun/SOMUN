@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#020259">
 <meta name="color-scheme" content="light">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mymemory.translated.net; form-action 'self'; base-uri 'self';">
 <title>SOMUN — Sorbonne Model UN</title>
 <meta name="description" content="Sorbonne Model UN (SOMUN) : trainings, conférences, voyages et visites. Toute la vie de l'association au même endroit.">
 <meta property="og:type" content="website">
@@ -45,7 +47,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* ---------- En-tête semi-transparent & lisible ---------- */
 header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.7);backdrop-filter:blur(18px) saturate(165%);-webkit-backdrop-filter:blur(18px) saturate(165%);border-bottom:1px solid rgba(226,228,242,.65);transition:background .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
-/* au défilement, seul l'aspect change : la hauteur reste la même (avant, l'en-tête rétrécissait et la page tremblait) */
 header.scrolled{background:rgba(255,255,255,.86);border-bottom-color:rgba(226,228,242,.95);box-shadow:0 12px 30px -20px rgba(2,2,89,.38)}
 .bar{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 18px;gap:12px}
 .brand{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:10px;color:var(--bleu);transition:transform .2s var(--ease)}
@@ -62,10 +63,7 @@ header.scrolled .brand img,header.scrolled .mark{transform:scale(.88)}
 .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--bleu),var(--marine));color:#fff;display:grid;place-items:center;font-weight:700;border:2px solid var(--or);cursor:pointer;font-family:var(--f-titre);font-size:16px;padding-top:2px;box-shadow:0 3px 10px rgba(0,0,142,.18);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .avatar:hover{transform:translateY(-1px) scale(1.04);box-shadow:0 6px 16px rgba(0,0,142,.26)}
 
-/* ---------- Menu (ordinateur) ----------
-   La pastille bleue n'est plus recréée à chaque page : elle part de l'onglet précédent et s'étire
-   vers le nouveau (le bord avant d'abord, le bord arrière suit). Le libellé devient blanc exactement
-   là où passe la pastille, puis le trait doré se pose sous l'onglet choisi. */
+/* ---------- Menu (ordinateur) ---------- */
 .dnav{--nav-fs:13.5px;--nav-px:15px;position:relative;display:none;align-items:center;gap:2px;padding:4px;border-radius:99px;background:rgba(242,243,250,.78);border:1px solid rgba(226,228,242,.9);isolation:isolate;min-width:0;max-width:100%;transition:background .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
 header.scrolled .dnav{background:rgba(255,255,255,.94);border-color:var(--line);box-shadow:0 3px 10px -6px rgba(2,2,89,.18)}
 .dnav.tight{overflow-x:auto;scrollbar-width:none}
@@ -111,7 +109,6 @@ main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;pos
   from{opacity:0;transform:translateX(-72px)}
   to{opacity:1;transform:translateX(0)}
 }
-/* ancienne page qui sort pendant que la nouvelle entre */
 .view-ghost{position:absolute;left:18px;right:18px;z-index:0;pointer-events:none;will-change:transform,opacity}
 .view-ghost.out-left{animation:outLeft .34s var(--ios-ease) forwards}
 .view-ghost.out-right{animation:outRight .34s var(--ios-ease) forwards}
@@ -282,6 +279,13 @@ label.inline{display:flex;gap:8px;align-items:center;font-weight:500}
 .info{background:var(--bleu-soft);color:var(--bleu);border-radius:14px;padding:12px 16px;font-size:14px;margin-bottom:14px;border-left:4px solid var(--bleu)}
 .sg-box{background:var(--or-soft);border:1px solid rgba(235,192,0,.65);border-radius:16px;padding:16px;margin-top:16px}
 
+/* ---------- Mentions légales ---------- */
+.legal-card{margin-top:14px;padding:22px 24px}
+.legal-card h2{margin:26px 0 10px;font-size:19px}
+.legal-card h2:first-child{margin-top:4px}
+.legal-card p{margin:0 0 12px;color:var(--ink)}
+.legal-card p:last-child{margin-bottom:0}
+
 /* ---------- Fenêtres, notifications ---------- */
 .sheet-bg{position:fixed;inset:0;background:rgba(2,2,89,.42);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .sheet-bg.open{display:flex;animation:fadeBg .2s var(--ease) both}
@@ -302,10 +306,10 @@ footer{background:var(--marine);color:rgba(255,255,255,.82);font-size:12.5px;pad
 footer .f-brand{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.95);padding:7px 14px;border-radius:15px;border:2px solid var(--or);box-shadow:0 6px 18px rgba(2,2,89,.18)}
 footer .f-brand img{height:44px;width:auto;display:block}
 footer .f-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px}
-footer a{color:var(--or);text-decoration:none;font-weight:600;font-size:13px}
-footer a:hover{text-decoration:underline}
+footer a,footer .f-link-btn{color:var(--or);text-decoration:none;font-weight:600;font-size:13px;background:none;border:0;padding:0;cursor:pointer;font-family:inherit}
+footer a:hover,footer .f-link-btn:hover{text-decoration:underline}
 body:has(.bureau-wrap) footer{background:rgba(255,255,255,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--marine);border-top:2px solid rgba(235,192,0,.8)}
-body:has(.bureau-wrap) footer a{color:var(--bleu)}
+body:has(.bureau-wrap) footer a,body:has(.bureau-wrap) footer .f-link-btn{color:var(--bleu)}
 @media(min-width:760px){
   .f-inner{flex-direction:row;justify-content:space-between;text-align:left}
   .f-meta{text-align:right}
@@ -338,17 +342,8 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center}
 </style>
 <style id="fx">
-/* =====================================================================
-   COUCHE « DYNAMISME » (additive : ne change ni couleurs, ni logo, ni organisation)
-   aurore animée, entrée en cascade, halo qui suit le doigt/la souris, compteurs,
-   squelettes de chargement, icônes vectorielles, globe doré interactif.
-   ===================================================================== */
 :root{--fx:cubic-bezier(.22,.8,.24,1)}
-
-/* barre de progression de lecture */
 #sp{position:fixed;top:0;left:0;right:0;height:3px;z-index:400;pointer-events:none;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--or),#fff0a8)}
-
-/* aurore douce derrière le bandeau d'accueil */
 .hero::before{content:"";position:absolute;width:460px;height:460px;left:-150px;top:-170px;border-radius:50%;background:radial-gradient(circle,rgba(40,40,240,.75),transparent 66%);filter:blur(60px);opacity:.75;pointer-events:none;z-index:0;animation:fxDrift 15s ease-in-out infinite alternate}
 .hero::after{animation:fxDrift2 19s ease-in-out infinite alternate}
 @keyframes fxDrift{to{transform:translate(80px,50px) scale(1.18)}}
@@ -357,44 +352,30 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 .hero-crest{translate:0 calc(var(--py,0px) * -.5)}
 .hero-crest img{animation:fxFloat 7s ease-in-out infinite}
 @keyframes fxFloat{50%{transform:translateY(-8px)}}
-
-/* entrée en cascade du texte d'accueil */
 .hero-txt>*{animation:fxRise .9s var(--fx) both}
 .hero-txt>:nth-child(1){animation-delay:.05s}.hero-txt>:nth-child(2){animation-delay:.13s}
 .hero-txt>:nth-child(3){animation-delay:.21s}.hero-txt>:nth-child(4){animation-delay:.29s}.hero-txt>:nth-child(5){animation-delay:.37s}
 @keyframes fxRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-
-/* chiffres clés en verre */
 .stats{border-top:0;padding-top:0;gap:10px}
 .stat{padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .stat b{font-variant-numeric:tabular-nums}
-
-/* révélation au défilement : léger flou + cascade */
 .reveal{filter:blur(4px);transition:opacity .7s var(--fx),transform .5s var(--fx),filter .7s var(--fx),box-shadow .28s var(--fx),border-color .28s var(--fx)}
 .reveal.show{filter:none}
 .reveal .bar-p span{transform-origin:0 50%;transform:scaleX(0);transition:transform 1.1s .3s var(--fx)}
 .reveal.show .bar-p span{transform:none}
-
-/* halo doré qui suit le pointeur sur les cartes */
 .ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button{position:relative;isolation:isolate}
 .ev::before,.news::before,.about .card::before,.board-card::before,.partners a.card::before,.pole-pick button::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(360px circle at var(--gx,50%) var(--gy,0%),rgba(235,192,0,.17),transparent 58%)}
 @media(hover:hover){.ev:hover::before,.news:hover::before,.about .card:hover::before,.board-card:hover::before,.partners a.card:hover::before,.pole-pick button:hover::before{opacity:1}}
 .pole-pick button::after{content:"→";position:absolute;right:18px;top:18px;color:var(--bleu);opacity:0;transform:translateX(-8px);transition:all .3s var(--fx)}
 .pole-pick button:hover::after{opacity:1;transform:none}
-
-/* icônes vectorielles de la barre mobile */
 .tabbar button .ico{display:grid;place-items:center;height:24px;filter:none}
 .tabbar button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .tabbar button.on .ico{animation:fxPop .5s var(--fx)}
 @keyframes fxPop{0%{transform:scale(.8)}60%{transform:translateY(-2px) scale(1.16)}100%{transform:translateY(-2px) scale(1.08)}}
-
-/* chargement : squelettes */
 .sk{min-height:130px;border-radius:var(--r);background:linear-gradient(100deg,#f0f1f9 30%,#fbfbff 50%,#f0f1f9 70%);background-size:300% 100%;animation:fxShim 1.5s linear infinite}
 .sk-hero{min-height:280px;border-radius:26px;margin:6px 0 22px}
 @keyframes fxShim{to{background-position:-150% 0}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-
-/* ---------- Globe doré en filigrane dans le bandeau d'accueil, qui suit la souris ---------- */
 :root{--globe:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='none' stroke='%23EBC000' stroke-width='1.3'%3E%3Ccircle cx='200' cy='200' r='190'/%3E%3Ccircle cx='200' cy='200' r='198' stroke-dasharray='1.5 7'/%3E%3Cellipse cx='200' cy='200' rx='150' ry='190'/%3E%3Cellipse cx='200' cy='200' rx='95' ry='190'/%3E%3Cellipse cx='200' cy='200' rx='40' ry='190'/%3E%3Cpath d='M200 10v380M10 200h380M27.7 120h344.6M27.7 280h344.6M83.4 50h233.2M83.4 350h233.2'/%3E%3C/svg%3E")}
 .hero-globe{position:absolute;left:50%;top:50%;width:min(540px,135%);aspect-ratio:1;background:var(--globe) center/contain no-repeat;opacity:.2;z-index:0;pointer-events:none;transform:translate(-50%,-50%) translate(calc(var(--mx,0) * -24px),calc(var(--my,0) * -16px));transition:transform .5s ease-out}
 .hero-crest,.hero:hover .hero-crest{transform:perspective(800px) rotateX(calc(var(--my,0) * -9deg)) rotateY(calc(var(--mx,0) * 11deg));transition:transform .35s ease-out}
@@ -407,7 +388,6 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 }
 </style>
 <style id="game">
-/* ===== JEU : QUIZ DES ROP ===== */
 .qz-hero{display:flex;align-items:center;gap:22px;margin:18px 0 14px;padding:22px;border-radius:26px;color:#fff;position:relative;overflow:hidden;isolation:isolate;
   background:radial-gradient(520px 260px at 90% -20%,rgba(235,192,0,.35),transparent 60%),linear-gradient(135deg,#020259,#00008E 70%,#1a1ae0);box-shadow:0 24px 50px -24px rgba(2,2,89,.6)}
 .qz-ringbox,.qz-endring{position:relative;flex:none;color:#fff}
@@ -445,8 +425,6 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 .qz-rank{width:30px;text-align:center;font-weight:700;color:var(--bleu)}
 .qz-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.qz-name em{font-weight:500;color:#5b5f86;font-style:normal;font-size:13px}
 .qz-score{font-weight:700;color:var(--bleu);font-variant-numeric:tabular-nums}
-
-/* partie */
 .qz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 10px}
 .qz-top-r{display:flex;gap:8px;align-items:center}
 .qz-streak{padding:4px 12px;border-radius:99px;background:#fff3d6;color:#8a5a00;font-weight:700;font-size:13px;animation:fxPop .5s var(--fx,ease)}
@@ -474,8 +452,6 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 .qz-fb{margin-top:16px;padding:14px 16px;border-radius:16px;animation:fxRise .4s var(--ios-ease) both}
 .qz-fb.ok{background:#eaf8f0;color:#14532d}.qz-fb.ko{background:#fdeceb;color:#7f1d1d}
 .qz-fb-t{font-weight:700}.qz-fb-a{margin-top:6px;font-weight:600}.qz-fb-r{margin-top:6px;font-size:12.5px;opacity:.75}
-
-/* fin de partie */
 .qz-end{text-align:center}
 .qz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0}
 .qz-stat{padding:14px 8px;border-radius:18px;background:var(--bleu-soft,#eef0ff)}
@@ -488,7 +464,6 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 .qz-wq{padding:12px 0;border-top:1px solid rgba(2,2,89,.07);font-size:14px;line-height:1.4}
 .qz-wq div{margin-top:5px;color:#14532d;font-weight:600}.qz-wq small{color:#5b5f86}
 .qz-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
-
 @media(max-width:620px){
   .qz-hero{flex-direction:column;text-align:center;gap:14px;padding:22px 18px}
   .qz-lv{justify-content:center}.qz-mini{justify-content:center}
@@ -497,15 +472,12 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
   .qz-card{padding:18px;border-radius:22px}
   .qz-actions .btn{flex:1 1 100%}
 }
-
-/* confettis */
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:500;overflow:hidden}
 .confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;opacity:0;animation:cfFall 2.4s ease-in forwards}
 @keyframes cfFall{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),105vh) rotate(var(--rot))}}
 @media(prefers-reduced-motion:reduce){.qz-in,.qz-ring-fg,.qz-opt,.qz-fb,.qz-up,.qz-streak{animation:none!important}}
 </style>
 <style id="jeux">
-/* Page « Jeux » : simulation diplomatique et quiz des ROP */
 .jeux{display:grid;gap:16px;margin-top:18px}
 .jeux-card{padding:0;overflow:hidden;display:flex;flex-direction:column}
 .jeux-art{height:178px;display:grid;place-items:center;padding:8px 14px 0;color:#fff;background:radial-gradient(520px 260px at 90% -20%,rgba(235,192,0,.35),transparent 60%),linear-gradient(135deg,#020259,#00008E 70%,#1a1ae0)}
@@ -558,11 +530,9 @@ const BOARD_BIO_PHOTOS={
   come:"photo_bio_come.jpeg"
 };
 const BOARD_ORDER=["come","servan","pierre","emna","clara"];
-const BOARD_ORDER_MOBILE=["servan","pierre","come","emna","clara"]; /* ordre de haut en bas sur téléphone */
+const BOARD_ORDER_MOBILE=["servan","pierre","come","emna","clara"];
 
-/* ===== JEU : 100 QCM tirés des Rules of Procedure (ROP) de SOMUN — UNGA =====
-   Convention d'écriture : la PREMIÈRE réponse de chaque liste est la bonne.
-   L'ordre des réponses est mélangé à l'affichage. */
+/* ===== JEU : 100 QCM tirés des Rules of Procedure (ROP) de SOMUN — UNGA ===== */
 const QUIZ_CH=[
   {id:1,ico:"📜",rop:"I",  fr:"Dispositions générales",     en:"General provisions"},
   {id:2,ico:"🧑‍⚖️",rop:"II", fr:"Les chairs",                en:"Chairpersons"},
@@ -575,7 +545,6 @@ const QUIZ_CH=[
   {id:9,ico:"🗳️",rop:"IX", fr:"Vote",                       en:"Voting"}
 ];
 const QUIZ=[];
-/* Q : options différentes selon la langue — QN : mêmes options dans les deux langues */
 const Q=(ch,ref,fr,en)=>QUIZ.push({id:QUIZ.length+1,ch,ref,fr,en});
 const QN=(ch,ref,frq,enq,o)=>QUIZ.push({id:QUIZ.length+1,ch,ref,fr:[frq,...o],en:[enq,...o]});
 
@@ -813,7 +782,7 @@ Q(7,"VII.a",
  ["De quoi un projet de résolution est-il au minimum composé ?","D'au moins un paragraphe préambulaire et une clause opérative","D'au moins trois clauses opératives","D'un préambule et de cinq clauses","D'une seule clause opérative"],
  ["What does a Draft Resolution consist of at minimum?","At least one preambular and one operative clause","At least three operative clauses","A preamble and five clauses","A single operative clause"]);
 Q(7,"VII.a",
- ["Dans quel cas les chairs approuvent-elles un projet de résolution ?","S'il est lisible, organisé dans son contenu et son enchaînement, et au bon format","S'il est signé par tous les délégués","S'il a été voté par le Conseil","S'il est écrit en moins de dix lignes"],
+ ["Dans quel cas les chairs approuvent-elles un projet de résolution ?","S'il est legible, organisé dans son contenu et son enchaînement, et au bon format","S'il est signé par tous les délégués","S'il a été voté par le Conseil","S'il est écrit en moins de dix lignes"],
  ["When do the chairs approve a Draft Resolution?","If it is legible, organized in content and flow, and in the proper format","If it is signed by all delegates","If the Council has voted for it","If it is shorter than ten lines"]);
 QN(7,"VII.b",
  "Combien de sponsors doit avoir un projet de résolution ?",
@@ -948,6 +917,7 @@ fr:{jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de p
  t_welcome:"Bienvenue !",t_bye:"À bientôt !",t_reg:"Inscription enregistrée ✓",t_need:"Connecte-toi pour t'inscrire",t_pub:"Publié !",t_ok:"Enregistré ✓",
  t_err_members:"Cet événement est réservé aux adhérents à jour.",t_err_full:"Désolé, c'est complet.",t_err_slug:"Paiement HelloAsso pas encore configuré pour cet événement.",no_res:"Aucun résultat",no_events:"Aucun événement prévu pour le moment.",no_news:"Aucune actualité publiée pour le moment.",
  foot:"Sorbonne Model UN · 2026-2027",autotr:"Contenus publiés traduits automatiquement",
+ legal_link:"Mentions légales",legal_t:"Mentions légales",
  about_t:"Qu'est-ce que SOMUN ?",about_txt:"Sorbonne Model UN est l'association de simulation des Nations unies de la Sorbonne. Lors d'une conférence Model UN (MUN), chaque participant représente un pays, défend ses positions, négocie et rédige des résolutions, comme les vrais diplomates.",
  about_1t:"Prise de parole",about_1:"Les trainings t'apprennent à débattre et à convaincre, en français et en anglais.",about_2t:"Conférences",about_2:"Participe à des MUN en France et à l'étranger.",about_3t:"Communauté",about_3:"Visites, soirées, voyages : une association vivante toute l'année.",
  contact:"Contact",follow:"Échanger",
@@ -979,8 +949,8 @@ fr:{jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de p
  danger_t:"Supprimer mon compte",danger_txt:"Ton compte, ton profil et tes inscriptions seront définitivement effacés. Cette action est irréversible.",
  danger_confirm:"Tape SUPPRIMER pour confirmer",danger_word:"SUPPRIMER",danger_btn:"Supprimer définitivement",t_deleted:"Compte supprimé",
  err_load:"Impossible de charger les données pour le moment.",retry:"Réessayer",
- e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
- e_cancel_past:"Cet événement déjà passé.",
+ e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_file_big:"Fichier trop volumineux (max. 5 Mo).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
+ e_cancel_past:"Cet événement est déjà passé.",
  setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
 en:{jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
  hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
@@ -1013,6 +983,7 @@ en:{jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure."
  t_welcome:"Welcome!",t_bye:"See you soon!",t_reg:"Registration saved ✓",t_need:"Log in to register",t_pub:"Published!",t_ok:"Saved ✓",
  t_err_members:"This event is for paid-up members only.",t_err_full:"Sorry, it's full.",t_err_slug:"HelloAsso payment not yet set up for this event.",no_res:"No results",no_events:"No upcoming events at the moment.",no_news:"No news published yet.",
  foot:"Sorbonne Model UN · 2026-2027",autotr:"Published content is automatically translated",
+ legal_link:"Legal notice",legal_t:"Legal notice",
  about_t:"What is SOMUN?",about_txt:"Sorbonne Model UN is the Sorbonne's United Nations simulation society. At a Model UN (MUN) conference, each participant represents a country, defends its positions, negotiates and drafts resolutions, just like real diplomats.",
  about_1t:"Public speaking",about_1:"Trainings teach you to debate and persuade, in French and English.",about_2t:"Conferences",about_2:"Take part in MUNs in France and abroad.",about_3t:"Community",about_3:"Visits, parties, trips: a lively association all year long.",
  contact:"Contact",follow:"Connect",
@@ -1044,7 +1015,7 @@ en:{jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure."
  danger_t:"Delete my account",danger_txt:"Your account, profile and registrations will be permanently erased. This cannot be undone.",
  danger_confirm:"Type DELETE to confirm",danger_word:"DELETE",danger_btn:"Delete permanently",t_deleted:"Account deleted",
  err_load:"Unable to load data right now.",retry:"Retry",
- e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"Invalid link (e.g. https://instagram.com/… or linkedin.com/in/…).",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
+ e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"Invalid link (e.g. https://instagram.com/… or linkedin.com/in/…).",e_file_big:"File too large (max. 5 MB).",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
  e_cancel_past:"This event has already taken place.",
  setup_t:"Setup required",setup_txt:"Fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of index.html.",sdk_t:"Unable to load client library",sdk_txt:"The database client script could not be loaded. Check your internet connection or script blocker and reload.",loading:"Loading…"}
 };
@@ -1059,7 +1030,7 @@ let D={events:[],news:[],poles:[],board:[],partners:[],resources:[],settings:{},
 let evSel=null,regList={event:null,rows:null};
 let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo="",adminTab="members",memberQ="",memberFilt="all",filt="all",q="",dragId=null,lastSync=0,navDir="right";
 
-/* ===== TRADUCTION AUTOMATIQUE (TOUS LES TEXTES AJOUTÉS VIA L'INTERFACE) ===== */
+/* ===== TRADUCTION AUTOMATIQUE ===== */
 let trCache=ls.get("somun_tr",{});
 const pending=new Set();let flushing=false,nativeT=null,trFailures=0;
 function protectProperNames(str){
@@ -1310,7 +1281,7 @@ async function refreshAll(){
 }
 
 /* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
-const ROUTES=["accueil","activites","ressources","jeu","quiz","diplomatie","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
+const ROUTES=["accueil","activites","ressources","jeu","quiz","diplomatie","adherer","pole","bureau","partenaires","admin","account","login","actus","reset","mentions"];
 const ROUTE_RANK={
   accueil:0,
   actus:0.5,
@@ -1327,7 +1298,8 @@ const ROUTE_RANK={
   admin:7,
   account:8,
   login:8,
-  reset:8
+  reset:8,
+  mentions:9
 };
 function rankOf(r){
   return ROUTE_RANK[r]??8;
@@ -1375,9 +1347,8 @@ window.addEventListener("scroll",()=>{
   const h=$("#hdr");
   if(h)h.classList.toggle("scrolled",window.scrollY>12);
 },{passive:true});
-/* --- Onglets (menu ordinateur et barre du téléphone) ---
-   Les onglets ne sont reconstruits que si leur liste change (langue, accès admin) ; la pastille,
-   elle, reste en place et glisse de l'onglet précédent vers le nouveau en s'étirant. */
+
+/* --- Onglets --- */
 const TABS={};
 const tabsReduce=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
 const tabsLead=t=>1-Math.pow(1-t,4);
@@ -1424,7 +1395,7 @@ function tabsGo(s,btn,instant){
   tabsReveal(s,btn,instant);
   if(instant||s.l==null||tabsReduce()||(Math.abs(L-s.l)<1&&Math.abs(W-s.w)<1)){
     cancelAnimationFrame(s.raf);s.raf=0;
-    const fresh=!s.box.classList.contains("ready");   // premier affichage : pas de fondu, pour éviter un clignotement
+    const fresh=!s.box.classList.contains("ready");
     if(fresh)pill.style.transition="none";
     tabsPut(s,L,W);pill.classList.remove("moving");pill.style.opacity="1";s.box.classList.add("ready");
     if(fresh){pill.getBoundingClientRect();pill.style.transition=""}
@@ -1436,10 +1407,10 @@ function tabsGo(s,btn,instant){
   let t0=null;
   pill.classList.add("moving");pill.style.opacity="1";
   const step=now=>{
-    if(t0==null)t0=now;   // l'horloge part de la première image (sinon, sur un ordinateur chargé, la pastille pouvait reculer d'un cran)
+    if(t0==null)t0=now;
     const t=Math.max(0,Math.min(1,(now-t0)/dur)),lead=tabsLead(t),trail=tabsTrail(t);
     let l=L0+(L-L0)*(toRight?trail:lead),r=R0+(R1-R0)*(toRight?lead:trail);
-    if(r-l>cap){if(toRight)l=r-cap;else r=l+cap}   // la pastille s'étire, mais jamais sur tout le menu
+    if(r-l>cap){if(toRight)l=r-cap;else r=l+cap}
     tabsPut(s,l,r-l);
     if(t<1)s.raf=requestAnimationFrame(step);
     else{s.raf=0;pill.classList.remove("moving")}
@@ -1473,8 +1444,9 @@ function render(keep,instantThumb){
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
   const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
-  if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
-  if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener noreferrer">Instagram</a>`);
+  if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
+  fl.push(`<button type="button" class="f-link-btn" onclick="go('mentions')">${esc(t("legal_link"))}</button>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
@@ -1485,10 +1457,9 @@ function render(keep,instantThumb){
   tabsBuild("tabbar",main.map(([k,i,l])=>[k,t(l),TABICON[i]]).concat([["more",t("more"),TABICON.menu,"openMore()"]]),inMore?"more":cur,{pill:"tab-pill",label:"Menu"});
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
-  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset,mentions:vMentions};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
-  /* glissement "poussé" : l'ancienne page part dans le sens opposé à la nouvelle */
   let ghost=null;
   const prev=appEl.firstElementChild;
   if(animCls&&prev&&prev.classList.contains("view")&&!reduceMotionGlobe()){
@@ -1523,11 +1494,66 @@ function closeSheet(){
   document.body.style.overflow="";
 }
 function openMore(){
-  const items=[["jeu","🎮",t("game")],["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")]];
+  const items=[["jeu","🎮",t("game")],["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")],["mentions","⚖️",t("legal_link")]];
   if(isStaff())items.push(["admin","⚙️",t("admin")]);
   openSheet(`<h3>${t("more")}</h3><div class="more-list">${items.map(([k,i,l])=>`<button onclick="go('${k}')">${i}  ${esc(l)}</button>`).join("")}</div>`);
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#sheetbg").classList.contains("open"))closeSheet()});
+
+/* ===== MENTIONS LÉGALES (FR / EN) ===== */
+function vMentions(){
+  const contact=esc(cfg("contact_email")||DEFAULT_CONTACT);
+  if(lang==="en"){
+    return `<h1>${t("legal_t")}</h1>
+    <div class="card legal-card reveal">
+      <h2>1. Website publisher</h2>
+      <p>The website <strong>SOMUN — Sorbonne Model United Nations</strong> is published by the association <strong>Sorbonne Model United Nations (SOMUN)</strong>, a non-profit association governed by the French Law of 1 July 1901.<br>
+      Registered office: Université Paris 1 Panthéon-Sorbonne, 12 Place du Panthéon, 75005 Paris, France.<br>
+      Contact email: <a href="mailto:${contact}">${contact}</a><br>
+      Publication Director: <strong>Servan GIL</strong>, acting as President of the association.</p>
+
+      <h2>2. Hosting and technical infrastructure</h2>
+      <p>The website is hosted by <strong>GitHub, Inc.</strong>, 88 Colin P Kelly Jr St, San Francisco, CA 94107, United States.<br>
+      User accounts, event registrations, and association data are managed using <strong>Supabase, Inc.</strong> (970 Toa Payoh North #07-04, Singapore — secure cloud database and authentication infrastructure hosted within the European Union).</p>
+
+      <h2>3. Intellectual property</h2>
+      <p>All content available on this website (texts, logos, visuals, quizzes, simulations, and downloadable documents) is protected by intellectual property law and remains the exclusive property of SOMUN or its respective rights holders. Any reproduction, representation, modification, or distribution, in whole or in part, without prior written authorisation is strictly prohibited.</p>
+
+      <h2>4. Personal data (GDPR)</h2>
+      <p>Information collected when creating an account, registering for an event, or tracking membership (first name, last name, email address, membership status, registrations, and association activities) is processed solely for the operation of the association and the management of its activities, on the legal basis of contractual performance (membership / event registration) and the legitimate interest of the association.<br>
+      Data is retained for the duration of the active account and the current academic year, and is deleted immediately upon account deletion.<br>
+      In accordance with the General Data Protection Regulation (GDPR — EU Regulation 2016/679) and the French Data Protection Act (<em>Loi Informatique et Libertés</em>), you have the right to access, rectify, restrict, and erase your personal data. You may exercise these rights directly from your account page or by writing to <a href="mailto:${contact}">${contact}</a>. You also have the right to lodge a complaint with the French supervisory authority (<strong>CNIL</strong> — <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>).</p>
+
+      <h2>5. Payments and external links</h2>
+      <p>Payments related to memberships and paid events are processed via <strong>HelloAsso</strong> in accordance with its own terms of use and privacy policy.<br>
+      This website may contain links to third-party services (external forms, shared folders, social networks, partners) over which SOMUN exercises no permanent editorial control.</p>
+    </div>`;
+  }
+  return `<h1>${t("legal_t")}</h1>
+  <div class="card legal-card reveal">
+    <h2>1. Éditeur du site</h2>
+    <p>Le site <strong>SOMUN — Sorbonne Model United Nations</strong> est édité par l'association <strong>Sorbonne Model United Nations (SOMUN)</strong>, association à but non lucratif régie par la loi du 1<sup>er</sup> juillet 1901.<br>
+    Adresse de domiciliation : Université Paris 1 Panthéon-Sorbonne, 12 Place du Panthéon, 75005 Paris, France.<br>
+    Contact : <a href="mailto:${contact}">${contact}</a><br>
+    Directeur de la publication : <strong>Servan GIL</strong>, en qualité de Président de l'association.</p>
+
+    <h2>2. Hébergement et infrastructure</h2>
+    <p>L'hébergement du site est assuré par <strong>GitHub, Inc.</strong>, 88 Colin P Kelly Jr St, San Francisco, CA 94107, États-Unis.<br>
+    La gestion des comptes, des inscriptions et des données associatives s'appuie sur <strong>Supabase, Inc.</strong> (970 Toa Payoh North #07-04, Singapour — hébergement cloud sécurisé et base de données situés dans l'Union européenne).</p>
+
+    <h2>3. Propriété intellectuelle</h2>
+    <p>L'ensemble des contenus présents sur ce site (textes, logos, visuels, quiz, simulations et documents mis à disposition) est protégé par le droit de la propriété intellectuelle et demeure la propriété exclusive de SOMUN ou de ses ayants droit. Toute reproduction ou représentation, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
+
+    <h2>4. Données personnelles (RGPD)</h2>
+    <p>Les informations recueillies lors de la création d'un compte, de l'inscription à un événement ou du suivi d'adhésion (prénom, nom, adresse e-mail, statut d'adhérent, inscriptions et activités associatives) sont utilisées uniquement pour le fonctionnement de l'association et la gestion de ses activités, sur la base légale de l'exécution du contrat associatif et de l'intérêt légitime de l'association.<br>
+    Les données sont conservées pendant la durée de vie du compte et de l'année universitaire en cours, puis supprimées sur simple demande ou dès la suppression du compte par l'utilisateur.<br>
+    Conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, de limitation et d'effacement de vos données. Vous pouvez exercer ces droits directement depuis votre espace compte ou en écrivant à <a href="mailto:${contact}">${contact}</a>. Vous disposez également du droit d'introduire une réclamation auprès de la <strong>CNIL</strong> (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>).</p>
+
+    <h2>5. Paiements et liens externes</h2>
+    <p>Les paiements liés aux adhésions et événements payants sont opérés via <strong>HelloAsso</strong> selon ses propres conditions générales d'utilisation.<br>
+    Le site peut contenir des liens vers des services tiers (formulaires, documents partagés, réseaux sociaux, partenaires) sur lesquels SOMUN n'exerce pas de contrôle éditorial permanent.</p>
+  </div>`;
+}
 
 /* ===== COMPOSANTS ===== */
 function evCard(e){
@@ -1562,8 +1588,8 @@ const errBox=()=>D.err?`<div class="info" style="background:#fde8e8;color:#9b1c1
 /* ===== VUES ===== */
 function socialLinks(){
   const l=[],ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin"),cMail=cfg("contact_email")||DEFAULT_CONTACT;
-  if(ig)l.push(`<a class="btn ghost sm" href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
-  if(li)l.push(`<a class="btn ghost sm" href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  if(ig)l.push(`<a class="btn ghost sm" href="${esc(ig)}" target="_blank" rel="noopener noreferrer">Instagram</a>`);
+  if(li)l.push(`<a class="btn ghost sm" href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   if(cMail)l.push(`<a class="btn ghost sm" href="mailto:${esc(cMail)}">✉️ ${t("contact")}</a>`);
   return l;
 }
@@ -1639,7 +1665,7 @@ function vRessources(){
       <h3 style="margin-top:8px">${esc(T(r.title))}</h3>
       ${r.description?`<p class="mute" style="margin:6px 0 12px">${esc(T(r.description))}</p>`:""}
       <div class="foot">
-        ${href?`<a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener">${t("open_doc")}</a>`:""}
+        ${href?`<a class="btn sm" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${t("open_doc")}</a>`:""}
         ${canEdit?`<div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editResource(${idArg(r.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('resources',${idArg(r.id)},this)">${t("del")}</button></div>`:""}
       </div>
     </div>`;
@@ -1675,7 +1701,7 @@ function vAdherer(){
   let action;
   if(!S.user)action=`<button class="btn" onclick="go('login')">${t("need_acc")}</button>`;
   else if(hasPaid())action=`<span class="tag free" style="font-size:14px;padding:6px 12px">${t("ha_verified")}</span>${p&&p.paid_until?`<div class="mute" style="margin-top:8px">${t("paid_until",{d:long(p.paid_until)})}</div>`:""}`;
-  else if(u)action=`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="btn gold" target="_blank" rel="noopener" href="${u}">${t("pay")}</a><button class="btn ghost sm" onclick="withBusy(this,async()=>{await loadPrivate();render(true);toast(t('t_ok'))})">${t("refresh_status")}</button></div>`;
+  else if(u)action=`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="btn gold" target="_blank" rel="noopener noreferrer" href="${u}">${t("pay")}</a><button class="btn ghost sm" onclick="withBusy(this,async()=>{await loadPrivate();render(true);toast(t('t_ok'))})">${t("refresh_status")}</button></div>`;
   else action=`<div class="info" style="margin:0">${t("ha_soon")}</div>`;
   return `<h1>${t("join_t")}</h1><p class="mute">${t("join_s")}</p>
   <div class="plan reveal"><div class="mute">${t("season")}</div><div class="price">${price} €</div>
@@ -1683,7 +1709,7 @@ function vAdherer(){
    <p class="mute" style="font-size:12px;margin:14px 0 0">${S.user&&!hasPaid()&&u?esc(t("ha_sync",{e:S.user.email}))+"<br>":""}${t("secure")}</p></div>`;
 }
 
-/* --- Onglet Bureau & Fiche Bio grand format --- */
+/* --- Onglet Bureau & Fiche Bio grand format (sécurisé contre l'injection d'attributs) --- */
 function firstKey(name){
   return String(name||"").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 }
@@ -1716,19 +1742,30 @@ function boardBioPhoto(m){
   if(key==="come")return "photo_bio_come.jpeg";
   return boardMemberPhoto(m);
 }
-function photoFallbackAttr(src,init,cls,extraCls=""){
-  const safe=safeAsset(src)||"";
-  if(safe.toLowerCase().endsWith(".jpeg")){
-    const jpg=safe.slice(0,-5)+".jpg";
-    return `onerror="if(!this.dataset.fb1){this.dataset.fb1=1;this.src='${esc(jpg)}'}else if(!this.dataset.fb2){this.dataset.fb2=1;this.src='IMG_2778.jpeg'}else{this.outerHTML='<div class=\\'${cls} ${extraCls}\\'>${esc(init)}</div>'"`;
+function handleImgError(img){
+  const src=img.getAttribute("src")||"";
+  if(!img.dataset.fb1&&src.toLowerCase().endsWith(".jpeg")){
+    img.dataset.fb1="1";
+    img.src=src.slice(0,-5)+".jpg";
+    return;
   }
-  return `onerror="this.outerHTML='<div class=\\'${cls} ${extraCls}\\'>${esc(init)}</div>'"`;
+  if(!img.dataset.fb2&&img.dataset.fallback==="1"){
+    img.dataset.fb2="1";
+    img.src="IMG_2778.jpeg";
+    return;
+  }
+  const div=document.createElement("div");
+  div.className=img.className;
+  div.textContent=img.dataset.init||"?";
+  img.replaceWith(div);
 }
 function avatarMarkup(src,init,cls,extraCls=""){
   const safe=safeAsset(src);
+  const fullCls=extraCls?`${cls} ${extraCls}`:cls;
+  const hasJpegFallback=safe&&safe.toLowerCase().endsWith(".jpeg")?"1":"0";
   return safe
-    ?`<img class="${cls} ${extraCls}" src="${esc(safe)}" alt="${esc(init)}" loading="lazy" ${photoFallbackAttr(safe,init,cls,extraCls)}>`
-    :`<div class="${cls} ${extraCls}">${esc(init)}</div>`;
+    ?`<img class="${esc(fullCls)}" src="${esc(safe)}" alt="${esc(init)}" data-init="${esc(init)}" data-fallback="${hasJpegFallback}" loading="lazy" onerror="handleImgError(this)">`
+    :`<div class="${esc(fullCls)}">${esc(init)}</div>`;
 }
 function vBureau(){
   if(D.loading)return loadingBox();
@@ -1758,8 +1795,8 @@ function openBoardBio(id){
   const ig=normalizeUrl(m.instagram_url||m.insta_url,"instagram");
   const li=normalizeUrl(m.linkedin_url,"linkedin");
   const links=[];
-  if(ig)links.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
-  if(li)links.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
+  if(ig)links.push(`<a href="${esc(ig)}" target="_blank" rel="noopener noreferrer">Instagram</a>`);
+  if(li)links.push(`<a href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   const socialBlock=links.length
     ?`<div class="bio-socials"><span class="bio-socials-lbl">${t("follow")}</span><div class="bio-socials-links">${links.join("")}</div></div>`
     :"";
@@ -1791,12 +1828,12 @@ function editBoardBio(id){
   const init=((m.name||"?").trim()[0]||"?").toUpperCase();
   openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
    <h3>✏️ ${esc(protectProperNames(m.name))}</h3>
-   <form onsubmit="saveBoardBio(event,${idArg(m.id)})">
+   <form id="bioEditForm" data-init="${esc(init)}" onsubmit="saveBoardBio(event,${idArg(m.id)})">
     ${avatarMarkup(currentBioPhoto,init,"bio-preview")}
     <label>${t("f_bio_photo_url")}</label>
-    <input id="bioPhotoInput" name="bio_photo_url" value="${esc(currentBioPhoto)}" placeholder="photo_bio_come.jpeg ou https://…" oninput="previewBioPhoto(this.value,'${esc(init)}')">
+    <input id="bioPhotoInput" name="bio_photo_url" value="${esc(currentBioPhoto)}" placeholder="photo_bio_come.jpeg ou https://…" oninput="previewBioPhoto(this.value)">
     <label>${t("f_photo_file")}</label>
-    <input type="file" accept="image/*" onchange="handleBioPhotoFile(this,'${esc(init)}')">
+    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleBioPhotoFile(this)">
     <div class="row2">
       <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
       <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
@@ -1808,18 +1845,31 @@ function editBoardBio(id){
    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="openBoardBio(${idArg(m.id)})">${t("back")}</button>
   </div>`,"bio-sheet");
 }
-function previewBioPhoto(val,init){
+function previewBioPhoto(val){
+  const form=$("#bioEditForm");
+  const init=(form&&form.dataset.init)||"?";
   const box=$("#sheet .bio-preview");
   if(!box)return;
   const safe=safeAsset(val);
   if(safe){
-    box.outerHTML=`<img class="bio-preview" src="${esc(safe)}" alt="${esc(init)}" ${photoFallbackAttr(safe,init,"bio-preview")}>`;
+    const img=document.createElement("img");
+    img.className="bio-preview";
+    img.src=safe;
+    img.alt=init;
+    img.dataset.init=init;
+    img.dataset.fallback=safe.toLowerCase().endsWith(".jpeg")?"1":"0";
+    img.onerror=function(){handleImgError(this)};
+    box.replaceWith(img);
   }else{
-    box.outerHTML=`<div class="bio-preview">${esc(init)}</div>`;
+    const div=document.createElement("div");
+    div.className="bio-preview";
+    div.textContent=init;
+    box.replaceWith(div);
   }
 }
-function handleBioPhotoFile(input,init){
+function handleBioPhotoFile(input){
   const file=input.files&&input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){input.value="";return toast(t("e_file_big"))}
   const reader=new FileReader();
   reader.onload=()=>{
     const img=new Image();
@@ -1832,7 +1882,7 @@ function handleBioPhotoFile(input,init){
       const dataUrl=c.toDataURL("image/jpeg",0.85);
       const inp=$("#bioPhotoInput");
       if(inp)inp.value=dataUrl;
-      previewBioPhoto(dataUrl,init);
+      previewBioPhoto(dataUrl);
     };
     img.src=reader.result;
   };
@@ -1873,14 +1923,13 @@ function vPartenaires(){
   return `<h1>${t("part_t")}</h1><p class="mute">${t("part_s")}</p>
   ${D.partners.length?`<div class="partners">${D.partners.map(p=>{
     const href=normalizeUrl(p.url||p.website);
-    return href?`<a class="card reveal" href="${esc(href)}" target="_blank" rel="noopener">${esc(T(p.name))}</a>`:`<div class="card reveal">${esc(T(p.name))}</div>`;
+    return href?`<a class="card reveal" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(T(p.name))}</a>`:`<div class="card reveal">${esc(T(p.name))}</div>`;
   }).join("")}</div>`:`<div class="card empty">${t("part_empty")}</div>`}
   <h2>${t("part_sp")}</h2><div class="card"><p class="mute" style="margin-top:0">${t("part_txt")}</p>
   ${contact?`<a class="btn sm" href="mailto:${esc(contact)}?subject=${encodeURIComponent("Partenariat SOMUN")}">${t("part_contact")}</a>`:""}</div>`;
 }
 
-/* --- Jeux : la page « Jeu » propose la simulation diplomatique et le quiz des ROP.
-   La simulation est dans le fichier simulateur.js, chargé seulement quand on l'ouvre --- */
+/* --- Jeux --- */
 const SIM_ART=`<svg viewBox="0 0 340 170" aria-hidden="true"><path d="M94 158A76 76 0 0 1 246 158" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="12" stroke-linecap="round"/><g transform="translate(103,136)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(129,101)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(170,88)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(211,101)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(237,136)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><path d="M50 158A120 120 0 0 1 290 158" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="12" stroke-linecap="round"/><g transform="translate(62,123)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="73" cy="110" r="3.2" fill="#3ddc84"/><g transform="translate(81,87)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="92" cy="74" r="3.2" fill="#3ddc84"/><g transform="translate(112,60)" fill="#EBC000" opacity="1"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="123" cy="47" r="3.2" fill="#ff6b78"/><g transform="translate(150,46)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="161" cy="33" r="3.2" fill="#3ddc84"/><g transform="translate(190,46)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="201" cy="33" r="3.2" fill="#EBC000"/><g transform="translate(228,60)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="228" cy="57" r="14" fill="none" stroke="#fff" stroke-width="2" stroke-opacity=".7"/><g transform="translate(248,30)"><path d="M-11-9h22a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-13l-5 5v-5h-4a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="#fff"/><circle cx="-5" cy="-2" r="1.5" fill="#020259"/><circle cy="-2" r="1.5" fill="#020259"/><circle cx="5" cy="-2" r="1.5" fill="#020259"/></g><g transform="translate(259,87)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="270" cy="74" r="3.2" fill="#ff6b78"/><g transform="translate(278,123)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="289" cy="110" r="3.2" fill="#3ddc84"/><rect x="146" y="140" width="48" height="11" rx="3" fill="#EBC000"/><g transform="translate(170,134)" fill="#fff" opacity="0.95"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g></svg>`;
 const SIM_FILE="simulateur.js?v=1.0.1";
 let simLoading=null,simOpen=null;
@@ -1926,7 +1975,7 @@ function vDiplomatie(){
   return backGames()+`<div class="card empty" style="margin-top:12px">${t("diplo_load")}</div>`;
 }
 
-/* --- Fiche événement + Study Guide Training + Formulaire Voyage --- */
+/* --- Fiche événement --- */
 function vEvent(){
   if(D.loading)return loadingBox();
   const back=`<button class="chip" onclick="go('activites')">${t("back_acts")}</button>`;
@@ -1952,7 +2001,7 @@ function vEvent(){
   const sgBlock=(canSeeSG||canEditSG)?`<div class="sg-box">
     <h3>📘 ${esc(T(e.study_guide_title||t("sg_box")))}</h3>
     <div class="actions" style="margin-top:10px">
-      ${sgHref?`<a class="btn sm" href="${esc(sgHref)}" target="_blank" rel="noopener">${t("sg_open")}</a>`:`<span class="mute">${t("none_yet")}</span>`}
+      ${sgHref?`<a class="btn sm" href="${esc(sgHref)}" target="_blank" rel="noopener noreferrer">${t("sg_open")}</a>`:`<span class="mute">${t("none_yet")}</span>`}
     </div></div>`:"";
 
   return `${back}
@@ -1989,7 +2038,7 @@ async function saveStudyGuide(ev,id){
   });
 }
 
-/* --- Liste des inscrits (Bureau / Training Lead) --- */
+/* --- Liste des inscrits --- */
 async function loadRegistrants(){
   if(!configured||(!isStaff()&&!isTrainingLead())||route!=="event"||evSel==null)return;
   const e=D.events.find(x=>String(x.id)===String(evSel));
@@ -2036,7 +2085,7 @@ function exportCSV(id){
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
-/* --- Inscription & Formulaire externe (Voyages) --- */
+/* --- Inscription & Formulaire externe --- */
 function openFormEvent(id){
   if(!S.user){toast(t("t_need"));go("login");return}
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
@@ -2058,7 +2107,7 @@ function openReg(id){
 function haSheet(e){
   const u=eventUrl(e);
   openSheet(`<h3>${esc(T(e.title))}</h3><p>${t("ha_after")}</p>
-   ${u?`<a class="btn gold" style="width:100%" target="_blank" rel="noopener" href="${u}">${t("go_ha")}</a>`:`<div class="info">${t("t_err_slug")}</div>`}
+   ${u?`<a class="btn gold" style="width:100%" target="_blank" rel="noopener noreferrer" href="${u}">${t("go_ha")}</a>`:`<div class="info">${t("t_err_slug")}</div>`}
    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
 function payEvent(id){const e=D.events.find(x=>String(x.id)===String(id));if(e)haSheet(e)}
@@ -2153,536 +2202,428 @@ function vAccount(){
    <h3 style="margin-top:14px">${t("my_history")}</h3>${histRows.length?histRows.map(h=>`<div class="mute" style="margin-top:4px">• <b>${esc(t("hist_season",{s:h.season||currentSeason()}))}</b> — ${esc(t("hist_source",{d:long(h.created_at),src:h.source||"HelloAsso"}))}</div>`).join(""):`<div class="mute">${t("none_yet")}</div>`}
    <h3 style="margin-top:14px">${t("my_regs")}</h3>${regs.map(e=>{
      const sg=e.type==="Training"&&D.myRegs[e.id]==="confirmed"&&safeUrl(e.study_guide_url);
-     return `<div class="mute" style="margin-top:6px">• <button class="linkish" onclick="openEvent(${idArg(e.id)})">${esc(T(e.title))}</button> — ${long(e.date)} ${D.myRegs[e.id]==="pending"?`<span class="tag paid">${t("pending")}</span> <button class="btn sm" onclick="payEvent(${idArg(e.id)})">${t("pay_now")}</button>`:""}${sg?` · <a href="${esc(sg)}" target="_blank" rel="noopener">📘 Study Guide ↗</a>`:""}</div>`;
+     return `<div class="mute" style="margin-top:4px">• <button class="linkish" onclick="openEvent(${idArg(e.id)})">${esc(T(e.title))}</button> (${long(e.date)})${D.myRegs[e.id]==="pending"?` <span class="tag paid">${t("pending")}</span>`:""}${sg?` · <a href="${esc(sg)}" target="_blank" rel="noopener noreferrer">📘 Study Guide ↗</a>`:""}</div>`;
    }).join("")||`<div class="mute">${t("none_yet")}</div>`}
    <br><button class="btn ghost sm" onclick="logout()">${t("logout")}</button></div>
-  <div class="card" style="margin-top:14px"><h3>${t("profile_t")}</h3><form onsubmit="saveProfile(event)">
-   <div class="row2"><div><label>${t("fn")}</label><input name="prenom" required maxlength="60" value="${esc(protectProperNames(p.prenom||""))}" autocomplete="given-name"></div>
-   <div><label>${t("ln")}</label><input name="nom" required maxlength="60" value="${esc(p.nom||"")}" autocomplete="family-name"></div></div>
-   <label>${t("ha_alt_mail")}</label><input name="helloasso_email" type="email" maxlength="120" value="${esc(p.helloasso_email||"")}">
-   <div class="mute" style="font-size:12px;margin-top:4px">${t("ha_alt_hint")}</div>
-   <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
-  <div class="card danger-zone" style="margin-top:14px"><h3>${t("danger_t")}</h3><p class="mute" style="margin-top:4px">${t("danger_txt")}</p>
-   <button class="btn sm danger" onclick="openDelete()">${t("danger_t")}</button></div>`;
+   <div class="card" style="margin-top:16px"><h3>${t("profile_t")}</h3><form onsubmit="saveProfile(event)">
+    <div class="row2"><div><label>${t("fn")}</label><input name="prenom" required maxlength="60" value="${esc(protectProperNames(p.prenom||""))}"></div><div><label>${t("ln")}</label><input name="nom" required maxlength="60" value="${esc(p.nom||"")}"></div></div>
+    <label>${t("ha_alt_mail")}</label><input name="helloasso_email" type="email" placeholder="autre.adresse@exemple.fr" value="${esc(p.helloasso_email||"")}">
+    <div class="mute" style="font-size:12px;margin-top:4px">${t("ha_alt_hint")}</div>
+    <br><button class="btn sm" type="submit">${t("save")}</button>
+   </form></div>
+   <div class="card danger-zone" style="margin-top:16px"><h3>${t("danger_t")}</h3><p class="mute" style="margin-top:4px">${t("danger_txt")}</p>
+    <button class="btn danger sm" onclick="openDeleteAccount()">${t("danger_t")}</button></div>`;
 }
 async function saveProfile(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),prenom=protectProperNames(String(f.get("prenom")||"").trim()),nom=String(f.get("nom")||"").trim();
+    const f=new FormData(ev.target);
     const haMail=String(f.get("helloasso_email")||"").trim().toLowerCase()||null;
-    if(!prenom||!nom)return;
-    const {error}=await sb.from("profiles").update({prenom,nom,helloasso_email:haMail}).eq("id",S.user.id);
+    const {error}=await sb.from("profiles").update({prenom:protectProperNames(f.get("prenom").trim()),nom:f.get("nom").trim(),helloasso_email:haMail}).eq("id",S.user.id);
     if(error)return toast(errMsg(error));
     await loadPrivate();render(true);toast(t("t_ok"));
   });
 }
-function openDelete(){
+function openDeleteAccount(){
+  const word=t("danger_word");
   openSheet(`<h3>${t("danger_t")}</h3><p class="mute">${t("danger_txt")}</p>
-   <label>${t("danger_confirm")}</label><input id="delword" placeholder="${esc(t("danger_word"))}" autocomplete="off" oninput="$('#delbtn').disabled=this.value.trim().toUpperCase()!==t('danger_word')">
-   <button class="btn danger" id="delbtn" style="width:100%;margin-top:14px" disabled onclick="deleteAccount(this)">${t("danger_btn")}</button>
-   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+   <form onsubmit="confirmDeleteAccount(event)">
+    <label>${t("danger_confirm")}</label><input id="delword" required autocomplete="off" placeholder="${esc(word)}">
+    <br><br><button class="btn danger" type="submit" style="width:100%">${t("danger_btn")}</button>
+   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
-async function deleteAccount(btn){
+async function confirmDeleteAccount(ev){
+  ev.preventDefault();
+  if($("#delword").value.trim().toUpperCase()!==t("danger_word"))return;
+  const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const {error}=await sb.rpc("delete_my_account");
     if(error)return toast(errMsg(error));
+    closeSheet();clearUser();
     try{await sb.auth.signOut({scope:"local"})}catch(e){}
-    clearUser();toast(t("t_deleted"));go("accueil");
+    toast(t("t_deleted"));go("accueil");
   });
 }
 
-/* --- Pôles & droits Responsable de pôle (avec sous-pôles Relations Externes) --- */
+/* --- Espace pôles + sous-pôles événementiel --- */
 const SUBPOLES=[
-  {key:"culturel",label:"Culturel",i18n:"subpole_culturel",driveKey:"drive_re_culturel"},
-  {key:"partenariats",label:"Partenariats",i18n:"subpole_partenariats",driveKey:"drive_re_partenariats"},
-  {key:"alumni",label:"Alumni",i18n:"subpole_alumni",driveKey:"drive_re_alumni"}
+  {id:"all",key:"subpole_all"},
+  {id:"culturel",key:"subpole_culturel"},
+  {id:"partenariats",key:"subpole_partenariats"},
+  {id:"alumni",key:"subpole_alumni"}
 ];
-const isRelExt=p=>Boolean(p&&/relations?\s*externes|external\s*relations/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`));
-function parseTaskSubpole(title){
-  const m=String(title||"").match(/^\[(Culturel|Partenariats|Alumni)\]\s*(.*)$/i);
-  if(!m)return {sub:"culturel",clean:String(title||"")};
-  return {sub:m[1].toLowerCase(),clean:m[2]};
-}
+const isEventPole=p=>/ev[eé]nementiel|event/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`);
+
 function vPole(){
   if(D.loading)return loadingBox();
-  if(!S.user)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("members")}<br><br><button class="btn" onclick="go('login')">${t("login")}</button></div>`;
-  const visible=D.poles.filter(p=>isStaff()||D.myPoles.includes(p.id));
-  if(!poleSel){
-    if(!visible.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
-    return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p>
-     <div class="pole-pick">${visible.map(p=>`<button onclick="openPole(${idArg(p.id)})">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
+  if(!S.user)return `<h1>${t("poles_t")}</h1><p class="mute">${t("members")}</p><button class="btn" onclick="go('login')">${t("login")}</button>`;
+  const avail=isStaff()?D.poles:D.poles.filter(p=>D.myPoles.includes(p.id));
+  if(!avail.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
+  if(!poleSel&&avail.length===1)poleSel=String(avail[0].id);
+  const pole=avail.find(p=>String(p.id)===String(poleSel));
+  if(!pole){
+    poleSel=null;
+    return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p><div class="pole-pick">${avail.map(p=>`<button onclick="selectPole(${idArg(p.id)})">${esc(p.icon||"📁")} ${esc(poleName(p))}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
   }
-  const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p){poleSel=null;return vPole()}
-  const hasSub=isRelExt(p),lead=isPoleLead(p.id);
-  const activeSub=hasSub?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
-  const rawDrive=hasSub?(cfg(activeSub.driveKey)||p.drive_url||p.doc_url):(p.drive_url||p.doc_url);
-  const docUrl=normalizeUrl(rawDrive);
+  const drive=safeUrl(pole.drive_url),lead=isPoleLead(pole.id),hasSub=isEventPole(pole);
+  const team=D.memberPoles.filter(x=>String(x.pole_id)===String(pole.id));
+  const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
+  const inTeam=new Set(team.map(x=>x.user_id));
+  const candidates=D.members.filter(m=>!inTeam.has(m.id)).sort((a,b)=>(a.nom+" "+a.prenom).localeCompare(b.nom+" "+b.prenom,"fr"));
 
-  const visibleTasks=hasSub
-    ?D.tasks.filter(x=>parseTaskSubpole(x.title).sub===activeSub.key)
+  const visibleTasks=hasSub&&subPoleSel!=="all"
+    ?D.tasks.filter(x=>(x.subpole||"culturel")===subPoleSel)
     :D.tasks;
 
-  const col=(k,l)=>{const items=visibleTasks.filter(x=>x.status===k);
-    return `<div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')">
-     <h4>${l}<span>${items.length}</span></h4>${items.map(x=>{const tid=idArg(x.id),cleanTitle=hasSub?parseTaskSubpole(x.title).clean:x.title;return `<div class="task" draggable="true" ondragstart="dragStart(${tid})" ondragend="this.classList.remove('drag')">${esc(T(cleanTitle))}
-      <div class="tb">${k!=="todo"?`<button onclick="moveTask(${tid},-1,this)" aria-label="←">‹</button>`:""}${k!=="done"?`<button onclick="moveTask(${tid},1,this)" aria-label="→">›</button>`:""}<button onclick="delTask(${tid},this)" aria-label="×">×</button></div></div>`}).join("")}</div>`};
+  const subTabs=hasSub?`<div class="chips" style="margin:6px 0 12px">${SUBPOLES.map(sp=>`<button class="chip ${subPoleSel===sp.id?"on":""}" onclick="subPoleSel='${sp.id}';render(true)">${esc(t(sp.key))}</button>`).join("")}</div>`:"";
 
-  let leadPanel="";
-  if(lead){
-    const teamLinks=D.memberPoles.filter(x=>String(x.pole_id)===String(p.id));
-    const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
-    const inIds=new Set(teamLinks.map(x=>x.user_id));
-    const candidates=D.members.filter(m=>!inIds.has(m.id));
-    leadPanel=`<h2>${t("pole_team")}</h2><div class="card">
-      ${candidates.length?`<div style="display:flex;gap:8px;margin-bottom:12px"><select id="addPoleMem"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")} (${esc(m.email||"")})</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(p.id)},this)">${t("add")}</button></div>`:""}
-      ${teamLinks.map(link=>{const m=byId[link.user_id]||{};const uid=sid(link.user_id);return `<div class="foot" style="border-bottom:1px solid var(--line);padding:8px 0;margin:0">
-        <span><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">(${esc(m.email||"")})</span></span>
-        <div style="display:flex;gap:6px;align-items:center">
-          ${isStaff()?`<select style="width:auto;padding:4px 8px;font-size:12px" onchange="setPoleMemberRole('${uid}',${idArg(p.id)},this.value,this)">
-            <option value="member" ${(link.role||"member")==="member"?"selected":""}>${t("pole_member")}</option>
-            <option value="lead" ${link.role==="lead"?"selected":""}>${t("pole_lead")}</option>
-          </select>`:`<span class="tag ${link.role==="lead"?"paid":"gray"}">${link.role==="lead"?t("pole_lead"):t("pole_member")}</span>`}
-          ${(isStaff()||link.role!=="lead")?`<button class="btn danger sm" onclick="removePoleMember('${uid}',${idArg(p.id)},this)">×</button>`:""}
-        </div></div>`}).join("")||`<div class="mute">${t("no_members")}</div>`}
-    </div>`;
-  }
-
-  const subTabs=hasSub?`<div class="chips" style="margin:14px 0 4px">${SUBPOLES.map(s=>`<button class="chip ${activeSub.key===s.key?"on":""}" onclick="subPoleSel='${s.key}';render(false,true)">${esc(t(s.i18n))}</button>`).join("")}</div>`:"";
-
-  return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="chip" onclick="poleSel=null;go('pole')">${t("back")}</button>${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
-  <h1 style="margin-top:12px">${esc(p.icon||"")} ${esc(poleName(p))}</h1><div class="mute">${esc(poleDesc(p))}</div>
+  return `${avail.length>1?`<button class="chip" onclick="poleSel=null;syncHash();render()">${t("back")}</button>`:""}
+  <h1 style="margin-top:8px">${esc(pole.icon||"📁")} ${esc(poleName(pole))}</h1><p class="mute">${esc(poleDesc(pole))}</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    ${drive?`<a class="btn ghost sm" target="_blank" rel="noopener noreferrer" href="${drive}">📂 ${t("open_docs")}</a>`:""}
+    ${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(pole.id)})">✏️ ${t("edit_pole")}</button>`:""}
+  </div>
   ${subTabs}
-  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin:14px 0"><input name="t" maxlength="200" placeholder="${esc(t("new_task"))}${hasSub?" ("+esc(t(activeSub.i18n))+")":""}" required><button class="btn" type="submit">${t("add")}</button></form>
-  <div class="cols">${col("todo",t("todo"))}${col("doing",t("doing"))}${col("done",t("done"))}</div>
-  ${docUrl?`<h2>${t("docs")}${hasSub?" — "+esc(t(activeSub.i18n)):""}</h2><a class="btn ghost sm" href="${esc(docUrl)}" target="_blank" rel="noopener">${t("open_docs")}</a>`:""}
-  ${leadPanel}`;
+  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <input id="tinput" placeholder="${esc(t("new_task"))}" required maxlength="180" style="flex:1;min-width:200px">
+    ${hasSub?`<select id="tsubpole" style="width:auto;min-width:150px">${SUBPOLES.filter(s=>s.id!=="all").map(s=>`<option value="${s.id}" ${(subPoleSel==="all"?"culturel":subPoleSel)===s.id?"selected":""}>${esc(t(s.key))}</option>`).join("")}</select>`:""}
+    <button class="btn" type="submit">${t("add")}</button>
+  </form>
+  <div class="cols">${[["todo","todo"],["doing","doing"],["done","done"]].map(([k,l])=>{const items=visibleTasks.filter(x=>x.status===k);return `
+   <div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}',this)">
+    <h4>${t(l)} <span>${items.length}</span></h4>
+    ${items.map(x=>{const xid=idArg(x.id);
+      const spBadge=hasSub&&subPoleSel==="all"&&x.subpole?`<span class="tag" style="margin-bottom:6px">${esc(t("subpole_"+x.subpole)||x.subpole)}</span><br>`:"";
+      return `<div class="task" draggable="true" ondragstart="dragId=${xid};this.classList.add('drag')" ondragend="this.classList.remove('drag')">
+     <div>${spBadge}${esc(T(x.title))}</div><div class="tb">${k!=="todo"?`<button onclick="moveTask(${xid},'${k==="done"?"doing":"todo"}')" aria-label="←">←</button>`:""}${k!=="done"?`<button onclick="moveTask(${xid},'${k==="todo"?"doing":"done"}')" aria-label="→">→</button>`:""}<button onclick="delTask(${xid})" aria-label="${esc(t("del"))}">✕</button></div></div>`}).join("")}
+   </div>`}).join("")}</div>
+  ${lead?`<h2>${t("pole_team")} (${team.length})</h2>
+  <div class="card">${team.length?team.map(r=>{const m=byId[r.user_id]||{};const isL=(r.role||"member")==="lead";
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
+      <div><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">${esc(m.email||"")}</span> ${isL?`<span class="tag paid">★ ${t("pole_lead")}</span>`:""}</div>
+      <div style="display:flex;gap:6px"><button class="chip sm ${isL?"on":""}" onclick="setPoleRole(${idArg(pole.id)},'${sid(r.user_id)}','${isL?"member":"lead"}',this)">${isL?t("pole_member"):t("pole_lead")}</button><button class="btn danger sm" onclick="removeFromPole(${idArg(pole.id)},'${sid(r.user_id)}',this)">✕</button></div>
+    </div>`}).join(""):`<div class="mute">${t("no_members")}</div>`}
+    ${candidates.length?`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><select id="addpm" style="flex:1;min-width:200px"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}${m.email?" ("+esc(m.email)+")":""}</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(pole.id)},this)">+ ${t("add")}</button></div>`:""}
+  </div>`:""}`;
 }
-async function openPole(id){route="pole";poleSel=id;subPoleSel="culturel";D.tasks=[];syncHash();render();await Promise.all([loadTasks(),isPoleLead(id)&&!D.members.length?loadAdmin():Promise.resolve()]);render(true)}
+function selectPole(id){poleSel=String(id);D.tasks=[];syncHash();render();loadTasks().then(()=>render(true))}
+async function setPoleRole(pid,uid,role,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").update({role}).eq("pole_id",pid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
+  });
+}
+async function removeFromPole(pid,uid,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").delete().eq("pole_id",pid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
+  });
+}
+async function addMemberToPole(pid,btn){
+  const uid=$("#addpm").value;if(!uid)return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").insert({pole_id:pid,user_id:uid,role:"member"});
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
+  });
+}
 async function addTask(ev){
-  ev.preventDefault();
-  const input=ev.target.elements.t,rawTitle=input.value.trim();if(!rawTitle)return;
-  const p=D.poles.find(x=>String(x.id)===String(poleSel));
-  const sub=p&&isRelExt(p)?(SUBPOLES.find(s=>s.key===subPoleSel)||SUBPOLES[0]):null;
-  const title=sub?`[${sub.label}] ${rawTitle}`:rawTitle;
+  ev.preventDefault();const inp=$("#tinput"),title=inp.value.trim();if(!title||!poleSel)return;
+  const subEl=$("#tsubpole"),subpole=subEl?subEl.value:null;
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const {error}=await sb.from("tasks").insert({pole_id:poleSel,title,created_by:S.user.id});
-    if(error)return toast(errMsg(error));
-    input.value="";
-    await loadTasks();render(true);
+    const row={pole_id:poleSel,title,status:"todo"};
+    if(subpole)row.subpole=subpole;
+    let res=await sb.from("tasks").insert(row);
+    if(res.error&&/column.*subpole/i.test(res.error.message||"")){
+      delete row.subpole;
+      res=await sb.from("tasks").insert(row);
+    }
+    if(res.error)return toast(errMsg(res.error));
+    inp.value="";await loadTasks();render(true);
   });
 }
-const ORDER=["todo","doing","done"];
-async function setTaskStatus(id,status,btn){
-  const cur=D.tasks.find(z=>String(z.id)===String(id));
-  if(!cur||cur.status===status)return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("tasks").update({status}).eq("id",cur.id);
-    if(error)return toast(errMsg(error));
-    await loadTasks();render(true);
-  });
+async function moveTask(id,status){
+  const prev=D.tasks.find(x=>String(x.id)===String(id));const old=prev?prev.status:null;
+  if(prev)prev.status=status;render(true);
+  const {error}=await sb.from("tasks").update({status}).eq("id",id);
+  if(error){if(prev&&old)prev.status=old;render(true);toast(errMsg(error))}
 }
-function moveTask(id,dir,btn){const x=D.tasks.find(z=>String(z.id)===String(id));if(!x)return;const n=ORDER[ORDER.indexOf(x.status)+dir];if(n)setTaskStatus(x.id,n,btn)}
-async function delTask(id,btn){
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("tasks").delete().eq("id",id);
-    if(error)return toast(errMsg(error));
-    await loadTasks();render(true);
-  });
-}
-const dragStart=id=>{dragId=id};
-function dropTask(ev,to){ev.preventDefault();ev.currentTarget.classList.remove("over");if(dragId!==null){const id=dragId;dragId=null;setTaskStatus(id,to)}}
-
-async function addMemberToPole(pid,btn){
-  const sel=$("#addPoleMem");if(!sel||!sel.value)return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("pole_members").insert({user_id:sel.value,pole_id:pid,role:"member",assigned_by:S.user.id});
-    if(error)return toast(errMsg(error));
-    await loadAdmin();render(true);toast(t("t_ok"));
-  });
-}
-async function setPoleMemberRole(uid,pid,role,el){
-  await withBusy(el,async()=>{
-    const {error}=await sb.from("pole_members").update({role}).eq("user_id",uid).eq("pole_id",pid);
-    if(error)return toast(errMsg(error));
-    await loadAdmin();render(true);toast(t("t_ok"));
-  });
-}
-async function removePoleMember(uid,pid,btn){
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid);
-    if(error)return toast(errMsg(error));
-    await loadAdmin();render(true);toast(t("t_ok"));
-  });
+function dropTask(ev,s,col){ev.preventDefault();col.classList.remove("over");if(dragId!=null)moveTask(dragId,s)}
+async function delTask(id){
+  const idx=D.tasks.findIndex(x=>String(x.id)===String(id));const removed=idx>-1?D.tasks.splice(idx,1)[0]:null;render(true);
+  const {error}=await sb.from("tasks").delete().eq("id",id);
+  if(error){if(removed)D.tasks.splice(idx,0,removed);render(true);toast(errMsg(error))}
 }
 
-/* --- Administration (Bureau) --- */
+/* --- Administration --- */
 function vAdmin(){
-  if(D.loading)return loadingBox();
-  if(!isStaff())return `<div class="card empty">${t("admin_only")}</div>`;
+  if(!isStaff())return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_only")}</p>`;
   const tabs=[["members",t("tab_members")],["content",t("tab_content")],["org",t("tab_org")]];
   return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_s")}</p>
   <div class="chips" style="margin-top:10px">${tabs.map(([k,l])=>`<button class="chip ${adminTab===k?"on":""}" onclick="adminTab='${k}';render(false,true)">${l}</button>`).join("")}</div>
   ${adminTab==="members"?adminMembers():adminTab==="content"?adminContent():adminOrg()}`;
 }
+
 function adminMembers(){
+  const mp=new Set(D.memberPoles.map(x=>x.user_id+":"+x.pole_id));
+  const qm=memberQ.trim().toLowerCase();
   const filters=[["all",t("filter_all")],["paid",t("filter_paid")],["unpaid",t("filter_unpaid")],["bureau",t("filter_bureau")]];
-  return `<div class="card" style="margin-bottom:14px">
-    <h3>${t("ha_tools")}</h3>
-    <p class="mute" style="margin:4px 0 10px">${t("ha_sync_info")}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn sm" onclick="syncHelloAssoAPI(this)">🔄 ${t("sync_ha")}</button>
-      <label class="btn ghost sm" style="margin:0;cursor:pointer">📥 ${t("import_csv")}<input type="file" accept=".csv,text/csv" style="display:none" onchange="importHelloAssoCSV(this)"></label>
-      <button class="btn danger sm" onclick="runPassation(this)">🎓 ${t("reset_year")}</button>
-    </div>
-  </div>
-  <input class="search" placeholder="🔍  ${esc(t("search_member"))}" value="${esc(memberQ)}" oninput="memberQ=this.value;memList()">
-  <div class="chips" style="margin-top:8px">${filters.map(([k,l])=>`<button class="chip sm ${memberFilt===k?"on":""}" onclick="memberFilt='${k}';render(false,true)">${l}</button>`).join("")}</div>
-  <div id="memlist" style="margin-top:8px">${memListHTML()}</div>`;
-}
-const memList=()=>{$("#memlist").innerHTML=memListHTML()};
-function memListHTML(){
-  const s=memberQ.trim().toLowerCase();
-  const l=D.members.filter(m=>{
+  const shown=D.members.filter(m=>{
     if(memberFilt==="paid"&&!m.paid)return false;
     if(memberFilt==="unpaid"&&m.paid)return false;
     if(memberFilt==="bureau"&&m.role!=="bureau")return false;
-    return `${m.prenom||""} ${m.nom||""} ${m.email||""} ${m.helloasso_email||""}`.toLowerCase().includes(s);
+    if(!qm)return true;
+    return `${m.prenom||""} ${m.nom||""} ${m.email||""}`.toLowerCase().includes(qm);
   });
-  if(!l.length)return `<div class="empty">${t("no_members")}</div>`;
-  return l.map(m=>{
-    const links=D.memberPoles.filter(x=>x.user_id===m.id);
-    const byPole=Object.fromEntries(links.map(x=>[String(x.pole_id),x.role||"member"]));
-    const self=m.id===S.user.id,uid=sid(m.id);
-    return `<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</h3><div class="mute">${esc(m.email||"")}${m.helloasso_email?" · HA: "+esc(m.helloasso_email):""}</div>
-      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        ${m.paid?`<span class="tag free">${t("ha_verified")}</span>`:`<span class="tag paid">${t("ha_unverified")}</span>`}
-        <button class="chip sm" onclick="togglePaid('${uid}',${!m.paid},this)">${m.paid?t("toggle_paid_off"):t("toggle_paid_on")}</button>
-      </div></div>
-      <select ${self?"disabled":""} onchange="setRole('${uid}',this.value,this)"><option value="member" ${m.role==="member"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select></div>
-      <div class="pchips">${D.poles.map(p=>{
-        const r=byPole[String(p.id)];
-        const badge=r==="lead"?" ★ (Respo)":r==="member"?" ✓":"";
-        return `<button class="chip sm ${r?"on":""}" title="Cliquer : Membre → Responsable → Retirer" onclick="cyclePoleRole('${uid}',${idArg(p.id)},this)">${esc(p.icon||"")} ${esc(poleName(p))}${badge}</button>`;
-      }).join("")}</div></div>`;
-  }).join("");
+  return `
+  <div class="card" style="margin-bottom:14px;border-left:4px solid var(--or)">
+    <h3 style="margin-bottom:4px">🔄 ${t("ha_tools")}</h3>
+    <p class="mute" style="margin:0 0 12px;font-size:13px">${t("ha_sync_info")}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <label class="btn ghost sm" style="margin:0;cursor:pointer">📄 ${t("import_csv")}<input type="file" accept=".csv,text/csv" style="display:none" onchange="importHelloAssoCSV(this)"></label>
+      <button class="btn ghost sm" onclick="withBusy(this,async()=>{await loadAdmin();render(true);toast(t('t_ok'))})">🔄 ${t("sync_ha")}</button>
+      <button class="btn danger sm" onclick="resetAcademicYear(this)">🎓 ${t("reset_year")}</button>
+    </div>
+  </div>
+  <input class="search" placeholder="🔍  ${esc(t("search_member"))}" value="${esc(memberQ)}" oninput="memberQ=this.value;render(true)" style="margin-bottom:10px">
+  <div class="chips" style="padding-bottom:10px">${filters.map(([k,l])=>`<button class="chip sm ${memberFilt===k?"on":""}" onclick="memberFilt='${k}';render(true)">${l}</button>`).join("")}</div>
+  ${shown.length?shown.map(m=>{const mid=sid(m.id);
+    const isPaid=Boolean(m.paid&&(!m.paid_until||isoDay(m.paid_until)>=todayStr()));
+    return `<div class="card member"><div class="top">
+    <div><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b>${isPaid?` <span class="tag free">${t("ha_verified")}</span>`:""}<div class="mute">${esc(m.email)}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <button class="btn sm ${isPaid?"ghost":"gold"}" onclick="togglePaid('${mid}',${!isPaid},this)">${isPaid?t("toggle_paid_off"):t("toggle_paid_on")}</button>
+      <select aria-label="${esc(t("acc_role"))}" onchange="setRole('${mid}',this.value)"><option value="member" ${m.role!=="bureau"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select>
+    </div>
+   </div><div class="pchips">${D.poles.map(p=>{const has=mp.has(m.id+":"+p.id);return `<button class="chip sm ${has?"on":""}" onclick="togglePole('${mid}',${idArg(p.id)},${!has},this)">${esc(p.icon||"")} ${esc(poleName(p))}</button>`}).join("")}</div></div>`}).join(""):`<div class="empty">${t("no_members")}</div>`}`;
 }
+
 async function togglePaid(uid,paid,btn){
   await withBusy(btn,async()=>{
-    const until=academicYearEnd();
-    const patch=paid?{paid:true,paid_until:until}:{paid:false,paid_until:null};
-    const {error}=await sb.from("profiles").update(patch).eq("id",uid);
+    const until=paid?academicYearEnd():null;
+    const {error}=await sb.from("profiles").update({paid,paid_until:until}).eq("id",uid);
     if(error)return toast(errMsg(error));
-    if(paid)await sb.from("membership_history").insert({user_id:uid,season:currentSeason(),source:"Bureau"}).catch(()=>{});
-    if(uid===S.user.id)await loadPrivate();
-    await loadAdmin();render(true);toast(t("t_ok"));
-  });
-}
-async function cyclePoleRole(uid,pid,btn){
-  await withBusy(btn,async()=>{
-    const cur=D.memberPoles.find(m=>m.user_id===uid&&String(m.pole_id)===String(pid));
-    let r;
-    if(!cur){
-      r=await sb.from("pole_members").insert({user_id:uid,pole_id:pid,role:"member",assigned_by:S.user.id});
-    }else if((cur.role||"member")==="member"){
-      r=await sb.from("pole_members").update({role:"lead"}).eq("user_id",uid).eq("pole_id",pid);
-    }else{
-      r=await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid);
+    if(paid){
+      await sb.from("membership_history").insert({user_id:uid,season:currentSeason(),source:"Validation Bureau"}).catch(()=>{});
     }
-    if(r.error)return toast(errMsg(r.error));
-    await Promise.all([loadAdmin(),uid===S.user.id?loadPrivate():Promise.resolve()]);
-    render(true);toast(t("t_ok"));
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
   });
 }
-async function setRole(uid,role,el){
-  await withBusy(el,async()=>{
-    const {error}=await sb.from("profiles").update({role}).eq("id",uid);
-    if(error)toast(errMsg(error));else toast(t("t_ok"));
-    await loadAdmin();render(true);
-  });
-}
-async function runPassation(btn){
+
+async function resetAcademicYear(btn){
   if(!confirm(t("confirm_reset_year")))return;
   await withBusy(btn,async()=>{
-    const {data,error}=await sb.rpc("reset_expired_memberships");
+    const today=todayStr();
+    const expired=D.members.filter(m=>m.paid&&m.paid_until&&isoDay(m.paid_until)<today);
+    const {error}=await sb.from("profiles").update({paid:false}).eq("paid",true).lt("paid_until",today);
     if(error)return toast(errMsg(error));
-    await Promise.all([loadPrivate(),loadAdmin()]);
-    render(true);toast(t("reset_year_done",{n:Number(data)||0}));
+    await Promise.all([loadAdmin(),loadPrivate()]);
+    render(true);toast(t("reset_year_done",{n:expired.length}));
   });
 }
 
-/* --- Import CSV & Sync API HelloAsso --- */
 async function importHelloAssoCSV(input){
-  const file=input.files&&input.files[0];input.value="";if(!file)return;
-  const buf=await file.arrayBuffer();
-  let text=new TextDecoder("utf-8").decode(buf);
-  if(text.includes("\uFFFD"))text=new TextDecoder("windows-1252").decode(buf);
-
+  const file=input.files&&input.files[0];if(!file)return;
+  if(file.size>2*1024*1024){input.value="";return toast(t("e_file_big"))}
+  const text=await file.text();
+  input.value="";
   const lines=text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length<2)return toast(t("no_res"));
-
-  const sep=(lines[0].split(";").length>lines[0].split(",").length)?";":",";
-  const parseLine=line=>{
-    const out=[];let cur="",inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else inQ=!inQ}
-      else if(c===sep&&!inQ){out.push(cur.trim());cur=""}
-      else cur+=c;
-    }
-    out.push(cur.trim());
-    return out;
-  };
-
-  let headRow=0,emailIdx=-1;
-  for(let i=0;i<Math.min(lines.length,10);i++){
-    const cols=parseLine(lines[i]).map(h=>h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));
-    const idx=cols.findIndex(h=>h.includes("email")||h.includes("e-mail")||h.includes("courriel")||h==="mail");
-    if(idx>=0){headRow=i;emailIdx=idx;break}
+  const sep=lines[0].includes(";")?";":",";
+  const headers=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase());
+  const mailCol=headers.findIndex(h=>h.includes("email")||h.includes("e-mail")||h.includes("mail"));
+  const statusCol=headers.findIndex(h=>h.includes("statut")||h.includes("status")||h.includes("paiement"));
+  const emails=new Set();
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(sep).map(c=>c.replace(/^"|"$/g,"").trim());
+    const rawMail=mailCol>=0?cols[mailCol]:cols.find(c=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c));
+    if(!rawMail)continue;
+    const st=statusCol>=0?(cols[statusCol]||"").toLowerCase():"";
+    if(st&&(st.includes("annul")||st.includes("refus")||st.includes("cancel")))continue;
+    emails.add(rawMail.toLowerCase());
   }
-  if(emailIdx<0)return toast("Colonne e-mail introuvable dans le CSV.");
-
-  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const emails=[...new Set(lines.slice(headRow+1).map(l=>(parseLine(l)[emailIdx]||"").toLowerCase()).filter(e=>emailRe.test(e)))];
-  if(!emails.length)return toast("Aucun e-mail valide trouvé dans ce fichier.");
-
+  let matched=0,queued=0;
   const until=academicYearEnd(),season=currentSeason();
-  let matched=0,queued=0,errCount=0;
-  for(const em of emails){
-    const m=D.members.find(x=>String(x.email||"").toLowerCase()===em||String(x.helloasso_email||"").toLowerCase()===em);
-    if(m){
-      if(!m.paid){
-        const {error}=await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",m.id);
-        if(!error){
-          matched++;
-          await sb.from("membership_history").insert({user_id:m.id,season,source:"HelloAsso CSV"});
-        }else{console.error(error);errCount++}
+  for(const mail of emails){
+    const prof=D.members.find(m=>(m.email||"").toLowerCase()===mail||(m.helloasso_email||"").toLowerCase()===mail);
+    if(prof){
+      const {error}=await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",prof.id);
+      if(!error){
+        matched++;
+        await sb.from("membership_history").insert({user_id:prof.id,season,source:"HelloAsso CSV"}).catch(()=>{});
       }
     }else{
-      const {error}=await sb.from("helloasso_paid_emails").upsert({email:em,paid_until:until,source:"HelloAsso CSV"});
+      const {error}=await sb.from("pending_memberships").upsert({email:mail,season,paid_until:until},{onConflict:"email"}).catch(()=>({error:true}));
       if(!error)queued++;
-      else{console.error(error);errCount++}
     }
   }
-  await Promise.all([loadPrivate(),loadAdmin()]);
-  render(true);
-  if(errCount&&!matched&&!queued)return toast("Erreur de droits Supabase (vérifie ton rôle Bureau).");
-  toast(t("csv_done",{m:matched,q:queued}));
+  await Promise.all([loadAdmin(),loadPrivate()]);
+  render(true);toast(t("csv_done",{m:matched,q:queued}));
 }
-async function syncHelloAssoAPI(btn){
+
+async function setRole(uid,role){
+  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+  if(error)return toast(errMsg(error));
+  await loadAdmin();toast(t("t_ok"));
+}
+async function togglePole(uid,pid,add,btn){
   await withBusy(btn,async()=>{
-    const {data,error}=await sb.functions.invoke("helloasso-sync");
-    if(error)return toast(t("ha_sync_info"));
-    await Promise.all([loadPrivate(),loadAdmin()]);render(true);
-    toast(t("csv_done",{m:(data&&data.matched)||0,q:(data&&data.queued)||0}));
+    const {error}=add?await sb.from("pole_members").insert({user_id:uid,pole_id:pid}):await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid);
+    if(error)return toast(errMsg(error));
+    await Promise.all([loadAdmin(),loadPrivate()]);render(true);
   });
 }
 
-/* --- Formulaires Contenu (Événements & Actualités) --- */
-function eventForm(e){
-  e=e||{};const isNew=e.id==null,v=k=>esc(e[k]??"");
-  return `<form onsubmit="saveEvent(event,${isNew?"null":idArg(e.id)})">
-    <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${v("title")}">
-    <label>${t("f_type")}</label><select name="type" onchange="if(this.value==='Voyage')this.form.members_only.checked=true">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}" ${e.type===x?"selected":""}>${I18N[lang][x]}</option>`).join("")}</select>
-    <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" value="${esc(isoDay(e.date)||todayStr())}" required></div>
-     <div><label>${t("f_time")}</label><input name="heure" type="time" value="${esc(hhmm(e.heure))}"></div></div>
-    <label>${t("f_place")}</label><input name="lieu" required maxlength="140" value="${v("lieu")}">
-    <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" min="0" step="0.01" value="${esc(e.prix??0)}" required></div>
-     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="${esc(e.places??30)}" required></div></div>
-    <label>${t("f_desc")}</label><textarea name="description" rows="4" maxlength="2000">${v("description")}</textarea>
-    <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…" value="${v("image_url")}">
-    <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…" value="${v("form_url")}">
-    <label>${t("f_slug")}</label><input name="slug" placeholder="ex : compimun-madrid-2026" value="${v("helloasso_slug")}">
-    <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
-    <br><button class="btn" type="submit">${isNew?t("publish"):t("save")}</button></form>`;
-}
-function openNewEvent(){
-  if(!isStaff())return toast(t("admin_only"));
-  openSheet(`<h3>${t("add_ev")}</h3>${eventForm()}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-function newsForm(n){
-  n=n||{};const isNew=n.id==null;
-  return `<form onsubmit="saveNews(event,${isNew?"null":idArg(n.id)})">
-    <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(n.title??"")}">
-    <label>${t("f_text")}</label><textarea name="body" rows="4" required maxlength="3000">${esc(n.body??"")}</textarea>
-    <br><br><button class="btn" type="submit">${isNew?t("publish"):t("save")}</button></form>`;
-}
 function adminContent(){
-  return `<div class="card"><h3>${t("add_ev")}</h3>${eventForm()}</div>
-  <div class="card" style="margin-top:14px"><h3>${t("add_news")}</h3>${newsForm()}</div>
+  return `<h2>${t("add_ev")}</h2><div class="card"><form onsubmit="addEvent(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="120">
+   <div class="row2">
+     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${I18N[lang][x]||x}</option>`).join("")}</select></div>
+     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_date")}</label><input name="date" type="date" required></div>
+     <div><label>${t("f_time")}</label><input name="heure" type="time"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="0"></div>
+     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div>
+   </div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" placeholder="ex : gala-somun-2026">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…">
+   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
+   <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
+   <br><button class="btn" type="submit">${t("publish")}</button></form></div>
+  <h2>${t("add_news")}</h2><div class="card"><form onsubmit="addNews(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="120"><label>${t("f_text")}</label><textarea name="body" rows="3" required maxlength="1500"></textarea>
+   <br><button class="btn" type="submit">${t("publish")}</button></form></div>
   <h2>${t("existing")}</h2>
-  ${D.events.map(e=>`<div class="card member"><div class="top"><div><h3><button class="linkish" onclick="openEvent(${idArg(e.id)})">${esc(e.title)}</button></h3><div class="mute">${long(e.date)}${hhmm(e.heure)?" · "+hhmm(e.heure):""} · ${D.taken[e.id]||0}/${e.places}</div></div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editEvent(${idArg(e.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${idArg(e.id)},this)">${t("del")}</button></div></div></div>`).join("")}
-  ${D.news.map(n=>`<div class="card member"><div class="top"><div><h3>${esc(n.title)}</h3><div class="mute">${long(n.created_at)}</div></div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></div></div></div>`).join("")}`;
-}
-function editEvent(id){
-  if(!isStaff())return toast(t("admin_only"));
-  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
-  openSheet(`<h3>${t("edit_ev")}</h3>${eventForm(e)}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-function editNews(id){
-  if(!isStaff())return toast(t("admin_only"));
-  const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
-  openSheet(`<h3>${t("edit_news")}</h3>${newsForm(n)}<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-async function saveEvent(ev,id){
-  ev.preventDefault();
-  if(!isStaff())return toast(t("admin_only"));
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target);
-    const prix=Math.max(0,Number(f.get("prix"))||0);
-    const places=Math.max(1,Math.floor(Number(f.get("places"))||1));
-    const slug=normalizeSlug(f.get("slug"));
-    const rawImg=(f.get("image_url")||"").trim();
-    const rawForm=(f.get("form_url")||"").trim();
-    const img=rawImg?normalizeUrl(rawImg):null;
-    const formUrl=rawForm?normalizeUrl(rawForm):null;
-    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
-    const row={type:f.get("type"),title:f.get("title").trim(),date:f.get("date"),heure:f.get("heure")||null,lieu:f.get("lieu").trim(),
-      prix,places,description:(f.get("description")||"").trim()||null,image_url:img,form_url:formUrl,
-      helloasso_slug:slug,members_only:f.get("members_only")==="on"};
-    const {error}=id==null?await sb.from("events").insert(row):await sb.from("events").update(row).eq("id",id);
-    if(error)return toast(errMsg(error));
-    toast(prix>0&&!slug&&!formUrl?t("slug_warn"):id==null?t("t_pub"):t("t_ok"));
-    closeSheet();await loadPublic();
-    if(id==null&&route!=="activites")go("activites");else render(true);
-  });
-}
-async function saveNews(ev,id){
-  ev.preventDefault();
-  if(!isStaff())return toast(t("admin_only"));
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),row={title:f.get("title").trim(),body:f.get("body").trim()};
-    const {error}=id==null?await sb.from("news").insert(row):await sb.from("news").update(row).eq("id",id);
-    if(error)return toast(errMsg(error));
-    toast(id==null?t("t_pub"):t("t_ok"));
-    closeSheet();await loadPublic();
-    if(id==null)go("actus");else render(true);
-  });
-}
-async function delEventFromView(id,btn){
-  if(!isStaff())return toast(t("admin_only"));
-  if(!confirm(t("confirm_del")))return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("events").delete().eq("id",id);
-    if(error)return toast(errMsg(error));
-    await loadPublic();
-    toast(t("t_ok"));
-    go("activites");
-  });
-}
-async function delRow(table,id,btn){
-  if(table==="events"&&!isStaff())return toast(t("admin_only"));
-  if(!confirm(t("confirm_del")))return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from(table).delete().eq("id",id);
-    if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("t_ok"));
-  });
+  ${D.events.map(e=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span><b>${esc(T(e.title))}</b> · ${isoDay(e.date)}${safeUrl(e.form_url)?` <span class="tag">${t("form_badge")}</span>`:""}</span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editEvent(${idArg(e.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${idArg(e.id)},this)">${t("del")}</button></div></div>`).join("")}
+  ${D.news.map(n=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span>📰 ${esc(T(n.title))}</span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></div></div>`).join("")}`;
 }
 
-/* --- Administration Organisation & Passation --- */
 function adminOrg(){
-  return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSiteSettings(event)">
-    <label>${t("f_hero")}</label><input name="hero_img" value="${esc(cfg("hero_img")||"")}">
-    <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email")||DEFAULT_CONTACT)}"></div>
-    <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div></div>
-    <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url")||"")}"></div>
-    <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(cfg("linkedin_url")||"")}"></div></div>
-    <br><button class="btn sm" type="submit">${t("save")}</button></form></div>
+  return `
+  <h2>${t("site_settings")}</h2>
+  <div class="card"><form onsubmit="saveSiteSettings(event)">
+    <div class="row2">
+      <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div>
+      <div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email"))}"></div>
+    </div>
+    <label>${t("f_hero")}</label><input name="hero_img" type="text" placeholder="https://…" value="${esc(cfg("hero_img"))}">
+    <div class="row2">
+      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url"))}"></div>
+      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/company/… ou https://…" value="${esc(cfg("linkedin_url"))}"></div>
+    </div>
+    <br><button class="btn" type="submit">${t("save")}</button>
+  </form></div>
 
   <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
-  ${sortedBoard().map(m=>`<div class="card member"><div class="top"><div><h3>${esc(protectProperNames(m.name))}</h3><div class="mute">${esc(m.role_fr)} · ${esc(DEFAULT_CONTACT)}</div></div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div></div></div>`).join("")}
+  ${sortedBoard().map(m=>{const pUrl=boardMemberPhoto(m);const init=((m.name||"?").trim()[0]||"?").toUpperCase();return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px">
+      ${pUrl?`<img src="${esc(pUrl)}" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--or)">`:`<div style="width:42px;height:42px;border-radius:50%;background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-weight:700">${esc(init)}</div>`}
+      <span><b>${esc(protectProperNames(m.name))}</b> · ${esc(m.role_fr||"")} <span class="mute">(${esc(m.email||DEFAULT_CONTACT)})</span></span>
+    </div>
+    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div>
+  </div>`}).join("")||`<div class="card empty">${t("none_yet")}</div>`}
 
   <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
-  ${D.poles.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.icon||"")} ${esc(p.name_fr)}</h3><div class="mute">${esc(p.desc_fr||"")}</div></div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></div></div></div>`).join("")}
+  ${D.poles.map(p=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+    <span>${esc(p.icon||"📁")} <b>${esc(p.name_fr)}</b> <span class="mute">${esc(p.name_en||"")}</span></span>
+    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></div>
+  </div>`).join("")||`<div class="card empty">${t("none_yet")}</div>`}
 
   <h2>${t("manage_partners")} <button onclick="editPartner()">+ ${t("add_partner")}</button></h2>
-  ${D.partners.map(p=>`<div class="card member"><div class="top"><div><h3>${esc(p.name)}</h3><div class="mute">${esc(p.url||"")}</div></div>
-    <button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div></div></div>`).join("")}`;
+  ${D.partners.map(p=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+    <span>🤝 <b>${esc(p.name)}</b> <span class="mute">${esc(p.url||p.website||"")}</span></span>
+    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPartner(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div>
+  </div>`).join("")||`<div class="card empty">${t("part_empty")}</div>`}`;
 }
+
 async function saveSiteSettings(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=Object.fromEntries(new FormData(ev.target));
-    const rawIg=String(f.instagram_url||"").trim();
-    const rawLi=String(f.linkedin_url||"").trim();
-    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
-    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
-    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
-    const payload={
-      hero_img:String(f.hero_img||"").trim(),
-      contact_email:String(f.contact_email||"").trim()||DEFAULT_CONTACT,
-      cotisation:String(f.cotisation||DEFAULT_COTISATION).trim(),
-      instagram_url:ig||"",
-      linkedin_url:li||""
-    };
-    const rows=Object.entries(payload).map(([key,value])=>({key,value}));
-    const {error}=await sb.from("site_settings").upsert(rows);
+    const f=new FormData(ev.target);
+    const rawHero=String(f.get("hero_img")||"").trim(),hero=rawHero?safeAsset(rawHero):null;
+    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawHero&&!hero)||(rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const pairs=[
+      {key:"cotisation",value:String(Math.max(0,Number(f.get("cotisation"))||DEFAULT_COTISATION))},
+      {key:"contact_email",value:String(f.get("contact_email")||"").trim()},
+      {key:"hero_img",value:hero||""},
+      {key:"instagram_url",value:ig||""},
+      {key:"linkedin_url",value:li||""}
+    ];
+    const {error}=await sb.from("site_settings").upsert(pairs,{onConflict:"key"});
     if(error)return toast(errMsg(error));
     await loadPublic();render(true);toast(t("t_ok"));
   });
 }
+
 function editBoard(id){
   const m=id!=null?D.board.find(x=>String(x.id)===String(id)):{};
   const isNew=!m||m.id==null;
-  openSheet(`<div class="bio-body" style="margin-top:0;padding-top:22px">
-    <h3>${isNew?t("add_board"):t("edit")}</h3><form onsubmit="saveBoard(event,${isNew?"null":idArg(m.id)})">
-    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(protectProperNames(m.name||""))}">
-    <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
-    <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div></div>
-    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||DEFAULT_CONTACT)}">
-    <label>${t("f_photo_url")}</label><input name="photo_url" value="${esc(m.photo_url||"")}" placeholder="photo_pierre_bureau.jpeg ou https://…">
-    <label>${t("f_bio_photo_url")}</label><input name="bio_photo_url" value="${esc(m.bio_photo_url||"")}" placeholder="photo_bio_come.jpeg ou https://…">
+  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+  const curBioPhoto=m.bio_photo_url||boardBioPhoto(m)||"";
+  openSheet(`<h3>${isNew?t("add_board"):t("edit")}</h3><form id="bioEditForm" data-init="${esc(init)}" onsubmit="saveBoard(event,${isNew?"null":idArg(m.id)})">
+    <label>${t("f_title")} (Nom complet)</label><input name="name" required maxlength="100" value="${esc(protectProperNames(m.name||""))}">
+    <div class="row2">
+      <div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
+      <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div>
+    </div>
+    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||"")}">
     <div class="row2">
       <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
       <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
     </div>
+    <label>${t("f_photo_url")}</label><input name="photo_url" type="text" placeholder="photo_bureau_...jpeg ou https://…" value="${esc(m.photo_url||"")}">
+    <label>${t("f_bio_photo_url")}</label><input id="bioPhotoInput" name="bio_photo_url" type="text" placeholder="photo_bio_...jpeg ou https://…" value="${esc(curBioPhoto)}" oninput="previewBioPhoto(this.value)">
+    <label>${t("f_photo_file")}</label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleBioPhotoFile(this)">
+    ${avatarMarkup(curBioPhoto,init,"bio-preview")}
     <label>${t("f_bio")}</label><textarea name="bio" rows="4" maxlength="2000">${esc(m.bio||"")}</textarea>
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
-  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button></div>`,"bio-sheet");
+  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
 async function saveBoard(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target);
-    const rawPhoto=String(f.get("photo_url")||"").trim();
-    const rawBioPhoto=String(f.get("bio_photo_url")||"").trim();
-    const photo=rawPhoto?safeAsset(rawPhoto):null;
-    const bioPhoto=rawBioPhoto?safeAsset(rawBioPhoto):null;
+    const rawPhoto=String(f.get("photo_url")||"").trim(),photo=rawPhoto?safeAsset(rawPhoto):null;
+    const rawBioPhoto=String(f.get("bio_photo_url")||"").trim(),bioPhoto=rawBioPhoto?safeAsset(rawBioPhoto):null;
     if((rawPhoto&&!photo)||(rawBioPhoto&&!bioPhoto))return toast(t("e_url"));
-    const rawIg=String(f.get("instagram_url")||"").trim();
-    const rawLi=String(f.get("linkedin_url")||"").trim();
-    const ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
-    const li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
     if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
-    const baseRow={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||DEFAULT_CONTACT,bio:(f.get("bio")||"").trim()||null};
-    const fullRow={...baseRow,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
-    let res=id==null?await sb.from("board_members").insert(fullRow):await sb.from("board_members").update(fullRow).eq("id",id);
+    const row={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||null,bio:(f.get("bio")||"").trim()||null,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
+    let res=id==null?await sb.from("board_members").insert(row):await sb.from("board_members").update(row).eq("id",id);
     if(res.error&&/column/i.test(res.error.message||"")){
-      res=id==null?await sb.from("board_members").insert(baseRow):await sb.from("board_members").update(baseRow).eq("id",id);
+      const fallback={name:row.name,role_fr:row.role_fr,role_en:row.role_en,email:row.email,bio:row.bio};
+      res=id==null?await sb.from("board_members").insert(fallback):await sb.from("board_members").update(fallback).eq("id",id);
     }
     if(res.error)return toast(errMsg(res.error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
+
 function editPole(id){
   const p=id!=null?D.poles.find(x=>String(x.id)===String(id)):{};
   const isNew=!p||p.id==null;
   openSheet(`<h3>${isNew?t("add_pole"):t("edit_pole")}</h3><form onsubmit="savePole(event,${isNew?"null":idArg(p.id)})">
-    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}"></div>
-    <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}"></div></div>
-    <label>${t("f_icon")}</label><input name="icon" maxlength="8" placeholder="ex : 🎙️" value="${esc(p.icon||"")}">
-    <label>${t("f_desc_fr")}</label><input name="desc_fr" maxlength="200" value="${esc(p.desc_fr||"")}">
-    <label>${t("f_desc_en")}</label><input name="desc_en" maxlength="200" value="${esc(p.desc_en||"")}">
+    <label>${t("f_icon")}</label><input name="icon" maxlength="8" value="${esc(p.icon||"📁")}">
+    <div class="row2">
+      <div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}"></div>
+      <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}"></div>
+    </div>
+    <label>${t("f_desc_fr")}</label><textarea name="desc_fr" rows="2" maxlength="400">${esc(p.desc_fr||"")}</textarea>
+    <label>${t("f_desc_en")}</label><textarea name="desc_en" rows="2" maxlength="400">${esc(p.desc_en||"")}</textarea>
     <label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…" value="${esc(p.drive_url||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
@@ -2691,347 +2632,443 @@ async function savePole(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),drv=String(f.get("drive_url")||"").trim(),url=drv?normalizeUrl(drv):null;
-    if(drv&&!url)return toast(t("e_url"));
-    const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,icon:(f.get("icon")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim()||null,desc_en:(f.get("desc_en")||"").trim()||null,drive_url:url};
+    const f=new FormData(ev.target),rawUrl=String(f.get("drive_url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
+    if(rawUrl&&!url)return toast(t("e_url"));
+    const row={icon:(f.get("icon")||"📁").trim(),name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim()||null,desc_en:(f.get("desc_en")||"").trim()||null,drive_url:url};
     const {error}=id==null?await sb.from("poles").insert(row):await sb.from("poles").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
-function editPartner(){
-  openSheet(`<h3>${t("add_partner")}</h3><form onsubmit="savePartner(event)">
-    <label>${t("f_title")}</label><input name="name" required maxlength="100">
-    <label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…">
+
+function editPartner(id){
+  const p=id!=null?D.partners.find(x=>String(x.id)===String(id)):{};
+  const isNew=!p||p.id==null;
+  openSheet(`<h3>${isNew?t("add_partner"):t("edit")}</h3><form onsubmit="savePartner(event,${isNew?"null":idArg(p.id)})">
+    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(p.name||"")}">
+    <label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…" value="${esc(p.url||p.website||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
-async function savePartner(ev){
+async function savePartner(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),raw=String(f.get("url")||"").trim(),url=raw?normalizeUrl(raw):null;
-    if(raw&&!url)return toast(t("e_url"));
-    const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url});
+    const f=new FormData(ev.target),rawUrl=String(f.get("url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
+    if(rawUrl&&!url)return toast(t("e_url"));
+    const row={name:f.get("name").trim(),url};
+    const {error}=id==null?await sb.from("partners").insert(row):await sb.from("partners").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
 
-/* ===== DÉMARRAGE ===== */
-const withTimeout=(p,ms,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+" : pas de réponse après "+ms/1000+" s")),ms))]);
-function checkRedirectNotice(){
-  const raw=[location.hash.slice(1),location.search.slice(1)].filter(Boolean).join("&");
-  if(!raw)return;
-  const params=new URLSearchParams(raw);
-  const errDesc=params.get("error_description");
-  const rType=params.get("type");
-  if(errDesc){
-    authInfo=errDesc.replace(/\+/g," ");
-    route="login";
-    history.replaceState(null,"",location.pathname);
-  }else if(rType==="signup"||rType==="email"){
-    setTimeout(()=>toast(t("t_mail_confirmed")),400);
-  }
+function openNewEvent(){
+  openSheet(`<h3>${t("add_ev")}</h3><form onsubmit="addEvent(event,true)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="120">
+   <div class="row2">
+     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${I18N[lang][x]||x}</option>`).join("")}</select></div>
+     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_date")}</label><input name="date" type="date" required></div>
+     <div><label>${t("f_time")}</label><input name="heure" type="time"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="0"></div>
+     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div>
+   </div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" placeholder="ex : gala-somun-2026">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…">
+   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
+   <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
+   <br><button class="btn" type="submit" style="width:100%">${t("publish")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
-if(configured){
-  sb.auth.onAuthStateChange((evt,session)=>{
-    if(evt==="INITIAL_SESSION")return;
-    S.user=session?session.user:null;
-    if(evt==="PASSWORD_RECOVERY"){route="reset";syncHash(true)}
-    setTimeout(async()=>{try{await loadPrivate()}catch(e){console.error(e)}softRender()},0);
-  });
-}
-async function init(){
-  readHash();
-  checkRedirectNotice();
-  render(false,true);
-  if(!configured)return;
-  const pubTask=withTimeout(loadPublic(),10000,"Base de données")
-    .catch(e=>{console.error(e);D.err=(e&&e.message)||String(e)})
-    .finally(()=>{D.loading=false;softRender()});
-  const authTask=(async()=>{
-    try{
-      const {data}=await withTimeout(sb.auth.getSession(),5000,"Session");
-      S.user=data&&data.session?data.session.user:null;
-      if(S.user){
-        await withTimeout(loadPrivate(),8000,"Profil");
-        softRender();
-        if(route==="event")loadRegistrants();
-        if(route==="pole"&&poleSel)loadTasks().then(()=>softRender());
-      }
-    }catch(e){console.error(e)}
-  })();
-  await Promise.all([pubTask,authTask]);
-  document.addEventListener("visibilitychange",()=>{
-    if(!document.hidden&&S.user&&Date.now()-lastSync>60000)refreshAll().catch(console.error);
-  });
-}
-/* ===== JEU : QUIZ DES ROP (100 QCM, points, niveaux, progression par compte) ===== */
-const QZ_PTS=10;
-const QZ_LEVELS=[
-  {min:0,   ico:"👀",fr:"Observateur",        en:"Observer"},
-  {min:100, ico:"🪪",fr:"Délégué",            en:"Delegate"},
-  {min:300, ico:"🤝",fr:"Sponsor",            en:"Sponsor"},
-  {min:500, ico:"🔨",fr:"Chair",              en:"Chairperson"},
-  {min:800, ico:"🌍",fr:"Ambassadeur",        en:"Ambassador"},
-  {min:1000,ico:"👑",fr:"Secrétaire général", en:"Secretary-General"}
-];
-const G={run:null,lbBusy:false,saveWarned:false};
-const qzShuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const qzIsMastered=id=>Boolean(D.quiz[id]&&D.quiz[id].mastered);
-const qzMastered=()=>QUIZ.filter(q=>qzIsMastered(q.id)).length;
-const qzPoints=()=>qzMastered()*QZ_PTS;
-const qzChap=id=>QUIZ_CH.find(c=>c.id===id);
-function qzLevel(p){let i=0;QZ_LEVELS.forEach((l,k)=>{if(p>=l.min)i=k});return{i,cur:QZ_LEVELS[i],next:QZ_LEVELS[i+1]||null}}
-function qzRing(pct,size,stroke){
-  const r=(size-stroke)/2,c=2*Math.PI*r,h=size/2;
-  return `<svg class="qz-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="${stroke}"/><circle class="qz-ring-fg" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct/100)).toFixed(1)}" style="--c:${c.toFixed(1)}" transform="rotate(-90 ${h} ${h})"/></svg>`;
-}
-
-/* ----- données : classement ----- */
-async function loadLeaderboard(){
-  if(!S.user){D.lb=[];return}
-  const {data,error}=await sb.rpc("quiz_leaderboard");
-  D.lb=error?[]:(data||[]);
-}
-function qzEnsureLb(){
-  if(!S.user||D.lb!==null||G.lbBusy)return;
-  G.lbBusy=true;
-  loadLeaderboard().then(()=>{G.lbBusy=false;if(route==="quiz"&&!G.run)qzRefresh()});
-}
-
-/* ----- lancer / terminer une partie ----- */
-function startQuiz(mode){
-  let list;
-  if(mode==="mix")list=qzShuffle(QUIZ).slice(0,20);
-  else if(mode==="all")list=qzShuffle(QUIZ);
-  else if(mode==="weak"){
-    list=qzShuffle(QUIZ.filter(q=>!qzIsMastered(q.id))).slice(0,20);
-    if(!list.length){toast(t("qz_all_mastered"));return}
-  }else list=qzShuffle(QUIZ.filter(q=>q.ch===Number(mode)));
-  G.run={mode:String(mode),list,i:0,ok:0,gain:0,streak:0,best:0,wrong:[],picked:null,order:qzShuffle([0,1,2,3]),done:false,lvl0:qzLevel(qzPoints()).i,saveErr:false};
-  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
-}
-function qzPick(k){
-  const r=G.run;if(!r||r.done||r.picked!==null||k<0||k>3)return;
-  const q=r.list[r.i],ok=r.order[k]===0;
-  r.picked=k;
-  const prev=D.quiz[q.id]||{attempts:0,correct:0,mastered:false};
-  if(ok&&!prev.mastered)r.gain+=QZ_PTS;
-  D.quiz[q.id]={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:prev.mastered||ok};
-  if(ok){r.ok++;r.streak++;r.best=Math.max(r.best,r.streak)}else{r.streak=0;r.wrong.push(q)}
-  if(S.user){
-    sb.rpc("quiz_answer",{p_q:q.id,p_ok:ok}).then(({error})=>{
-      if(error){r.saveErr=true;if(!G.saveWarned){G.saveWarned=true;toast(t("qz_save_err"))}}
-    });
-  }
-  qzRefresh();
-}
-function qzNext(){
-  const r=G.run;if(!r||r.picked===null)return;
-  r.i++;
-  if(r.i>=r.list.length){
-    r.done=true;D.lb=null;
-    if(r.ok/r.list.length>=.8)qzConfetti();
-  }else{r.picked=null;r.order=qzShuffle([0,1,2,3])}
-  qzRefresh();window.scrollTo({top:0,behavior:"smooth"});
-}
-function qzQuit(){G.run=null;qzRefresh();window.scrollTo({top:0})}
-async function qzReset(btn){
-  if(!confirm(t("qz_reset_ask")))return;
+async function addEvent(ev,fromModal){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    if(S.user){const {error}=await sb.rpc("quiz_reset");if(error)return toast(errMsg(error))}
-    D.quiz={};D.lb=null;toast(t("qz_reset_done"));qzRefresh();
+    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0),slug=normalizeSlug(f.get("helloasso_slug"));
+    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?normalizeUrl(rawImg):null;
+    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
+    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
+    const {error}=await sb.from("events").insert({title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,Number(f.get("places"))||30),helloasso_slug:slug,form_url:formUrl,image_url:img,description:(f.get("description")||"").trim()||null,members_only:f.get("members_only")==="on"});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();if(fromModal)closeSheet();
+    await loadPublic();render(true);
+    toast(prix>0&&!slug&&!formUrl?t("slug_warn"):t("t_pub"));
   });
 }
-function qzRefresh(){
-  const el=$("#qz");
-  if(!el){render(true);return}
-  el.innerHTML=qzBody();
-  observe(Boolean(G.run));if(!G.run)stagger();
-  const card=el.querySelector(".qz-card");
-  if(card&&!reduceMotionGlobe()){card.classList.remove("qz-in");void card.offsetWidth;card.classList.add("qz-in")}
+function editEvent(id){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  openSheet(`<h3>${t("edit_ev")}</h3><form onsubmit="saveEvent(event,${idArg(e.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="120" value="${esc(e.title)}">
+   <div class="row2">
+     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}" ${e.type===x?"selected":""}>${I18N[lang][x]||x}</option>`).join("")}</select></div>
+     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120" value="${esc(e.lieu)}"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_date")}</label><input name="date" type="date" required value="${esc(isoDay(e.date))}"></div>
+     <div><label>${t("f_time")}</label><input name="heure" type="time" value="${esc(hhmm(e.heure))}"></div>
+   </div>
+   <div class="row2">
+     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="${Number(e.prix)||0}"></div>
+     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" required value="${Math.max(1,Number(e.places)||30)}"></div>
+   </div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" value="${esc(e.helloasso_slug||"")}">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…" value="${esc(e.form_url||"")}">
+   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…" value="${esc(e.image_url||"")}">
+   <label>${t("f_desc")}</label><textarea name="description" rows="4" maxlength="2000">${esc(e.description||"")}</textarea>
+   <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
-function qzConfetti(){
-  if(reduceMotionGlobe())return;
-  const box=document.createElement("div");box.className="confetti";box.setAttribute("aria-hidden","true");
-  const cols=["#EBC000","#00008E","#fff0a8","#4b4bd6","#020259"];
-  for(let i=0;i<40;i++){
-    const s=document.createElement("i");
-    s.style.cssText=`left:${Math.random()*100}%;background:${cols[i%5]};--dx:${((Math.random()-.5)*180).toFixed(0)}px;--rot:${(Math.random()*720).toFixed(0)}deg;animation-delay:${(Math.random()*.4).toFixed(2)}s;animation-duration:${(1.7+Math.random()*1.2).toFixed(2)}s`;
-    box.appendChild(s);
-  }
-  document.body.appendChild(box);setTimeout(()=>box.remove(),3600);
+async function saveEvent(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0),slug=normalizeSlug(f.get("helloasso_slug"));
+    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?normalizeUrl(rawImg):null;
+    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
+    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
+    const {error}=await sb.from("events").update({title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,Number(f.get("places"))||30),helloasso_slug:slug,form_url:formUrl,image_url:img,description:(f.get("description")||"").trim()||null,members_only:f.get("members_only")==="on"}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);
+    toast(prix>0&&!slug&&!formUrl?t("slug_warn"):t("t_ok"));
+  });
 }
-document.addEventListener("keydown",e=>{
-  const r=G.run;
-  if(route!=="quiz"||!r||r.done||e.ctrlKey||e.metaKey||e.altKey)return;
-  const k=({"1":0,"2":1,"3":2,"4":3,a:0,b:1,c:2,d:3})[String(e.key).toLowerCase()];
-  if(k!==undefined&&r.picked===null){qzPick(k);return}
-  if((e.key==="Enter"||e.key===" ")&&r.picked!==null){e.preventDefault();qzNext()}
-});
+function editNews(id){
+  const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
+  openSheet(`<h3>${t("edit_news")}</h3><form onsubmit="saveNews(event,${idArg(n.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="120" value="${esc(n.title)}">
+   <label>${t("f_text")}</label><textarea name="body" rows="5" required maxlength="1500">${esc(n.body)}</textarea>
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveNews(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const {error}=await sb.from("news").update({title:f.get("title").trim(),body:f.get("body").trim()}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function addNews(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const {error}=await sb.from("news").insert({title:f.get("title").trim(),body:f.get("body").trim()});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function delRow(table,id,btn){
+  if(!confirm(t("confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from(table).delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function delEventFromView(id,btn){
+  if(!confirm(t("confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("events").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await loadPublic();toast(t("t_ok"));go("activites");
+  });
+}
 
-/* ----- affichage ----- */
+/* ===== JEU : LOGIQUE, INTERFACE, CONFETTIS & CLASSEMENT ===== */
+const G={run:null,lbBusy:false};
+const QZ_LEVELS=[
+  [0,  "🎓",["Délégué stagiaire","Trainee delegate"]],
+  [100,"🗣️",["Orateur de l'Assemblée","Assembly speaker"]],
+  [250,"✍️",["Rédacteur de résolutions","Resolution drafter"]],
+  [450,"🤝",["Négociateur chevronné","Seasoned negotiator"]],
+  [700,"🏛️",["Président de séance","Chairperson"]],
+  [900,"🌍",["Secrétaire général","Secretary-General"]]
+];
+const qzLevel=pts=>{let cur=QZ_LEVELS[0],next=null;for(const l of QZ_LEVELS){if(pts>=l[0])cur=l;else if(!next)next=l}return{cur,next}};
+const qzMastered=()=>QUIZ.filter(q=>D.quiz[q.id]?.mastered).length;
+const qzPoints=()=>qzMastered()*10;
+const qzAccuracy=()=>{let a=0,c=0;for(const v of Object.values(D.quiz)){a+=v.attempts||0;c+=v.correct||0}return a?Math.round(c/a*100):0};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r};
+const qzPack=q=>q[lang]||q.fr;
+function qzRing(pct,size=132,sw=11){
+  const r=(size-sw)/2,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="${sw}"/>
+    <circle class="qz-ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${sw}" stroke-linecap="round"
+      style="--c:${c.toFixed(1)}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
+  </svg>`;
+}
+function startQuiz(mode,chId){
+  let pool=mode==="ch"?QUIZ.filter(q=>q.ch===chId):mode==="weak"?QUIZ.filter(q=>!D.quiz[q.id]?.mastered):[...QUIZ];
+  if(!pool.length){toast(t("qz_all_mastered"));return}
+  pool=shuffle(pool);if(mode==="mix")pool=pool.slice(0,20);
+  const items=pool.map(q=>{const [prompt,...opts]=qzPack(q);const order=shuffle(opts.map((_,i)=>i));return{q,prompt,opts:order.map(i=>opts[i]),good:order.indexOf(0)}});
+  G.run={mode,chId,items,i:0,picked:null,streak:0,best:0,right:0,gain:0,beforeLv:qzLevel(qzPoints()).cur[0],wrong:[],dirty:[]};
+  render(false,true);
+}
+function pickAnswer(idx){
+  const r=G.run;if(!r||r.picked!==null)return;
+  r.picked=idx;const it=r.items[r.i],ok=idx===it.good;
+  const prev=D.quiz[it.q.id]||{attempts:0,correct:0,mastered:false};
+  const was=Boolean(prev.mastered);
+  const next={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:was||ok};
+  D.quiz[it.q.id]=next;r.dirty.push(it.q.id);
+  if(ok){r.right++;r.streak++;r.best=Math.max(r.best,r.streak);if(!was)r.gain+=10}
+  else{r.streak=0;r.wrong.push(it)}
+  render(true,true);
+}
+async function nextQuestion(){
+  const r=G.run;if(!r)return;
+  r.i++;r.picked=null;
+  if(r.i>=r.items.length){
+    const after=qzLevel(qzPoints()).cur[0];
+    r.leveledUp=after>r.beforeLv;
+    if(r.right===r.items.length||r.leveledUp)confetti();
+    render(false,true);
+    await saveQuiz();
+  }else render(true,true);
+}
+function quitQuiz(){const had=G.run&&G.run.dirty.length;G.run=null;render(false,true);if(had)saveQuiz()}
+async function saveQuiz(){
+  if(!configured||!S.user||!G.run||!G.run.dirty.length)return;
+  const ids=[...new Set(G.run.dirty)];G.run.dirty=[];
+  const rows=ids.map(id=>({user_id:S.user.id,q_id:id,attempts:D.quiz[id].attempts,correct:D.quiz[id].correct,mastered:D.quiz[id].mastered,updated_at:new Date().toISOString()}));
+  const {error}=await sb.from("quiz_progress").upsert(rows,{onConflict:"user_id,q_id"});
+  if(error){console.error(error);if(isMissingTableErr(error))toast(t("qz_save_err"));return}
+  D.lb=null;loadLeaderboard();
+}
+async function loadLeaderboard(){
+  if(!configured||G.lbBusy)return;G.lbBusy=true;
+  const r=await sb.rpc("quiz_leaderboard");
+  G.lbBusy=false;
+  if(!r.error){D.lb=r.data||[];if(route==="quiz"&&!G.run)softRender()}
+}
+async function resetQuiz(){
+  if(!confirm(t("qz_reset_ask")))return;
+  D.quiz={};D.lb=null;
+  if(configured&&S.user)await sb.from("quiz_progress").delete().eq("user_id",S.user.id);
+  render(true,true);toast(t("qz_reset_done"));loadLeaderboard();
+}
+function confetti(){
+  const host=document.createElement("div");host.className="confetti";
+  const cols=["#EBC000","#00008E","#ffffff","#ffd84d","#2e31d4"];
+  for(let i=0;i<54;i++){
+    const p=document.createElement("i");
+    p.style.cssText=`left:${Math.random()*100}%;background:${cols[i%cols.length]};--dx:${(Math.random()*220-110).toFixed(0)}px;--rot:${(Math.random()*720-360).toFixed(0)}deg;animation-delay:${(Math.random()*.45).toFixed(2)}s`;
+    host.appendChild(p);
+  }
+  document.body.appendChild(host);setTimeout(()=>host.remove(),2900);
+}
 function vJeu(){
-  qzEnsureLb();
-  return `<div id="qz">${qzBody()}</div>`;
-}
-function qzBody(){
-  if(!G.run)return qzHome();
-  return G.run.done?qzEnd():qzPlay();
-}
-function qzHome(){
-  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),lv=qzLevel(pts);
-  let att=0,cor=0;Object.values(D.quiz).forEach(x=>{att+=x.attempts||0;cor+=x.correct||0});
-  const acc=att?Math.round(cor/att*100):0;
-  const weakN=total-m;
-  const nextTxt=lv.next?t("qz_next_level",{n:lv.next.min-pts,l:lv.next[lang]}):t("qz_max");
-  const lvPct=lv.next?Math.round((pts-lv.cur.min)/(lv.next.min-lv.cur.min)*100):100;
-  const modes=[
-    ["mix","⚡",t("qz_mix"),t("qz_mix_d")],
-    ["weak","🎯",t("qz_weak"),t("qz_weak_d",{n:weakN})],
-    ["all","🏆",t("qz_all"),t("qz_all_d")]
-  ];
+  if(G.run)return G.run.i>=G.run.items.length?vQuizEnd():vQuizPlay();
+  if(D.lb===null&&configured&&!G.lbBusy)loadLeaderboard();
+  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),acc=qzAccuracy();
+  const {cur,next}=qzLevel(pts),lvName=cur[2][lang==="fr"?0:1];
+  const lvPct=next?Math.round((pts-cur[0])/(next[0]-cur[0])*100):100;
+  const weak=total-m;
   return `<h1>${t("game_t")}</h1><p class="mute">${t("game_s")}</p>
-  <div class="qz-hero reveal">
-    <div class="qz-ringbox">${qzRing(Math.round(m/total*100),112,10)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
+  <section class="qz-hero">
+    <div class="qz-ringbox">${qzRing(Math.round(m/total*100))}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
     <div class="qz-herotxt">
-      <div class="qz-lv"><span class="qz-lvico">${lv.cur.ico}</span><span>${esc(lv.cur[lang])}</span></div>
+      <div class="qz-lv"><span class="qz-lvico">${cur[1]}</span>${esc(lvName)}</div>
       <div class="qz-pts"><b>${pts}</b> ${t("qz_points")}</div>
-      <div class="qz-lvbar" aria-hidden="true"><span style="width:${lvPct}%"></span></div>
-      <div class="qz-lvtxt">${esc(nextTxt)}</div>
-      <div class="qz-mini"><span>${m} ${t("qz_mastered")}</span><span>${acc}% ${t("qz_accuracy")}</span></div>
+      <div class="qz-lvbar"><span style="width:${lvPct}%"></span></div>
+      <div class="qz-lvtxt">${next?t("qz_next_level",{n:next[0]-pts,l:next[2][lang==="fr"?0:1]}):t("qz_max")}</div>
+      <div class="qz-mini"><span>🎯 ${m}/${total} ${t("qz_mastered")}</span><span>✓ ${acc}% ${t("qz_accuracy")}</span></div>
     </div>
+  </section>
+  ${S.user?"":`<div class="card qz-guest"><span>💾 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+  <div class="qz-modes">
+    <button class="qz-mode" onclick="startQuiz('mix')"><span class="qz-mode-ico">⚡</span><b>${t("qz_mix")}</b><small>${t("qz_mix_d")}</small></button>
+    <button class="qz-mode" onclick="startQuiz('weak')" ${weak?"":"disabled"}><span class="qz-mode-ico">🎯</span><b>${t("qz_weak")}</b><small>${t("qz_weak_d",{n:weak})}</small></button>
+    <button class="qz-mode" onclick="startQuiz('all')"><span class="qz-mode-ico">🏆</span><b>${t("qz_all")}</b><small>${t("qz_all_d")}</small></button>
   </div>
-  ${S.user?"":`<div class="card qz-guest reveal"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
-  <div class="qz-modes">${modes.map(([k,i,a,b])=>`<button class="qz-mode reveal" onclick="startQuiz('${k}')"><span class="qz-mode-ico">${i}</span><b>${esc(a)}</b><small>${esc(b)}</small></button>`).join("")}</div>
   <h2>${t("qz_chapters")}</h2>
   <div class="grid">${QUIZ_CH.map(c=>{
-    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>qzIsMastered(q.id)).length,p=Math.round(done/qs.length*100);
+    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>D.quiz[q.id]?.mastered).length,pct=Math.round(done/qs.length*100);
     return `<div class="card qz-ch reveal">
-      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">ROP ${c.rop}</span></div>
-      <h3>${esc(c[lang])}</h3>
-      <div class="bar-p" style="margin:10px 0 6px"><span style="width:${p}%"></span></div>
-      <div class="qz-ch-meta"><span>${done}/${qs.length} ${t("qz_mastered")}</span><span>${t("qz_questions",{n:qs.length})}</span></div>
-      <button class="btn sm" style="margin-top:12px;width:100%" onclick="startQuiz(${c.id})">${done?t("qz_replay"):t("qz_play")}</button>
-    </div>`}).join("")}</div>
-  ${S.user?qzBoard():""}
-  <div style="margin-top:26px;text-align:center"><button class="btn ghost sm" onclick="qzReset(this)">${t("qz_reset")}</button></div>`;
-}
-function qzBoard(){
-  const rows=D.lb;
-  return `<h2>${t("qz_lb")}</h2><div class="card qz-board reveal">${
-    rows===null?`<div class="sk" style="min-height:120px"></div>`:
-    rows.length?rows.map((r,i)=>`<div class="qz-row ${r.me?"me":""}"><span class="qz-rank">${["🥇","🥈","🥉"][i]||i+1}</span><span class="qz-name">${esc(r.name)}${r.me?` <em>(${t("qz_you")})</em>`:""}</span><span class="qz-score">${r.points} ${t("qz_points")}</span></div>`).join(""):
-    `<p class="mute" style="margin:6px 0">${t("qz_lb_empty")}</p>`}</div>`;
-}
-function qzPlay(){
-  const r=G.run,q=r.list[r.i],txt=q[lang]||q.fr,c=qzChap(q.ch),n=r.list.length,L="ABCD";
-  const answered=r.picked!==null,ok=answered&&r.order[r.picked]===0;
-  const pct=Math.round((r.i+(answered?1:0))/n*100);
-  const opts=r.order.map((oi,k)=>{
-    let cls="qz-opt";
-    if(answered){if(oi===0)cls+=" good";else if(k===r.picked)cls+=" bad";else cls+=" dim"}
-    return `<button class="${cls}" ${answered?"disabled":""} onclick="qzPick(${k})"><b>${L[k]}</b><span>${esc(txt[oi+1])}</span></button>`;
-  }).join("");
-  const fb=answered?`<div class="qz-fb ${ok?"ok":"ko"}" role="status">
-      <div class="qz-fb-t">${ok?"✅ "+t("qz_good"):"❌ "+t("qz_bad")}</div>
-      ${ok?"":`<div class="qz-fb-a">${esc(txt[1])}</div>`}
-      <div class="qz-fb-r">${t("qz_rule")} · ROP ${esc(q.ref)}</div>
-    </div>
-    <button class="btn" style="width:100%;margin-top:14px" onclick="qzNext()">${r.i+1>=n?t("qz_finish"):t("qz_next")} →</button>`:"";
-  return `<div class="qz-top">
-      <button class="btn ghost sm" onclick="qzQuit()">✕ ${t("qz_quit")}</button>
-      <div class="qz-top-r">${r.streak>=2?`<span class="qz-streak">🔥 ${r.streak}</span>`:""}<span class="qz-run">${r.ok}/${r.i+(answered?1:0)}</span></div>
-    </div>
-    <div class="bar-p qz-prog" aria-hidden="true"><span style="width:${pct}%"></span></div>
-    <div class="qz-card qz-in">
-      <div class="qz-meta"><span class="tag">${c.ico} ${esc(c[lang])}</span><span class="mute">${t("qz_q",{i:r.i+1,n})}</span></div>
-      <h2 class="qz-q">${esc(txt[0])}</h2>
-      <div class="qz-opts">${opts}</div>
-      ${fb}
+      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">${lang==="fr"?"Art.":"Sec."} ${esc(c.rop)}</span></div>
+      <h3>${esc(c[lang]||c.fr)}</h3>
+      <div class="bar-p" style="margin:12px 0 8px"><span style="width:${pct}%"></span></div>
+      <div class="qz-ch-meta"><span>${done} / ${qs.length} ${t("qz_mastered")}</span><span>${pct}%</span></div>
+      <button class="btn sm" style="margin-top:12px;width:100%" onclick="startQuiz('ch',${c.id})">${done===qs.length?t("qz_replay"):t("qz_play")}</button>
     </div>`;
+  }).join("")}</div>
+  <h2>${t("qz_lb")}</h2>${leaderboardHTML()}
+  ${m>0?`<p style="text-align:center;margin-top:26px"><button class="linkish mute" style="font-size:13px" onclick="resetQuiz()">${t("qz_reset")}</button></p>`:""}`;
 }
-function qzEnd(){
-  const r=G.run,n=r.list.length,pct=Math.round(r.ok/n*100),pts=qzPoints(),lv=qzLevel(pts);
-  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
-  const up=lv.i>r.lvl0;
-  const L="ABCD";
-  return `<div class="qz-card qz-in qz-end">
-    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${r.ok}/${n}</b><span>${pct}%</span></div></div>
-    <h1 style="margin:10px 0 4px">${t("qz_end_t")}</h1>
-    <p class="mute" style="margin:0 0 14px">${msg}</p>
-    <div class="qz-stats">
-      <div class="qz-stat gold"><b>${r.gain?"+"+r.gain:"0"}</b><span>${t("qz_gain")}</span></div>
-      <div class="qz-stat"><b>${pts}</b><span>${t("qz_total",{n:pts})}</span></div>
-      <div class="qz-stat"><b>${r.best}</b><span>${t("qz_streak",{n:r.best})}</span></div>
+function leaderboardHTML(){
+  if(!configured)return "";
+  if(D.lb===null)return `<div class="sk" style="min-height:110px"></div>`;
+  if(!D.lb.length)return `<div class="card empty">${t("qz_lb_empty")}</div>`;
+  const medals=["🥇","🥈","🥉"];
+  return `<div class="card qz-board">${D.lb.map((u,i)=>{
+    const me=S.user&&u.user_id===S.user.id;
+    const lv=qzLevel(Number(u.points)||0).cur;
+    return `<div class="qz-row ${me?"me":""}">
+      <span class="qz-rank">${medals[i]||i+1}</span>
+      <span class="qz-name">${esc(protectProperNames(u.prenom||""))} ${esc(u.nom||"")}${me?` <em>(${t("qz_you")})</em>`:""}</span>
+      <span class="tag">${lv[1]} ${esc(lv[2][lang==="fr"?0:1])}</span>
+      <span class="qz-score">${Number(u.points)||0} pts</span>
+    </div>`;
+  }).join("")}</div>`;
+}
+function vQuizPlay(){
+  const r=G.run,it=r.items[r.i],ch=QUIZ_CH.find(c=>c.id===it.q.ch),answered=r.picked!==null,ok=r.picked===it.good;
+  const pct=Math.round((r.i+(answered?1:0))/r.items.length*100);
+  const letters=["A","B","C","D"];
+  return `<div class="qz-top">
+    <button class="chip sm" onclick="quitQuiz()">✕ ${t("qz_quit")}</button>
+    <div class="qz-top-r">${r.streak>=2?`<span class="qz-streak">🔥 ${r.streak}</span>`:""}<span class="qz-run">+${r.gain} pts</span></div>
+  </div>
+  <div class="bar-p qz-prog"><span style="width:${pct}%"></span></div>
+  <div class="qz-card ${answered?"":"qz-in"}">
+    <div class="qz-meta"><span>${ch.ico} ${esc(ch[lang]||ch.fr)} · <b>${esc(it.q.ref)}</b></span><span class="mute">${t("qz_q",{i:r.i+1,n:r.items.length})}</span></div>
+    <h2 class="qz-q">${esc(it.prompt)}</h2>
+    <div class="qz-opts">${it.opts.map((o,idx)=>{
+      let cls="qz-opt";
+      if(answered){if(idx===it.good)cls+=" good";else if(idx===r.picked)cls+=" bad";else cls+=" dim"}
+      return `<button class="${cls}" ${answered?"disabled":""} onclick="pickAnswer(${idx})"><b>${letters[idx]}</b><span>${esc(o)}</span></button>`;
+    }).join("")}</div>
+    ${answered?`<div class="qz-fb ${ok?"ok":"ko"}">
+      <div class="qz-fb-t">${ok?"✓ "+t("qz_good"):"✕ "+t("qz_bad")}</div>
+      ${ok?"":`<div class="qz-fb-a">${esc(it.opts[it.good])}</div>`}
+      <div class="qz-fb-r">${t("qz_rule")} ${esc(it.q.ref)} · ${esc(ch[lang]||ch.fr)}</div>
     </div>
-    ${r.gain?"":`<p class="mute" style="margin:10px 0">${t("qz_gain0")}</p>`}
-    ${up?`<div class="qz-up">${lv.cur.ico} ${t("qz_levelup",{l:lv.cur[lang]})}</div>`:""}
-    ${S.user?"":`<div class="card qz-guest"><span>🔐 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
-    ${r.saveErr?`<div class="card qz-guest" style="border-color:var(--rouge)"><span>⚠️ ${t("qz_save_err")}</span></div>`:""}
-    ${r.wrong.length?`<details class="qz-wrong" open><summary>${t("qz_review",{n:r.wrong.length})}</summary>${r.wrong.map(q=>{const x=q[lang]||q.fr;return `<div class="qz-wq"><b>${esc(x[0])}</b><div>✅ ${esc(x[1])}</div><small>ROP ${esc(q.ref)}</small></div>`}).join("")}</details>`:""}
+    <button class="btn" style="width:100%;margin-top:14px" onclick="nextQuestion()">${r.i+1<r.items.length?t("qz_next"):t("qz_finish")} →</button>`:""}
+  </div>`;
+}
+function vQuizEnd(){
+  const r=G.run,n=r.items.length,pct=Math.round(r.right/n*100),lv=qzLevel(qzPoints()).cur;
+  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
+  return `<div class="qz-card qz-end">
+    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${r.right}/${n}</b><span>${pct}%</span></div></div>
+    <h1 style="margin:14px 0 4px">${t("qz_end_t")}</h1>
+    <p class="mute" style="margin:0 0 18px">${esc(msg)}</p>
+    <div class="qz-stats">
+      <div class="qz-stat gold"><b>+${r.gain}</b><span>${t("qz_gain")}</span></div>
+      <div class="qz-stat"><b>${qzPoints()}</b><span>${t("qz_total")}</span></div>
+      <div class="qz-stat"><b>🔥 ${r.best}</b><span>${t("qz_streak")}</span></div>
+    </div>
+    ${r.gain===0&&r.right>0?`<p class="mute" style="font-size:13px;margin:10px 0 0">${t("qz_gain0")}</p>`:""}
+    ${r.leveledUp?`<div class="qz-up">${lv[1]} ${t("qz_levelup",{l:lv[2][lang==="fr"?0:1]})}</div>`:""}
+    ${r.wrong.length?`<details class="qz-wrong"><summary>${t("qz_review",{n:r.wrong.length})}</summary>${r.wrong.map(w=>`<div class="qz-wq"><b>${esc(w.prompt)}</b><div>✓ ${esc(w.opts[w.good])}</div><small>${t("qz_rule")} ${esc(w.q.ref)}</small></div>`).join("")}</details>`:""}
     <div class="qz-actions">
-      <button class="btn" onclick="startQuiz('${r.mode}')">${t("qz_again")}</button>
-      <button class="btn ghost" onclick="qzQuit()">${t("qz_back")}</button>
-      <button class="btn ghost" onclick="go('ressources')">${t("qz_open_rop")}</button>
+      <button class="btn" onclick="startQuiz('${r.mode}',${r.chId||0})">${t("qz_again")}</button>
+      <button class="btn ghost" onclick="G.run=null;render(false,true)">${t("qz_back")}</button>
+      <button class="btn ghost" onclick="G.run=null;go('ressources')">${t("qz_open_rop")}</button>
     </div>
   </div>`;
 }
+document.addEventListener("keydown",e=>{
+  if(route!=="quiz"||!G.run||G.run.i>=G.run.items.length)return;
+  if(e.target&&["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName))return;
+  const k=e.key.toUpperCase(),idx="ABCD".indexOf(k);
+  if(G.run.picked===null&&idx>=0&&idx<G.run.items[G.run.i].opts.length)pickAnswer(idx);
+  else if(G.run.picked!==null&&(e.key==="Enter"||e.key===" ")){e.preventDefault();nextQuestion()}
+});
 
-/* ===== EFFETS D'INTERFACE (visuels uniquement) ===== */
+/* ===== DÉMARRAGE & SYNCHRONISATION ===== */
+async function init(){
+  readHash();syncHash(true);
+  if(!configured){D.loading=false;render(false,true);return}
+  sb.auth.onAuthStateChange((ev,session)=>{
+    if(ev==="SIGNED_OUT"){clearUser();render(true);return}
+    if(ev==="PASSWORD_RECOVERY"){S.user=session&&session.user;go("reset");return}
+    if(ev==="USER_UPDATED"&&session){S.user=session.user;render(true);return}
+    if(ev==="SIGNED_IN"&&session){
+      const prev=S.user&&S.user.id;S.user=session.user;
+      if(prev!==S.user.id){
+        if(location.hash.includes("type=signup")){toast(t("t_mail_confirmed"));syncHash(true)}
+        loadPrivate().then(()=>render(true));
+      }
+    }
+  });
+  const [ses]=await Promise.all([sb.auth.getSession(),loadPublic()]);
+  S.user=ses.data&&ses.data.session?ses.data.session.user:null;
+  if(S.user)await loadPrivate();
+  D.loading=false;render(false,true);
+  if(route==="pole"&&poleSel)loadTasks().then(()=>render(true));
+  if(route==="event")loadRegistrants();
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&configured&&Date.now()-lastSync>30000)refreshAll();
+});
+
+/* =====================================================================
+   COUCHE « DYNAMISME » (JS autonome)
+   ===================================================================== */
 const TABICON={
-  home:'<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg>',
-  cal:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M8 3v4M16 3v4M3.5 10.2h17"/></svg>',
-  ticket:'<svg viewBox="0 0 24 24"><path d="M4 9.4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1.4a2.6 2.6 0 0 0 0 5.2V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.4a2.6 2.6 0 0 0 0-5.2z"/><path d="M14.5 7.5v9" stroke-dasharray="1.6 2.6"/></svg>',
-  users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><circle cx="17.3" cy="9.4" r="2.4"/><path d="M16.6 14.1c2.3.2 3.9 1.5 4.4 4"/></svg>',
-  menu:'<svg viewBox="0 0 24 24"><path d="M4 7.5h16M4 12h16M4 16.5h10"/></svg>'
+  home:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 7v10" stroke-dasharray="2 2"/></svg>',
+  users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19.5c.8-3.5 3.6-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.7"/><path d="M16 14.3c2.4.3 4.6 2 5.3 5.2"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>'
 };
+const GLOW=".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button";
+document.addEventListener("pointermove",e=>{
+  const c=e.target&&e.target.closest&&e.target.closest(GLOW);
+  if(!c)return;
+  const r=c.getBoundingClientRect();
+  c.style.setProperty("--gx",(e.clientX-r.left)+"px");
+  c.style.setProperty("--gy",(e.clientY-r.top)+"px");
+},{passive:true});
+let raf=0;
+function onScroll(){
+  if(raf)return;
+  raf=requestAnimationFrame(()=>{
+    raf=0;
+    const h=document.documentElement.scrollHeight-innerHeight;
+    const sp=$("#sp");if(sp)sp.style.transform=`scaleX(${h>0?Math.min(1,Math.max(0,scrollY/h)):0})`;
+    const hero=$(".hero");
+    if(hero){const r=hero.getBoundingClientRect();hero.style.setProperty("--py",Math.max(-40,Math.min(40,-r.top*.14))+"px")}
+  });
+}
+addEventListener("scroll",onScroll,{passive:true});
+addEventListener("resize",onScroll,{passive:true});
 function stagger(){
-  document.querySelectorAll(".grid").forEach(g=>{
-    [...g.children].filter(c=>c.classList.contains("reveal")).forEach((c,i)=>{
-      if(i>0){c.style.transitionDelay=Math.min(i,6)*70+"ms";setTimeout(()=>{c.style.transitionDelay=""},1500)}
-    });
+  let i=0;
+  document.querySelectorAll(".reveal").forEach(el=>{
+    if(el.getBoundingClientRect().top<innerHeight*1.05){
+      el.style.transitionDelay=Math.min(i++,6)*65+"ms";
+      setTimeout(()=>{el.style.transitionDelay=""},900);
+    }
   });
 }
 function animateStats(){
-  if(reduceMotionGlobe())return;
   document.querySelectorAll(".stat b").forEach(el=>{
-    const n=parseInt(el.textContent,10);
-    if(!isFinite(n)||n<=0||el.dataset.done)return;
-    el.dataset.done=1;const t0=performance.now(),d=1000;
-    (function f(now){const k=Math.min(1,(now-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(n*e);if(k<1)requestAnimationFrame(f)})(t0);
+    const to=parseInt(el.textContent,10);
+    if(!to||el.dataset.done)return;
+    el.dataset.done=1;
+    const t0=performance.now(),dur=850;
+    const step=t=>{const p=Math.min(1,(t-t0)/dur);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)};
+    requestAnimationFrame(step);
   });
 }
-(function(){
-  const sp=document.getElementById("sp"),root=document.documentElement;let tick=false;
-  function upd(){
-    tick=false;const y=window.scrollY||0,max=root.scrollHeight-innerHeight;
-    sp.style.transform="scaleX("+(max>0?Math.min(1,y/max):0)+")";
-    root.style.setProperty("--py",Math.min(y,700)*.07+"px");
-  }
-  addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(upd)}},{passive:true});
-  addEventListener("resize",upd);upd();
-  document.addEventListener("pointermove",e=>{
-    const c=e.target.closest&&e.target.closest(".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button");
-    if(!c)return;const r=c.getBoundingClientRect();
-    c.style.setProperty("--gx",(e.clientX-r.left)+"px");c.style.setProperty("--gy",(e.clientY-r.top)+"px");
-  },{passive:true});
-})();
 
-/* Le blason et le globe suivent légèrement la souris */
 const reduceMotionGlobe=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
-let tiltHero=null;
 document.addEventListener("pointermove",e=>{
-  if(e.pointerType&&e.pointerType!=="mouse")return;
-  const h=e.target&&e.target.closest?e.target.closest(".hero"):null;
-  if(h!==tiltHero){if(tiltHero){tiltHero.style.removeProperty("--mx");tiltHero.style.removeProperty("--my")}tiltHero=h}
-  if(!h||reduceMotionGlobe())return;
+  if(e.pointerType!=="mouse"||reduceMotionGlobe())return;
+  const h=e.target&&e.target.closest&&e.target.closest(".hero");
+  if(!h)return;
   const r=h.getBoundingClientRect();
-  h.style.setProperty("--mx",((e.clientX-r.left)/r.width-.5).toFixed(3));
-  h.style.setProperty("--my",((e.clientY-r.top)/r.height-.5).toFixed(3));
+  h.style.setProperty("--mx",(((e.clientX-r.left)/r.width-.5)*2).toFixed(3));
+  h.style.setProperty("--my",(((e.clientY-r.top)/r.height-.5)*2).toFixed(3));
 },{passive:true});
+document.addEventListener("pointerout",e=>{
+  const h=e.target&&e.target.closest&&e.target.closest(".hero");
+  if(h&&(!e.relatedTarget||!h.contains(e.relatedTarget))){h.style.setProperty("--mx","0");h.style.setProperty("--my","0")}
+});
 
 init();
 </script>
