@@ -485,6 +485,25 @@ body:has(.bureau-wrap) footer a{color:var(--bleu)}
 @keyframes cfFall{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),105vh) rotate(var(--rot))}}
 @media(prefers-reduced-motion:reduce){.qz-in,.qz-ring-fg,.qz-opt,.qz-fb,.qz-up,.qz-streak{animation:none!important}}
 </style>
+<style id="jeux">
+/* Page « Jeux » : simulation diplomatique et quiz des ROP */
+.jeux{display:grid;gap:16px;margin-top:18px}
+.jeux-card{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.jeux-art{height:178px;display:grid;place-items:center;padding:8px 14px 0;color:#fff;background:radial-gradient(520px 260px at 90% -20%,rgba(235,192,0,.35),transparent 60%),linear-gradient(135deg,#020259,#00008E 70%,#1a1ae0)}
+.jeux-art svg{width:100%;max-width:340px;height:auto;display:block}
+.jeux-art.quiz{padding:0}
+.jeux-art .qz-ringbox svg{width:auto}
+.jeux-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:9px;flex:1}
+.jeux-body h3{font-family:var(--f-titre);font-weight:700;font-size:21px;color:var(--bleu);margin:0;padding-top:2px}
+.jeux-body p{margin:0}
+.jeux-meta{display:flex;flex-wrap:wrap;gap:8px}
+.jeux-meta span{font-size:12px;font-weight:600;padding:4px 11px;border-radius:99px;background:var(--bleu-soft);color:var(--bleu)}
+.jeux-saved{font-size:13.5px;color:var(--marine);background:var(--or-soft);border-radius:12px;padding:8px 12px}
+.jeux-cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
+.jeux-top{margin-bottom:14px}
+@media(min-width:760px){.jeux{grid-template-columns:1fr 1fr}}
+@media(hover:hover){.jeux-card:hover{transform:translateY(-4px);border-color:rgba(235,192,0,.7);box-shadow:0 22px 40px -20px rgba(2,2,89,.35)}}
+</style>
 </head>
 <body>
 <div id="sp"></div>
@@ -879,7 +898,7 @@ const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 
 /* ===== TEXTES FR / EN ===== */
 const I18N={
-fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
+fr:{jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
  hero_out:"Débattre, négocier, changer le monde.",hero_sub_out:"Trainings, conférences, voyages et visites : toute la vie de l'association au même endroit.",hero_sub_in:"Voici ce qui t'attend à SOMUN.",
  hello:"Bonjour",see_acts:"Voir les activités",st_events:"événements",st_poles:"pôles",st_regs:"inscriptions",st_my_regs:"mes inscriptions",
  next:"Prochains événements",see_all:"Tout voir →",news:"Actualités",search:"Rechercher un événement ou un lieu",all:"Tous",mine:"Mes inscriptions",
@@ -944,7 +963,7 @@ fr:{home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer
  e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
  e_cancel_past:"Cet événement déjà passé.",
  setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
-en:{home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
+en:{jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
  hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
  hello:"Hello",see_acts:"See activities",st_events:"events",st_poles:"teams",st_regs:"registrations",st_my_regs:"my registrations",
  next:"Upcoming events",see_all:"See all →",news:"News",search:"Search an event or venue",all:"All",mine:"My registrations",
@@ -1272,7 +1291,7 @@ async function refreshAll(){
 }
 
 /* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
-const ROUTES=["accueil","activites","ressources","jeu","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
+const ROUTES=["accueil","activites","ressources","jeu","quiz","diplomatie","adherer","pole","bureau","partenaires","admin","account","login","actus","reset"];
 const ROUTE_RANK={
   accueil:0,
   actus:0.5,
@@ -1280,6 +1299,8 @@ const ROUTE_RANK={
   event:1.5,
   ressources:2,
   jeu:2.5,
+  quiz:2.6,
+  diplomatie:2.7,
   adherer:3,
   pole:4,
   bureau:5,
@@ -1363,7 +1384,7 @@ function render(keep,instantThumb){
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener">LinkedIn</a>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
-  const staff=isStaff(),cur=route==="event"?"activites":route;
+  const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
   $("#dnav").innerHTML=`<span class="nav-thumb" id="nav-thumb" aria-hidden="true"></span>`+nav.map(([k,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')">${t(l)}</button>`).join("");
@@ -1372,7 +1393,7 @@ function render(keep,instantThumb){
   $("#tabbar").innerHTML=main.map(([k,i,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')"><span class="ico" aria-hidden="true">${TABICON[i]}</span>${t(l)}</button>`).join("")+`<button class="${inMore?"on":""}" onclick="openMore()"><span class="ico" aria-hidden="true">${TABICON.menu}</span>${t("more")}</button>`;
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
-  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeu,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
   /* glissement "poussé" : l'ancienne page part dans le sens opposé à la nouvelle */
@@ -1764,6 +1785,53 @@ function vPartenaires(){
   }).join("")}</div>`:`<div class="card empty">${t("part_empty")}</div>`}
   <h2>${t("part_sp")}</h2><div class="card"><p class="mute" style="margin-top:0">${t("part_txt")}</p>
   ${contact?`<a class="btn sm" href="mailto:${esc(contact)}?subject=${encodeURIComponent("Partenariat SOMUN")}">${t("part_contact")}</a>`:""}</div>`;
+}
+
+/* --- Jeux : la page « Jeu » propose la simulation diplomatique et le quiz des ROP.
+   La simulation est dans le fichier simulateur.js, chargé seulement quand on l'ouvre --- */
+const SIM_ART=`<svg viewBox="0 0 340 170" aria-hidden="true"><path d="M94 158A76 76 0 0 1 246 158" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="12" stroke-linecap="round"/><g transform="translate(103,136)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(129,101)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(170,88)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(211,101)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><g transform="translate(237,136)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><path d="M50 158A120 120 0 0 1 290 158" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="12" stroke-linecap="round"/><g transform="translate(62,123)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="73" cy="110" r="3.2" fill="#3ddc84"/><g transform="translate(81,87)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="92" cy="74" r="3.2" fill="#3ddc84"/><g transform="translate(112,60)" fill="#EBC000" opacity="1"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="123" cy="47" r="3.2" fill="#ff6b78"/><g transform="translate(150,46)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="161" cy="33" r="3.2" fill="#3ddc84"/><g transform="translate(190,46)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="201" cy="33" r="3.2" fill="#EBC000"/><g transform="translate(228,60)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="228" cy="57" r="14" fill="none" stroke="#fff" stroke-width="2" stroke-opacity=".7"/><g transform="translate(248,30)"><path d="M-11-9h22a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-13l-5 5v-5h-4a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="#fff"/><circle cx="-5" cy="-2" r="1.5" fill="#020259"/><circle cy="-2" r="1.5" fill="#020259"/><circle cx="5" cy="-2" r="1.5" fill="#020259"/></g><g transform="translate(259,87)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="270" cy="74" r="3.2" fill="#ff6b78"/><g transform="translate(278,123)" fill="#fff" opacity="0.88"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g><circle cx="289" cy="110" r="3.2" fill="#3ddc84"/><rect x="146" y="140" width="48" height="11" rx="3" fill="#EBC000"/><g transform="translate(170,134)" fill="#fff" opacity="0.95"><circle cy="-8" r="5.2"/><path d="M-9 8c0-7 4-10 9-10s9 3 9 10z"/></g></svg>`;
+const SIM_FILE="simulateur.js?v=1.0.1";
+let simLoading=null,simOpen=null;
+const simCtx=()=>({lang,user:S.user,profile:S.profile,sb,toast,takeOpen:()=>{const o=simOpen;simOpen=null;return o}});
+function simSaved(){try{const g=JSON.parse(localStorage.getItem("somun_sim_v1_current")||"null");return g&&g.phase>=1&&g.phase<7?g:null}catch(e){return null}}
+function openSim(mode){simOpen=mode;go("diplomatie")}
+function loadSim(){
+  if(simLoading)return simLoading;
+  simLoading=new Promise((ok,ko)=>{const s=document.createElement("script");s.src=SIM_FILE;s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  simLoading.then(()=>{if(route==="diplomatie")render(true,true)},()=>{simLoading=null;if(route==="diplomatie")$("#app").innerHTML=`<div class="view">${backGames()}<div class="card empty" style="margin-top:12px">${t("diplo_err")}</div></div>`});
+  return simLoading;
+}
+const backGames=()=>`<button class="chip" onclick="go('jeu')">${t("back_games")}</button>`;
+function vJeux(){
+  const total=QUIZ.length,m=qzMastered(),saved=simSaved();
+  return `<h1>${t("jeux_t")}</h1><p class="mute">${t("jeux_s")}</p>
+  <div class="jeux">
+    <div class="card jeux-card reveal">
+      <div class="jeux-art">${SIM_ART}</div>
+      <div class="jeux-body">
+        <h3>${t("diplo")}</h3>
+        <p>${t("diplo_s")}</p>
+        <div class="jeux-meta"><span>${t("diplo_m1")}</span><span>${t("diplo_m2")}</span></div>
+        ${saved?`<p class="jeux-saved">${t("diplo_saved",{p:saved.phase})}${saved.scen&&saved.scen.title?" : "+esc(saved.scen.title):""}</p>`:""}
+        <div class="jeux-cta">${saved?`<button class="btn" onclick="openSim('resume')">${t("diplo_resume")}</button><button class="btn ghost" onclick="openSim('new')">${t("diplo_new")}</button>`:`<button class="btn" onclick="openSim('new')">${t("diplo_go")}</button>`}</div>
+      </div>
+    </div>
+    <div class="card jeux-card reveal">
+      <div class="jeux-art quiz"><div class="qz-ringbox">${qzRing(total?Math.round(m/total*100):0,112,10)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div></div>
+      <div class="jeux-body">
+        <h3>${t("game_t")}</h3>
+        <p>${t("game_s")}</p>
+        <div class="jeux-meta"><span>${m} ${t("qz_mastered")}</span><span>${qzPoints()} ${t("qz_points")}</span></div>
+        <div class="jeux-cta"><button class="btn" onclick="go('quiz')">${t("quiz_go")}</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+function vQuiz(){return backGames()+vJeu()}
+function vDiplomatie(){
+  if(window.SIM)return `<div class="jeux-top">${backGames()}</div>`+SIM.view(simCtx);
+  loadSim();
+  return backGames()+`<div class="card empty" style="margin-top:12px">${t("diplo_load")}</div>`;
 }
 
 /* --- Fiche événement + Study Guide Training + Formulaire Voyage --- */
@@ -2638,7 +2706,7 @@ async function loadLeaderboard(){
 function qzEnsureLb(){
   if(!S.user||D.lb!==null||G.lbBusy)return;
   G.lbBusy=true;
-  loadLeaderboard().then(()=>{G.lbBusy=false;if(route==="jeu"&&!G.run)qzRefresh()});
+  loadLeaderboard().then(()=>{G.lbBusy=false;if(route==="quiz"&&!G.run)qzRefresh()});
 }
 
 /* ----- lancer / terminer une partie ----- */
@@ -2706,7 +2774,7 @@ function qzConfetti(){
 }
 document.addEventListener("keydown",e=>{
   const r=G.run;
-  if(route!=="jeu"||!r||r.done||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(route!=="quiz"||!r||r.done||e.ctrlKey||e.metaKey||e.altKey)return;
   const k=({"1":0,"2":1,"3":2,"4":3,a:0,b:1,c:2,d:3})[String(e.key).toLowerCase()];
   if(k!==undefined&&r.picked===null){qzPick(k);return}
   if((e.key==="Enter"||e.key===" ")&&r.picked!==null){e.preventDefault();qzNext()}
