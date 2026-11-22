@@ -44,15 +44,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 /* ---------- En-tête semi-transparent & lisible ---------- */
-header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.68);backdrop-filter:blur(18px) saturate(165%);-webkit-backdrop-filter:blur(18px) saturate(165%);border-bottom:1px solid rgba(226,228,242,.65);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
-header.scrolled{background:rgba(255,255,255,.78);box-shadow:0 4px 20px rgba(2,2,89,.06)}
-.bar{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 18px;gap:12px;transition:padding .25s var(--ease)}
-header.scrolled .bar{padding:6px 18px}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.7);backdrop-filter:blur(18px) saturate(165%);-webkit-backdrop-filter:blur(18px) saturate(165%);border-bottom:1px solid rgba(226,228,242,.65);transition:background .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+/* au défilement, seul l'aspect change : la hauteur reste la même (avant, l'en-tête rétrécissait et la page tremblait) */
+header.scrolled{background:rgba(255,255,255,.86);border-bottom-color:rgba(226,228,242,.95);box-shadow:0 12px 30px -20px rgba(2,2,89,.38)}
+.bar{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 18px;gap:12px}
 .brand{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:10px;color:var(--bleu);transition:transform .2s var(--ease)}
 .brand:hover{transform:translateY(-1px)}
 .brand:active{transform:scale(.97)}
-.brand img,.mark{width:auto;height:46px;object-fit:contain;display:block;border-radius:8px;transition:height .25s var(--ease)}
-header.scrolled .brand img,header.scrolled .mark{height:40px}
+.brand img,.mark{width:auto;height:46px;object-fit:contain;display:block;border-radius:8px;transform-origin:left center;transition:transform .3s var(--ease)}
+header.scrolled .brand img,header.scrolled .mark{transform:scale(.88)}
 .mark{display:grid;place-items:center;width:46px;background:var(--bleu-soft);color:var(--bleu);font-size:13px;font-weight:800}
 .wordmark{font-family:var(--f-marque);font-weight:900;font-size:23px;letter-spacing:2.5px;line-height:1;padding-top:3px}
 .right{display:flex;gap:8px;align-items:center}
@@ -62,22 +62,41 @@ header.scrolled .brand img,header.scrolled .mark{height:40px}
 .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--bleu),var(--marine));color:#fff;display:grid;place-items:center;font-weight:700;border:2px solid var(--or);cursor:pointer;font-family:var(--f-titre);font-size:16px;padding-top:2px;box-shadow:0 3px 10px rgba(0,0,142,.18);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .avatar:hover{transform:translateY(-1px) scale(1.04);box-shadow:0 6px 16px rgba(0,0,142,.26)}
 
-/* Navigation bureau avec pilule coulissante */
-.dnav{position:relative;display:none;gap:4px;background:rgba(242,243,250,.76);padding:4px;border-radius:99px;border:1px solid rgba(226,228,242,.85);isolation:isolate}
-.nav-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:99px;background:var(--bleu);box-shadow:0 3px 12px rgba(0,0,142,.24);transform:translateX(4px);transition:transform .36s var(--ios-ease),width .36s var(--ios-ease),opacity .22s var(--ease);z-index:0;pointer-events:none;opacity:0;will-change:transform,width}
-.dnav button{position:relative;z-index:1;border:0;background:none;padding:7px 14px;font-size:13px;color:var(--marine);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .24s var(--ease),transform .15s var(--ease)}
+/* ---------- Menu (ordinateur) ----------
+   La pastille bleue n'est plus recréée à chaque page : elle part de l'onglet précédent et s'étire
+   vers le nouveau (le bord avant d'abord, le bord arrière suit). Le libellé devient blanc exactement
+   là où passe la pastille, puis le trait doré se pose sous l'onglet choisi. */
+.dnav{--nav-fs:13.5px;--nav-px:15px;position:relative;display:none;align-items:center;gap:2px;padding:4px;border-radius:99px;background:rgba(242,243,250,.78);border:1px solid rgba(226,228,242,.9);isolation:isolate;min-width:0;max-width:100%;transition:background .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease)}
+header.scrolled .dnav{background:rgba(255,255,255,.94);border-color:var(--line);box-shadow:0 3px 10px -6px rgba(2,2,89,.18)}
+.dnav.tight{overflow-x:auto;scrollbar-width:none}
+.dnav.tight::-webkit-scrollbar{display:none}
+.dnav button{position:relative;z-index:1;flex:none;border:0;background:none;margin:0;padding:7px var(--nav-px);font-size:var(--nav-fs);line-height:1.5;color:var(--marine);font-weight:500;cursor:pointer;white-space:nowrap;border-radius:99px;transition:color .2s var(--ease),transform .15s var(--ease)}
 .dnav button:hover{color:var(--bleu)}
-.dnav button:active{transform:scale(.96)}
-.dnav button.on{color:#fff;background:transparent;font-weight:600;box-shadow:none}
+.dnav button:not(.on):active{transform:scale(.95)}
+.dnav:not(.ready) button.on{background:var(--bleu);color:#fff}
+.tab-hover{position:absolute;z-index:0;left:0;top:4px;width:0;height:0;border-radius:99px;background:rgba(0,0,142,.075);opacity:0;pointer-events:none;transition:left .28s var(--ios-ease),width .28s var(--ios-ease),opacity .2s var(--ease)}
+.dnav.hovering .tab-hover{opacity:1}
+.nav-pill{position:absolute;z-index:2;left:0;top:4px;width:0;height:0;border-radius:99px;overflow:hidden;pointer-events:none;opacity:0;background:linear-gradient(180deg,#1717b5 0%,var(--bleu) 52%,#00007a 100%);box-shadow:0 8px 18px -8px rgba(0,0,142,.7),inset 0 1px 0 rgba(255,255,255,.2);transition:opacity .2s var(--ease)}
+.nav-pill::after{content:"";position:absolute;left:50%;bottom:3px;width:16px;height:3px;margin-left:-8px;border-radius:3px;background:var(--or);box-shadow:0 0 8px rgba(235,192,0,.55);transition:transform .38s var(--ios-ease),opacity .25s var(--ease)}
+.nav-pill.moving::after{transform:scaleX(0);opacity:0;transition-duration:.12s}
+.tab-ink{position:absolute;left:0;top:0}
+.tab-ink span{position:absolute;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#fff;font-weight:500;font-size:var(--nav-fs);line-height:1.5}
 
 /* ---------- Barre d'onglets (mobile) ---------- */
 .tabbar{position:fixed;left:12px;right:12px;bottom:10px;z-index:100;background:rgba(2,2,89,.92);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,.12);border-radius:22px;display:flex;padding:5px 6px calc(5px + env(safe-area-inset-bottom)*.35);box-shadow:0 12px 32px rgba(2,2,89,.28)}
-.tabbar button{flex:1;border:0;background:none;color:rgba(255,255,255,.68);font-size:10.5px;font-weight:500;padding:6px 2px;min-height:46px;border-radius:16px;cursor:pointer;position:relative;transition:color .22s var(--ease),background .24s var(--ios-ease),transform .15s var(--ease)}
+.tabbar button{flex:1;border:0;background:none;color:rgba(255,255,255,.68);font-size:10.5px;font-weight:500;padding:6px 2px;min-height:46px;border-radius:16px;cursor:pointer;position:relative;z-index:1;transition:color .22s var(--ease) .06s,transform .15s var(--ease)}
 .tabbar button:active{transform:scale(.94)}
 .tabbar button .ico{display:block;font-size:19px;line-height:1.25;filter:grayscale(.25);transition:transform .28s var(--ios-ease),filter .2s var(--ease)}
-.tabbar button.on{color:var(--or);font-weight:600;background:rgba(235,192,0,.14)}
+.tabbar button.on{color:var(--or);font-weight:600}
+.tabbar:not(.ready) button.on{background:rgba(235,192,0,.14)}
+.tab-pill{position:absolute;z-index:0;left:0;top:0;width:0;height:0;border-radius:16px;background:linear-gradient(180deg,rgba(235,192,0,.24),rgba(235,192,0,.09));box-shadow:inset 0 0 0 1px rgba(235,192,0,.3);opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
 .tabbar button.on .ico{filter:none;transform:translateY(-2px) scale(1.08)}
-@media(min-width:860px){.dnav{display:flex}.tabbar{display:none}body{padding-bottom:0}}
+@media(min-width:860px){
+  .dnav{display:flex}.tabbar{display:none}body{padding-bottom:0}
+  .bar{display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,max-content) minmax(max-content,1fr);gap:16px}
+  .bar>.brand{justify-self:start}.bar>.right{justify-self:end}
+}
+@media(min-width:860px) and (max-width:1179px){.dnav{--nav-fs:12.5px;--nav-px:10px}.bar{gap:10px}}
 
 /* ---------- Mise en page & glissement bidirectionnel ---------- */
 main{max-width:1120px;width:100%;margin:0 auto;padding:24px 18px 48px;flex:1;position:relative}
@@ -1356,24 +1375,97 @@ window.addEventListener("scroll",()=>{
   const h=$("#hdr");
   if(h)h.classList.toggle("scrolled",window.scrollY>12);
 },{passive:true});
-function moveNavThumb(instant){
-  const nav=$("#dnav"),thumb=$("#nav-thumb"),active=nav&&nav.querySelector("button.on");
-  if(!nav||!thumb)return;
-  if(!active||nav.offsetParent===null){thumb.style.opacity="0";return}
-  const x=active.offsetLeft,w=active.offsetWidth;
-  if(instant){
-    thumb.style.transition="none";
-    thumb.style.transform=`translate3d(${x}px,0,0)`;
-    thumb.style.width=`${w}px`;
-    thumb.style.opacity="1";
-    thumb.getBoundingClientRect();
-    thumb.style.transition="";
-  }else{
-    thumb.style.opacity="1";
-    thumb.style.transform=`translate3d(${x}px,0,0)`;
-    thumb.style.width=`${w}px`;
+/* --- Onglets (menu ordinateur et barre du téléphone) ---
+   Les onglets ne sont reconstruits que si leur liste change (langue, accès admin) ; la pastille,
+   elle, reste en place et glisse de l'onglet précédent vers le nouveau en s'étirant. */
+const TABS={};
+const tabsReduce=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+const tabsLead=t=>1-Math.pow(1-t,4);
+const tabsTrail=t=>{const u=Math.min(1,Math.max(0,(t-.12)/.88));return u<.5?4*u*u*u:1-Math.pow(2-2*u,3)/2};
+function tabsBuild(id,items,cur,opt){
+  const box=$("#"+id);if(!box)return;
+  let s=TABS[id];
+  if(!s){
+    s=TABS[id]={id,box,l:null,w:null,raf:0,rq:0,goal:null,sig:"",ink:null,hov:null,ro:null};
+    if(opt.hover){s.hov=document.createElement("span");s.hov.className="tab-hover";s.hov.setAttribute("aria-hidden","true");box.appendChild(s.hov);tabsHover(s)}
+    s.pill=document.createElement("span");s.pill.className=opt.pill;s.pill.setAttribute("aria-hidden","true");
+    if(opt.ink){s.ink=document.createElement("span");s.ink.className="tab-ink";s.pill.appendChild(s.ink)}
+    box.appendChild(s.pill);
+    if("ResizeObserver" in window){s.ro=new ResizeObserver(()=>{cancelAnimationFrame(s.rq);s.rq=requestAnimationFrame(()=>tabsSync(s,true))});s.ro.observe(box)}
   }
+  if(opt.label)box.setAttribute("aria-label",opt.label);
+  const sig=items.map(i=>i[0]+":"+i[1]).join("|");
+  if(sig!==s.sig){
+    s.sig=sig;
+    box.querySelectorAll(":scope>button").forEach(b=>{if(s.ro)s.ro.unobserve(b);b.remove()});
+    box.insertAdjacentHTML("beforeend",items.map(([k,l,ico,click])=>`<button type="button" data-k="${k}" onclick="${click||`go('${k}')`}">${ico?`<span class="ico" aria-hidden="true">${ico}</span>`:""}${esc(l)}</button>`).join(""));
+    if(s.ink)s.ink.innerHTML=items.map(i=>`<span>${esc(i[1])}</span>`).join("");
+    if(s.ro)box.querySelectorAll(":scope>button").forEach(b=>s.ro.observe(b));
+  }
+  box.querySelectorAll(":scope>button").forEach(b=>{const on=b.dataset.k===cur;b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
 }
+function tabsSync(s,instant){
+  if(!s)return;
+  const box=s.box,btns=[...box.querySelectorAll(":scope>button")];
+  if(!box.offsetWidth){cancelAnimationFrame(s.raf);s.raf=0;s.pill.style.opacity="0";s.l=null;s.goal=null;box.classList.remove("ready");return}
+  if(s.ink)btns.forEach((b,i)=>{const e=s.ink.children[i];if(e)e.style.cssText=`left:${b.offsetLeft}px;top:${b.offsetTop}px;width:${b.offsetWidth}px;height:${b.offsetHeight}px`});
+  if(s.hov)box.classList.toggle("tight",box.scrollWidth>box.clientWidth+1);
+  tabsGo(s,btns.find(b=>b.classList.contains("on")),instant);
+}
+function tabsPut(s,l,w){s.l=l;s.w=w;s.pill.style.left=l+"px";s.pill.style.width=w+"px";if(s.ink)s.ink.style.left=-l+"px"}
+function tabsGo(s,btn,instant){
+  const pill=s.pill;
+  if(!btn){cancelAnimationFrame(s.raf);s.raf=0;pill.style.opacity="0";s.l=null;s.goal=null;return}
+  const L=btn.offsetLeft,W=btn.offsetWidth,goal=L+":"+W;
+  pill.style.top=btn.offsetTop+"px";pill.style.height=btn.offsetHeight+"px";
+  if(s.ink)s.ink.style.top=-btn.offsetTop+"px";
+  if(s.raf&&s.goal===goal)return;
+  s.goal=goal;
+  tabsReveal(s,btn,instant);
+  if(instant||s.l==null||tabsReduce()||(Math.abs(L-s.l)<1&&Math.abs(W-s.w)<1)){
+    cancelAnimationFrame(s.raf);s.raf=0;
+    const fresh=!s.box.classList.contains("ready");   // premier affichage : pas de fondu, pour éviter un clignotement
+    if(fresh)pill.style.transition="none";
+    tabsPut(s,L,W);pill.classList.remove("moving");pill.style.opacity="1";s.box.classList.add("ready");
+    if(fresh){pill.getBoundingClientRect();pill.style.transition=""}
+    return;
+  }
+  cancelAnimationFrame(s.raf);
+  const L0=s.l,R0=s.l+s.w,R1=L+W,toRight=L>L0,cap=Math.max(s.w,W)+150;
+  const dur=Math.min(620,Math.max(320,260+Math.abs(L+W/2-(L0+s.w/2))*.5));
+  let t0=null;
+  pill.classList.add("moving");pill.style.opacity="1";
+  const step=now=>{
+    if(t0==null)t0=now;   // l'horloge part de la première image (sinon, sur un ordinateur chargé, la pastille pouvait reculer d'un cran)
+    const t=Math.max(0,Math.min(1,(now-t0)/dur)),lead=tabsLead(t),trail=tabsTrail(t);
+    let l=L0+(L-L0)*(toRight?trail:lead),r=R0+(R1-R0)*(toRight?lead:trail);
+    if(r-l>cap){if(toRight)l=r-cap;else r=l+cap}   // la pastille s'étire, mais jamais sur tout le menu
+    tabsPut(s,l,r-l);
+    if(t<1)s.raf=requestAnimationFrame(step);
+    else{s.raf=0;pill.classList.remove("moving")}
+  };
+  s.raf=requestAnimationFrame(step);
+}
+function tabsReveal(s,btn,instant){
+  const box=s.box;if(box.scrollWidth<=box.clientWidth+1)return;
+  const a=btn.offsetLeft-14,b=btn.offsetLeft+btn.offsetWidth+14;let x=box.scrollLeft;
+  if(a<x)x=a;else if(b>x+box.clientWidth)x=b-box.clientWidth;
+  if(x!==box.scrollLeft)box.scrollTo({left:x,behavior:instant||tabsReduce()?"auto":"smooth"});
+}
+function tabsHover(s){
+  const box=s.box,h=s.hov;
+  box.addEventListener("pointerover",e=>{
+    if(e.pointerType!=="mouse")return;
+    const b=e.target.closest&&e.target.closest("button");
+    if(!b||b.parentNode!==box)return;
+    const first=!box.classList.contains("hovering");
+    if(first)h.style.transition="opacity .2s ease";
+    h.style.left=b.offsetLeft+"px";h.style.top=b.offsetTop+"px";h.style.width=b.offsetWidth+"px";h.style.height=b.offsetHeight+"px";
+    if(first){h.getBoundingClientRect();box.classList.add("hovering");requestAnimationFrame(()=>{h.style.transition=""})}
+  });
+  box.addEventListener("pointerleave",()=>box.classList.remove("hovering"));
+}
+function moveNavThumb(instant){tabsSync(TABS.dnav,instant);tabsSync(TABS.tabbar,instant)}
 window.addEventListener("resize",()=>moveNavThumb(true),{passive:true});
 
 function render(keep,instantThumb){
@@ -1387,10 +1479,10 @@ function render(keep,instantThumb){
   const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
-  $("#dnav").innerHTML=`<span class="nav-thumb" id="nav-thumb" aria-hidden="true"></span>`+nav.map(([k,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')">${t(l)}</button>`).join("");
+  tabsBuild("dnav",nav.map(([k,l])=>[k,t(l)]),cur,{pill:"nav-pill",ink:true,hover:true,label:lang==="fr"?"Menu principal":"Main menu"});
   const main=[["accueil","home","home"],["activites","cal","activities"],["adherer","ticket","join"],["pole","users","poles"]];
   const inMore=!main.some(m=>m[0]===cur);
-  $("#tabbar").innerHTML=main.map(([k,i,l])=>`<button class="${cur===k?"on":""}" onclick="go('${k}')"><span class="ico" aria-hidden="true">${TABICON[i]}</span>${t(l)}</button>`).join("")+`<button class="${inMore?"on":""}" onclick="openMore()"><span class="ico" aria-hidden="true">${TABICON.menu}</span>${t("more")}</button>`;
+  tabsBuild("tabbar",main.map(([k,i,l])=>[k,t(l),TABICON[i]]).concat([["more",t("more"),TABICON.menu,"openMore()"]]),inMore?"more":cur,{pill:"tab-pill",label:"Menu"});
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
   const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset};
