@@ -1666,8 +1666,8 @@ function vConferences(){
   </div>
   ${D.conferences.length?`<div style="margin-top:16px">${D.conferences.map(c=>{
     const cid=idArg(c.id);
-    const delRow=D.myConfs[c.id]||null;
-    const isSel=Boolean(delRow)||staff;
+    const myConfRow=D.myConfs[c.id]||null;
+    const isSel=Boolean(myConfRow)||staff;
     const appHref=safeUrl(c.application_form_url);
     const mymunHref=safeUrl(c.mymun_url);
     const hbHref=safeUrl(c.handbook_url);
@@ -1683,7 +1683,7 @@ function vConferences(){
     const delegateBlock=isSel
       ?`<div class="conf-box del">
         <h4>🎖️ ${t("conf_sec_delegates")}</h4>
-        ${delRow&&(delRow.committee||delRow.country)?`<div class="conf-kv-item" style="margin-bottom:8px"><b>${t("conf_lbl_assignment")}</b><span>${esc([delRow.committee,delRow.country].filter(Boolean).join(" · "))}</span></div>`:""}
+        ${myConfRow&&(myConfRow.committee||myConfRow.country)?`<div class="conf-kv-item" style="margin-bottom:8px"><b>${t("conf_lbl_assignment")}</b><span>${esc([delRow.committee,delRow.country].filter(Boolean).join(" · "))}</span></div>`:""}
         <div class="conf-kv">
           ${c.travel_info?`<div class="conf-kv-item"><b>${t("conf_lbl_travel")}</b><div style="white-space:pre-line;font-size:14px">${esc(T(c.travel_info))}</div></div>`:""}
           ${c.hotel_info?`<div class="conf-kv-item"><b>${t("conf_lbl_hotel")}</b><div style="white-space:pre-line;font-size:14px">${esc(T(c.hotel_info))}</div></div>`:""}
@@ -1699,12 +1699,12 @@ function vConferences(){
         <p class="mute" style="margin:4px 0 0;font-size:13.5px">${t("conf_locked")}</p>
       </div>`;
 
-    return `<div class="card conf-card ${delRow?"is-selected":""} reveal">
+    return `<div class="card conf-card ${myConfRow?"is-selected":""} reveal">
       <div class="conf-header">
         <div>
           <div style="margin-bottom:6px">
             <span class="tag trip">🌍 ${t("Conférence")}</span>
-            ${delRow?`<span class="tag paid">${t("conf_selected_badge")}</span>`:""}
+            ${myConfRow?`<span class="tag paid">${t("conf_selected_badge")}</span>`:""}
           </div>
           <h3 style="font-family:var(--f-titre);font-size:22px;color:var(--bleu);margin:0">${esc(T(c.title))}</h3>
           <div class="mute" style="margin-top:4px">${c.location?"📍 "+esc(T(c.location)):""}${c.location&&dateRange?" · ":""}${dateRange?"🗓️ "+esc(dateRange):""}</div>
