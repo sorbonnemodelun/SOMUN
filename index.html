@@ -883,21 +883,6 @@ const sdkLoaded=typeof supabase!=="undefined";
 const configured=keysConfigured&&sdkLoaded;
 const helloassoReady=Boolean(HELLOASSO_ORG)&&!HELLOASSO_ORG.includes("VOTRE-");
 const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
-
-<footer>
-  <nav aria-label="Liens de pied de page">
-    <a href="#contact">Contact</a>
-    <a href="#mentions-legales">Mentions légales</a>
-  </nav>
-</footer>
-
-<section id="mentions-legales">
-  <h2>Mentions légales</h2>
-  <p><strong>Éditeur :</strong> SOMUN (Sorbonne Model United Nations), association étudiante rattachée à l’Université Paris 1 Panthéon-Sorbonne.</p>
-  <p><strong>Direction de la publication :</strong> Présidence / Bureau de SOMUN.</p>
-  <p><strong>Hébergement :</strong> Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis) — Dépôt sur GitHub.</p>
-  <p><strong>Données personnelles :</strong> Les données recueillies via HelloAsso ou les formulaires d’inscription servent uniquement à la gestion des membres, événements et délégations.</p>
-</section>
   
 /* ===== TEXTES FR / EN ===== */
 const I18N={
