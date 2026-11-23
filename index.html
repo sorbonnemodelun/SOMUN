@@ -1444,9 +1444,9 @@ function render(keep,instantThumb){
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
   const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
+  fl.push(`<a href="#mentions" class="f-link-btn" onclick="event.preventDefault();go('mentions')">${esc(t("legal_link"))}</a>`);
   if(ig)fl.push(`<a href="${esc(ig)}" target="_blank" rel="noopener noreferrer">Instagram</a>`);
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
-  fl.push(`<button type="button" class="f-link-btn" onclick="go('mentions')">${esc(t("legal_link"))}</button>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
   const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
@@ -2242,388 +2242,83 @@ async function confirmDeleteAccount(ev){
     if(error)return toast(errMsg(error));
     closeSheet();clearUser();
     try{await sb.auth.signOut({scope:"local"})}catch(e){}
-    toast(t("t_deleted"));go("accueil");
+    await loadPublic();toast(t("t_deleted"));go("accueil",true);
   });
 }
 
-/* --- Espace pôles + sous-pôles événementiel --- */
-const SUBPOLES=[
-  {id:"all",key:"subpole_all"},
-  {id:"culturel",key:"subpole_culturel"},
-  {id:"partenariats",key:"subpole_partenariats"},
-  {id:"alumni",key:"subpole_alumni"}
-];
-const isEventPole=p=>/ev[eé]nementiel|event/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`);
-
+/* --- Espace pôles (avec responsables de pôle & sous-pôles : Culturel, Partenariats, Alumni) --- */
+const isSubPole=p=>/culturel|partenariat|alumni/i.test(`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`);
+const subPoleKey=p=>{
+  const hay=`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`.toLowerCase();
+  if(hay.includes("partenariat"))return "partenariats";
+  if(hay.includes("alumni"))return "alumni";
+  return "culturel";
+};
 function vPole(){
   if(D.loading)return loadingBox();
-  if(!S.user)return `<h1>${t("poles_t")}</h1><p class="mute">${t("members")}</p><button class="btn" onclick="go('login')">${t("login")}</button>`;
-  const avail=isStaff()?D.poles:D.poles.filter(p=>D.myPoles.includes(p.id));
-  if(!avail.length)return `<h1>${t("poles_t")}</h1><div class="card empty">${t("no_pole_yet")}</div>`;
-  if(!poleSel&&avail.length===1)poleSel=String(avail[0].id);
-  const pole=avail.find(p=>String(p.id)===String(poleSel));
-  if(!pole){
-    poleSel=null;
-    return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p><div class="pole-pick">${avail.map(p=>`<button onclick="selectPole(${idArg(p.id)})">${esc(p.icon||"📁")} ${esc(poleName(p))}<small>${esc(poleDesc(p))}</small></button>`).join("")}</div>`;
+  if(!S.user)return `<h1>${t("poles_t")}</h1><div class="card" style="margin-top:14px"><p>${t("members")}</p><button class="btn" onclick="go('login')">${t("login")}</button></div>`;
+  if(poleSel){
+    const p=D.poles.find(x=>String(x.id)===String(poleSel));if(!p)return "";
+    const canEditPole=isPoleLead(p.id);
+    const driveHref=normalizeUrl(p.drive_url);
+    const cols=[["todo",t("todo")],["doing",t("doing")],["done",t("done")]];
+    const team=D.memberPoles.filter(x=>String(x.pole_id)===String(p.id));
+    const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
+    const avail=D.members.filter(m=>!team.some(x=>x.user_id===m.id));
+    const teamBlock=canEditPole?`<div class="card" style="margin-top:18px">
+      <h3>👥 ${t("pole_team")}</h3>
+      ${team.length?`<div style="margin-top:10px;display:grid;gap:8px">${team.map(tm=>{
+        const m=byId[tm.user_id]||{};
+        const label=((m.prenom||"")+" "+(m.nom||"")).trim()||m.email||sid(tm.user_id);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line)">
+          <span><b>${esc(protectProperNames(label))}</b>${m.email?` <span class="mute">(${esc(m.email)})</span>`:""}</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select onchange="setPoleRole(${idArg(p.id)},'${sid(tm.user_id)}',this.value,this)">
+              <option value="member" ${tm.role!=="lead"?"selected":""}>${t("pole_member")}</option>
+              <option value="lead" ${tm.role==="lead"?"selected":""}>${t("pole_lead")}</option>
+            </select>
+            <button class="btn danger sm" onclick="removePoleMember(${idArg(p.id)},'${sid(tm.user_id)}',this)">×</button>
+          </div>
+        </div>`;
+      }).join("")}</div>`:`<div class="mute" style="margin-top:8px">${t("none_yet")}</div>`}
+      ${avail.length?`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <select id="addPoleUser" style="flex:1;min-width:200px">${avail.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(((m.prenom||"")+" "+(m.nom||"")).trim()||m.email))}</option>`).join("")}</select>
+        <button class="btn sm" onclick="addPoleMember(${idArg(p.id)},this)">+ ${t("add")}</button>
+      </div>`:""}
+    </div>`:"";
+
+    return `<button class="chip" onclick="go('pole')">${t("back")}</button>
+    <div class="page-head"><h1>${esc(p.icon||"")} ${esc(poleName(p))}</h1>${canEditPole?`<button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️ ${t("edit_pole")}</button>`:""}</div>
+    <p class="mute">${esc(poleDesc(p))}</p>
+    <div class="card" style="margin-bottom:16px"><b>📁 ${t("docs")}</b> : ${driveHref?`<a href="${esc(driveHref)}" target="_blank" rel="noopener noreferrer">${t("open_docs")}</a>`:`<span class="mute">${t("none_yet")}</span>`}</div>
+    <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin-bottom:16px"><input id="taskin" placeholder="${esc(t("new_task"))}" required maxlength="240"><button class="btn" type="submit">${t("add")}</button></form>
+    <div class="cols">${cols.map(([k,lbl])=>{const items=D.tasks.filter(x=>x.status===k);
+      return `<div class="col" data-s="${k}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}')"><h4>${lbl}<span>${items.length}</span></h4>${items.map(x=>`<div class="task" draggable="true" data-id="${sid(x.id)}" ondragstart="dragId='${sid(x.id)}';this.classList.add('drag')" ondragend="dragId=null;this.classList.remove('drag')"><div>${esc(T(x.title))}</div><div class="tb">${k!=="todo"?`<button title="←" onclick="moveTask('${sid(x.id)}','${k==="done"?"doing":"todo"}',this)">←</button>`:""}${k!=="done"?`<button title="→" onclick="moveTask('${sid(x.id)}','${k==="todo"?"doing":"done"}',this)">→</button>`:""}<button title="Supprimer" onclick="delTask('${sid(x.id)}',this)">×</button></div></div>`).join("")}</div>`;
+    }).join("")}</div>
+    ${teamBlock}`;
   }
-  const drive=safeUrl(pole.drive_url),lead=isPoleLead(pole.id),hasSub=isEventPole(pole);
-  const team=D.memberPoles.filter(x=>String(x.pole_id)===String(pole.id));
-  const byId=Object.fromEntries(D.members.map(m=>[m.id,m]));
-  const inTeam=new Set(team.map(x=>x.user_id));
-  const candidates=D.members.filter(m=>!inTeam.has(m.id)).sort((a,b)=>(a.nom+" "+a.prenom).localeCompare(b.nom+" "+b.prenom,"fr"));
+  const staff=isStaff();
+  const list=staff?D.poles:D.poles.filter(p=>D.myPoles.includes(p.id));
+  const mainPoles=list.filter(p=>!isSubPole(p));
+  const subPoles=list.filter(p=>isSubPole(p));
+  const subTabs=[["culturel",t("subpole_culturel")],["partenariats",t("subpole_partenariats")],["alumni",t("subpole_alumni")]];
+  const visibleSubPoles=subPoles.filter(p=>subPoleKey(p)===subPoleSel);
+  const renderPoleBtn=p=>`<button onclick="poleSel=${idArg(p.id)};D.tasks=[];go('pole')">${esc(p.icon||"")} ${esc(poleName(p))}${D.myPoleRoles[p.id]==="lead"?" ★":""}<small>${esc(poleDesc(p))}</small></button>`;
 
-  const visibleTasks=hasSub&&subPoleSel!=="all"
-    ?D.tasks.filter(x=>(x.subpole||"culturel")===subPoleSel)
-    :D.tasks;
-
-  const subTabs=hasSub?`<div class="chips" style="margin:6px 0 12px">${SUBPOLES.map(sp=>`<button class="chip ${subPoleSel===sp.id?"on":""}" onclick="subPoleSel='${sp.id}';render(true)">${esc(t(sp.key))}</button>`).join("")}</div>`:"";
-
-  return `${avail.length>1?`<button class="chip" onclick="poleSel=null;syncHash();render()">${t("back")}</button>`:""}
-  <h1 style="margin-top:8px">${esc(pole.icon||"📁")} ${esc(poleName(pole))}</h1><p class="mute">${esc(poleDesc(pole))}</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    ${drive?`<a class="btn ghost sm" target="_blank" rel="noopener noreferrer" href="${drive}">📂 ${t("open_docs")}</a>`:""}
-    ${lead?`<button class="btn ghost sm" onclick="editPole(${idArg(pole.id)})">✏️ ${t("edit_pole")}</button>`:""}
-  </div>
-  ${subTabs}
-  <form onsubmit="addTask(event)" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-    <input id="tinput" placeholder="${esc(t("new_task"))}" required maxlength="180" style="flex:1;min-width:200px">
-    ${hasSub?`<select id="tsubpole" style="width:auto;min-width:150px">${SUBPOLES.filter(s=>s.id!=="all").map(s=>`<option value="${s.id}" ${(subPoleSel==="all"?"culturel":subPoleSel)===s.id?"selected":""}>${esc(t(s.key))}</option>`).join("")}</select>`:""}
-    <button class="btn" type="submit">${t("add")}</button>
-  </form>
-  <div class="cols">${[["todo","todo"],["doing","doing"],["done","done"]].map(([k,l])=>{const items=visibleTasks.filter(x=>x.status===k);return `
-   <div class="col" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTask(event,'${k}',this)">
-    <h4>${t(l)} <span>${items.length}</span></h4>
-    ${items.map(x=>{const xid=idArg(x.id);
-      const spBadge=hasSub&&subPoleSel==="all"&&x.subpole?`<span class="tag" style="margin-bottom:6px">${esc(t("subpole_"+x.subpole)||x.subpole)}</span><br>`:"";
-      return `<div class="task" draggable="true" ondragstart="dragId=${xid};this.classList.add('drag')" ondragend="this.classList.remove('drag')">
-     <div>${spBadge}${esc(T(x.title))}</div><div class="tb">${k!=="todo"?`<button onclick="moveTask(${xid},'${k==="done"?"doing":"todo"}')" aria-label="←">←</button>`:""}${k!=="done"?`<button onclick="moveTask(${xid},'${k==="todo"?"doing":"done"}')" aria-label="→">→</button>`:""}<button onclick="delTask(${xid})" aria-label="${esc(t("del"))}">✕</button></div></div>`}).join("")}
-   </div>`}).join("")}</div>
-  ${lead?`<h2>${t("pole_team")} (${team.length})</h2>
-  <div class="card">${team.length?team.map(r=>{const m=byId[r.user_id]||{};const isL=(r.role||"member")==="lead";
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
-      <div><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b> <span class="mute">${esc(m.email||"")}</span> ${isL?`<span class="tag paid">★ ${t("pole_lead")}</span>`:""}</div>
-      <div style="display:flex;gap:6px"><button class="chip sm ${isL?"on":""}" onclick="setPoleRole(${idArg(pole.id)},'${sid(r.user_id)}','${isL?"member":"lead"}',this)">${isL?t("pole_member"):t("pole_lead")}</button><button class="btn danger sm" onclick="removeFromPole(${idArg(pole.id)},'${sid(r.user_id)}',this)">✕</button></div>
-    </div>`}).join(""):`<div class="mute">${t("no_members")}</div>`}
-    ${candidates.length?`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><select id="addpm" style="flex:1;min-width:200px"><option value="">${t("add_member_pole")}</option>${candidates.map(m=>`<option value="${sid(m.id)}">${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}${m.email?" ("+esc(m.email)+")":""}</option>`).join("")}</select><button class="btn sm" onclick="addMemberToPole(${idArg(pole.id)},this)">+ ${t("add")}</button></div>`:""}
-  </div>`:""}`;
+  return `<h1>${t("poles_t")}</h1><p class="mute">${t("poles_s")}</p>
+  ${mainPoles.length?`<div class="pole-pick" style="margin-top:14px">${mainPoles.map(renderPoleBtn).join("")}</div>`:""}
+  ${subPoles.length?`<h2>${t("pole_l")}</h2>
+    <div class="chips">${subTabs.map(([k,lbl])=>`<button class="chip ${subPoleSel===k?"on":""}" onclick="subPoleSel='${k}';render(false,true)">${esc(lbl)}</button>`).join("")}</div>
+    <div class="pole-pick">${visibleSubPoles.length?visibleSubPoles.map(renderPoleBtn).join(""):`<div class="card empty">${t("none_yet")}</div>`}</div>`:""}
+  ${!mainPoles.length&&!subPoles.length?`<div class="card empty" style="margin-top:14px">${t("no_pole_yet")}</div>`:""}`;
 }
-function selectPole(id){poleSel=String(id);D.tasks=[];syncHash();render();loadTasks().then(()=>render(true))}
-async function setPoleRole(pid,uid,role,btn){
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("pole_members").update({role}).eq("pole_id",pid).eq("user_id",uid);
-    if(error)return toast(errMsg(error));
-    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
-  });
-}
-async function removeFromPole(pid,uid,btn){
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("pole_members").delete().eq("pole_id",pid).eq("user_id",uid);
-    if(error)return toast(errMsg(error));
-    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
-  });
-}
-async function addMemberToPole(pid,btn){
-  const uid=$("#addpm").value;if(!uid)return;
-  await withBusy(btn,async()=>{
-    const {error}=await sb.from("pole_members").insert({pole_id:pid,user_id:uid,role:"member"});
-    if(error)return toast(errMsg(error));
-    await Promise.all([loadPrivate(),loadAdmin()]);render(true);toast(t("t_ok"));
-  });
-}
-async function addTask(ev){
-  ev.preventDefault();const inp=$("#tinput"),title=inp.value.trim();if(!title||!poleSel)return;
-  const subEl=$("#tsubpole"),subpole=subEl?subEl.value:null;
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const row={pole_id:poleSel,title,status:"todo"};
-    if(subpole)row.subpole=subpole;
-    let res=await sb.from("tasks").insert(row);
-    if(res.error&&/column.*subpole/i.test(res.error.message||"")){
-      delete row.subpole;
-      res=await sb.from("tasks").insert(row);
-    }
-    if(res.error)return toast(errMsg(res.error));
-    inp.value="";await loadTasks();render(true);
-  });
-}
-async function moveTask(id,status){
-  const prev=D.tasks.find(x=>String(x.id)===String(id));const old=prev?prev.status:null;
-  if(prev)prev.status=status;render(true);
-  const {error}=await sb.from("tasks").update({status}).eq("id",id);
-  if(error){if(prev&&old)prev.status=old;render(true);toast(errMsg(error))}
-}
-function dropTask(ev,s,col){ev.preventDefault();col.classList.remove("over");if(dragId!=null)moveTask(dragId,s)}
-async function delTask(id){
-  const idx=D.tasks.findIndex(x=>String(x.id)===String(id));const removed=idx>-1?D.tasks.splice(idx,1)[0]:null;render(true);
-  const {error}=await sb.from("tasks").delete().eq("id",id);
-  if(error){if(removed)D.tasks.splice(idx,0,removed);render(true);toast(errMsg(error))}
-}
-
-/* --- Administration --- */
-function vAdmin(){
-  if(!isStaff())return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_only")}</p>`;
-  const tabs=[["members",t("tab_members")],["content",t("tab_content")],["org",t("tab_org")]];
-  return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_s")}</p>
-  <div class="chips" style="margin-top:10px">${tabs.map(([k,l])=>`<button class="chip ${adminTab===k?"on":""}" onclick="adminTab='${k}';render(false,true)">${l}</button>`).join("")}</div>
-  ${adminTab==="members"?adminMembers():adminTab==="content"?adminContent():adminOrg()}`;
-}
-
-function adminMembers(){
-  const mp=new Set(D.memberPoles.map(x=>x.user_id+":"+x.pole_id));
-  const qm=memberQ.trim().toLowerCase();
-  const filters=[["all",t("filter_all")],["paid",t("filter_paid")],["unpaid",t("filter_unpaid")],["bureau",t("filter_bureau")]];
-  const shown=D.members.filter(m=>{
-    if(memberFilt==="paid"&&!m.paid)return false;
-    if(memberFilt==="unpaid"&&m.paid)return false;
-    if(memberFilt==="bureau"&&m.role!=="bureau")return false;
-    if(!qm)return true;
-    return `${m.prenom||""} ${m.nom||""} ${m.email||""}`.toLowerCase().includes(qm);
-  });
-  return `
-  <div class="card" style="margin-bottom:14px;border-left:4px solid var(--or)">
-    <h3 style="margin-bottom:4px">🔄 ${t("ha_tools")}</h3>
-    <p class="mute" style="margin:0 0 12px;font-size:13px">${t("ha_sync_info")}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <label class="btn ghost sm" style="margin:0;cursor:pointer">📄 ${t("import_csv")}<input type="file" accept=".csv,text/csv" style="display:none" onchange="importHelloAssoCSV(this)"></label>
-      <button class="btn ghost sm" onclick="withBusy(this,async()=>{await loadAdmin();render(true);toast(t('t_ok'))})">🔄 ${t("sync_ha")}</button>
-      <button class="btn danger sm" onclick="resetAcademicYear(this)">🎓 ${t("reset_year")}</button>
-    </div>
-  </div>
-  <input class="search" placeholder="🔍  ${esc(t("search_member"))}" value="${esc(memberQ)}" oninput="memberQ=this.value;render(true)" style="margin-bottom:10px">
-  <div class="chips" style="padding-bottom:10px">${filters.map(([k,l])=>`<button class="chip sm ${memberFilt===k?"on":""}" onclick="memberFilt='${k}';render(true)">${l}</button>`).join("")}</div>
-  ${shown.length?shown.map(m=>{const mid=sid(m.id);
-    const isPaid=Boolean(m.paid&&(!m.paid_until||isoDay(m.paid_until)>=todayStr()));
-    return `<div class="card member"><div class="top">
-    <div><b>${esc(protectProperNames(m.prenom||""))} ${esc(m.nom||"")}</b>${isPaid?` <span class="tag free">${t("ha_verified")}</span>`:""}<div class="mute">${esc(m.email)}</div></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-      <button class="btn sm ${isPaid?"ghost":"gold"}" onclick="togglePaid('${mid}',${!isPaid},this)">${isPaid?t("toggle_paid_off"):t("toggle_paid_on")}</button>
-      <select aria-label="${esc(t("acc_role"))}" onchange="setRole('${mid}',this.value)"><option value="member" ${m.role!=="bureau"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select>
-    </div>
-   </div><div class="pchips">${D.poles.map(p=>{const has=mp.has(m.id+":"+p.id);return `<button class="chip sm ${has?"on":""}" onclick="togglePole('${mid}',${idArg(p.id)},${!has},this)">${esc(p.icon||"")} ${esc(poleName(p))}</button>`}).join("")}</div></div>`}).join(""):`<div class="empty">${t("no_members")}</div>`}`;
-}
-
-async function togglePaid(uid,paid,btn){
-  await withBusy(btn,async()=>{
-    const until=paid?academicYearEnd():null;
-    const {error}=await sb.from("profiles").update({paid,paid_until:until}).eq("id",uid);
-    if(error)return toast(errMsg(error));
-    if(paid){
-      await sb.from("membership_history").insert({user_id:uid,season:currentSeason(),source:"Validation Bureau"}).catch(()=>{});
-    }
-    await Promise.all([loadAdmin(),loadPrivate()]);render(true);toast(t("t_ok"));
-  });
-}
-
-async function resetAcademicYear(btn){
-  if(!confirm(t("confirm_reset_year")))return;
-  await withBusy(btn,async()=>{
-    const today=todayStr();
-    const expired=D.members.filter(m=>m.paid&&m.paid_until&&isoDay(m.paid_until)<today);
-    const {error}=await sb.from("profiles").update({paid:false}).eq("paid",true).lt("paid_until",today);
-    if(error)return toast(errMsg(error));
-    await Promise.all([loadAdmin(),loadPrivate()]);
-    render(true);toast(t("reset_year_done",{n:expired.length}));
-  });
-}
-
-async function importHelloAssoCSV(input){
-  const file=input.files&&input.files[0];if(!file)return;
-  if(file.size>2*1024*1024){input.value="";return toast(t("e_file_big"))}
-  const text=await file.text();
-  input.value="";
-  const lines=text.split(/\r?\n/).filter(l=>l.trim());
-  if(lines.length<2)return toast(t("no_res"));
-  const sep=lines[0].includes(";")?";":",";
-  const headers=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase());
-  const mailCol=headers.findIndex(h=>h.includes("email")||h.includes("e-mail")||h.includes("mail"));
-  const statusCol=headers.findIndex(h=>h.includes("statut")||h.includes("status")||h.includes("paiement"));
-  const emails=new Set();
-  for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(sep).map(c=>c.replace(/^"|"$/g,"").trim());
-    const rawMail=mailCol>=0?cols[mailCol]:cols.find(c=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c));
-    if(!rawMail)continue;
-    const st=statusCol>=0?(cols[statusCol]||"").toLowerCase():"";
-    if(st&&(st.includes("annul")||st.includes("refus")||st.includes("cancel")))continue;
-    emails.add(rawMail.toLowerCase());
-  }
-  let matched=0,queued=0;
-  const until=academicYearEnd(),season=currentSeason();
-  for(const mail of emails){
-    const prof=D.members.find(m=>(m.email||"").toLowerCase()===mail||(m.helloasso_email||"").toLowerCase()===mail);
-    if(prof){
-      const {error}=await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",prof.id);
-      if(!error){
-        matched++;
-        await sb.from("membership_history").insert({user_id:prof.id,season,source:"HelloAsso CSV"}).catch(()=>{});
-      }
-    }else{
-      const {error}=await sb.from("pending_memberships").upsert({email:mail,season,paid_until:until},{onConflict:"email"}).catch(()=>({error:true}));
-      if(!error)queued++;
-    }
-  }
-  await Promise.all([loadAdmin(),loadPrivate()]);
-  render(true);toast(t("csv_done",{m:matched,q:queued}));
-}
-
-async function setRole(uid,role){
-  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
-  if(error)return toast(errMsg(error));
-  await loadAdmin();toast(t("t_ok"));
-}
-async function togglePole(uid,pid,add,btn){
-  await withBusy(btn,async()=>{
-    const {error}=add?await sb.from("pole_members").insert({user_id:uid,pole_id:pid}):await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid);
-    if(error)return toast(errMsg(error));
-    await Promise.all([loadAdmin(),loadPrivate()]);render(true);
-  });
-}
-
-function adminContent(){
-  return `<h2>${t("add_ev")}</h2><div class="card"><form onsubmit="addEvent(event)">
-   <label>${t("f_title")}</label><input name="title" required maxlength="120">
-   <div class="row2">
-     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${I18N[lang][x]||x}</option>`).join("")}</select></div>
-     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_date")}</label><input name="date" type="date" required></div>
-     <div><label>${t("f_time")}</label><input name="heure" type="time"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="0"></div>
-     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div>
-   </div>
-   <label>${t("f_slug")}</label><input name="helloasso_slug" placeholder="ex : gala-somun-2026">
-   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…">
-   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
-   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
-   <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
-   <br><button class="btn" type="submit">${t("publish")}</button></form></div>
-  <h2>${t("add_news")}</h2><div class="card"><form onsubmit="addNews(event)">
-   <label>${t("f_title")}</label><input name="title" required maxlength="120"><label>${t("f_text")}</label><textarea name="body" rows="3" required maxlength="1500"></textarea>
-   <br><button class="btn" type="submit">${t("publish")}</button></form></div>
-  <h2>${t("existing")}</h2>
-  ${D.events.map(e=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span><b>${esc(T(e.title))}</b> · ${isoDay(e.date)}${safeUrl(e.form_url)?` <span class="tag">${t("form_badge")}</span>`:""}</span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editEvent(${idArg(e.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${idArg(e.id)},this)">${t("del")}</button></div></div>`).join("")}
-  ${D.news.map(n=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span>📰 ${esc(T(n.title))}</span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></div></div>`).join("")}`;
-}
-
-function adminOrg(){
-  return `
-  <h2>${t("site_settings")}</h2>
-  <div class="card"><form onsubmit="saveSiteSettings(event)">
-    <div class="row2">
-      <div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" value="${esc(cfg("cotisation"))}"></div>
-      <div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cfg("contact_email"))}"></div>
-    </div>
-    <label>${t("f_hero")}</label><input name="hero_img" type="text" placeholder="https://…" value="${esc(cfg("hero_img"))}">
-    <div class="row2">
-      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(cfg("instagram_url"))}"></div>
-      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/company/… ou https://…" value="${esc(cfg("linkedin_url"))}"></div>
-    </div>
-    <br><button class="btn" type="submit">${t("save")}</button>
-  </form></div>
-
-  <h2>${t("manage_board")} <button onclick="editBoard()">+ ${t("add_board")}</button></h2>
-  ${sortedBoard().map(m=>{const pUrl=boardMemberPhoto(m);const init=((m.name||"?").trim()[0]||"?").toUpperCase();return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:10px">
-      ${pUrl?`<img src="${esc(pUrl)}" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--or)">`:`<div style="width:42px;height:42px;border-radius:50%;background:var(--bleu-soft);color:var(--bleu);display:grid;place-items:center;font-weight:700">${esc(init)}</div>`}
-      <span><b>${esc(protectProperNames(m.name))}</b> · ${esc(m.role_fr||"")} <span class="mute">(${esc(m.email||DEFAULT_CONTACT)})</span></span>
-    </div>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoard(${idArg(m.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div>
-  </div>`}).join("")||`<div class="card empty">${t("none_yet")}</div>`}
-
-  <h2>${t("manage_poles")} <button onclick="editPole()">+ ${t("add_pole")}</button></h2>
-  ${D.poles.map(p=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
-    <span>${esc(p.icon||"📁")} <b>${esc(p.name_fr)}</b> <span class="mute">${esc(p.name_en||"")}</span></span>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></div>
-  </div>`).join("")||`<div class="card empty">${t("none_yet")}</div>`}
-
-  <h2>${t("manage_partners")} <button onclick="editPartner()">+ ${t("add_partner")}</button></h2>
-  ${D.partners.map(p=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
-    <span>🤝 <b>${esc(p.name)}</b> <span class="mute">${esc(p.url||p.website||"")}</span></span>
-    <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPartner(${idArg(p.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div>
-  </div>`).join("")||`<div class="card empty">${t("part_empty")}</div>`}`;
-}
-
-async function saveSiteSettings(ev){
-  ev.preventDefault();
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target);
-    const rawHero=String(f.get("hero_img")||"").trim(),hero=rawHero?safeAsset(rawHero):null;
-    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
-    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
-    if((rawHero&&!hero)||(rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
-    const pairs=[
-      {key:"cotisation",value:String(Math.max(0,Number(f.get("cotisation"))||DEFAULT_COTISATION))},
-      {key:"contact_email",value:String(f.get("contact_email")||"").trim()},
-      {key:"hero_img",value:hero||""},
-      {key:"instagram_url",value:ig||""},
-      {key:"linkedin_url",value:li||""}
-    ];
-    const {error}=await sb.from("site_settings").upsert(pairs,{onConflict:"key"});
-    if(error)return toast(errMsg(error));
-    await loadPublic();render(true);toast(t("t_ok"));
-  });
-}
-
-function editBoard(id){
-  const m=id!=null?D.board.find(x=>String(x.id)===String(id)):{};
-  const isNew=!m||m.id==null;
-  const init=((m.name||"?").trim()[0]||"?").toUpperCase();
-  const curBioPhoto=m.bio_photo_url||boardBioPhoto(m)||"";
-  openSheet(`<h3>${isNew?t("add_board"):t("edit")}</h3><form id="bioEditForm" data-init="${esc(init)}" onsubmit="saveBoard(event,${isNew?"null":idArg(m.id)})">
-    <label>${t("f_title")} (Nom complet)</label><input name="name" required maxlength="100" value="${esc(protectProperNames(m.name||""))}">
-    <div class="row2">
-      <div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80" value="${esc(m.role_fr||"")}"></div>
-      <div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80" value="${esc(m.role_en||"")}"></div>
-    </div>
-    <label>${t("email")}</label><input name="email" type="email" value="${esc(m.email||"")}">
-    <div class="row2">
-      <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
-      <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
-    </div>
-    <label>${t("f_photo_url")}</label><input name="photo_url" type="text" placeholder="photo_bureau_...jpeg ou https://…" value="${esc(m.photo_url||"")}">
-    <label>${t("f_bio_photo_url")}</label><input id="bioPhotoInput" name="bio_photo_url" type="text" placeholder="photo_bio_...jpeg ou https://…" value="${esc(curBioPhoto)}" oninput="previewBioPhoto(this.value)">
-    <label>${t("f_photo_file")}</label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleBioPhotoFile(this)">
-    ${avatarMarkup(curBioPhoto,init,"bio-preview")}
-    <label>${t("f_bio")}</label><textarea name="bio" rows="4" maxlength="2000">${esc(m.bio||"")}</textarea>
-    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
-  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-async function saveBoard(ev,id){
-  ev.preventDefault();
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target);
-    const rawPhoto=String(f.get("photo_url")||"").trim(),photo=rawPhoto?safeAsset(rawPhoto):null;
-    const rawBioPhoto=String(f.get("bio_photo_url")||"").trim(),bioPhoto=rawBioPhoto?safeAsset(rawBioPhoto):null;
-    if((rawPhoto&&!photo)||(rawBioPhoto&&!bioPhoto))return toast(t("e_url"));
-    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
-    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
-    if((rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
-    const row={name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,email:(f.get("email")||"").trim()||null,bio:(f.get("bio")||"").trim()||null,photo_url:photo,bio_photo_url:bioPhoto,instagram_url:ig,linkedin_url:li};
-    let res=id==null?await sb.from("board_members").insert(row):await sb.from("board_members").update(row).eq("id",id);
-    if(res.error&&/column/i.test(res.error.message||"")){
-      const fallback={name:row.name,role_fr:row.role_fr,role_en:row.role_en,email:row.email,bio:row.bio};
-      res=id==null?await sb.from("board_members").insert(fallback):await sb.from("board_members").update(fallback).eq("id",id);
-    }
-    if(res.error)return toast(errMsg(res.error));
-    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
-  });
-}
-
 function editPole(id){
-  const p=id!=null?D.poles.find(x=>String(x.id)===String(id)):{};
-  const isNew=!p||p.id==null;
-  openSheet(`<h3>${isNew?t("add_pole"):t("edit_pole")}</h3><form onsubmit="savePole(event,${isNew?"null":idArg(p.id)})">
-    <label>${t("f_icon")}</label><input name="icon" maxlength="8" value="${esc(p.icon||"📁")}">
-    <div class="row2">
-      <div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}"></div>
-      <div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}"></div>
-    </div>
-    <label>${t("f_desc_fr")}</label><textarea name="desc_fr" rows="2" maxlength="400">${esc(p.desc_fr||"")}</textarea>
-    <label>${t("f_desc_en")}</label><textarea name="desc_en" rows="2" maxlength="400">${esc(p.desc_en||"")}</textarea>
+  const p=D.poles.find(x=>String(x.id)===String(id));if(!p)return;
+  openSheet(`<h3>✏️ ${esc(poleName(p))}</h3><form onsubmit="savePole(event,${idArg(p.id)})">
+    <label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80" value="${esc(p.name_fr||"")}">
+    <label>${t("f_name_en")}</label><input name="name_en" maxlength="80" value="${esc(p.name_en||"")}">
+    <label>${t("f_desc_fr")}</label><textarea name="desc_fr" rows="2" maxlength="300">${esc(p.desc_fr||"")}</textarea>
+    <label>${t("f_desc_en")}</label><textarea name="desc_en" rows="2" maxlength="300">${esc(p.desc_en||"")}</textarea>
     <label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…" value="${esc(p.drive_url||"")}">
     <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
@@ -2632,129 +2327,351 @@ async function savePole(ev,id){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),rawUrl=String(f.get("drive_url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
-    if(rawUrl&&!url)return toast(t("e_url"));
-    const row={icon:(f.get("icon")||"📁").trim(),name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim()||null,desc_en:(f.get("desc_en")||"").trim()||null,drive_url:url};
-    const {error}=id==null?await sb.from("poles").insert(row):await sb.from("poles").update(row).eq("id",id);
+    const f=new FormData(ev.target),rawDrive=String(f.get("drive_url")||"").trim(),drive=rawDrive?normalizeUrl(rawDrive):null;
+    if(rawDrive&&!drive)return toast(t("e_url"));
+    const row={name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim(),desc_en:(f.get("desc_en")||"").trim()||null,drive_url:drive};
+    const {error}=await sb.from("poles").update(row).eq("id",id);
     if(error)return toast(errMsg(error));
     closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
-
-function editPartner(id){
-  const p=id!=null?D.partners.find(x=>String(x.id)===String(id)):{};
-  const isNew=!p||p.id==null;
-  openSheet(`<h3>${isNew?t("add_partner"):t("edit")}</h3><form onsubmit="savePartner(event,${isNew?"null":idArg(p.id)})">
-    <label>${t("f_title")}</label><input name="name" required maxlength="100" value="${esc(p.name||"")}">
-    <label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…" value="${esc(p.url||p.website||"")}">
-    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
-  </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+async function addPoleMember(pid,btn){
+  const uid=$("#addPoleUser")&&$("#addPoleUser").value;if(!uid)return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").insert({pole_id:pid,user_id:uid,role:"member"});
+    if(error)return toast(errMsg(error));
+    await loadPrivate();render(true);toast(t("t_ok"));
+  });
 }
-async function savePartner(ev,id){
+async function setPoleRole(pid,uid,role,sel){
+  sel.disabled=true;
+  try{
+    const {error}=await sb.from("pole_members").update({role}).eq("pole_id",pid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await loadPrivate();render(true);toast(t("t_ok"));
+  }finally{sel.disabled=false}
+}
+async function removePoleMember(pid,uid,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("pole_members").delete().eq("pole_id",pid).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await loadPrivate();render(true);toast(t("t_ok"));
+  });
+}
+async function addTask(ev){
+  ev.preventDefault();
+  const i=$("#taskin"),title=i.value.trim();if(!title||!poleSel)return;
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {data,error}=await sb.from("tasks").insert({pole_id:poleSel,title,status:"todo",created_by:S.user.id}).select().single();
+    if(error)return toast(errMsg(error));
+    D.tasks.push(data);i.value="";render(true);
+  });
+}
+async function moveTask(id,status,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("tasks").update({status}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    const x=D.tasks.find(t=>String(t.id)===String(id));if(x)x.status=status;render(true);
+  });
+}
+const dropTask=(ev,s)=>{ev.preventDefault();ev.currentTarget.classList.remove("over");if(dragId)moveTask(dragId,s)};
+async function delTask(id,btn){
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("tasks").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    D.tasks=D.tasks.filter(t=>String(t.id)!==String(id));render(true);
+  });
+}
+
+/* --- Administration --- */
+function vAdmin(){
+  if(D.loading&&!S.user)return loadingBox();
+  if(!isStaff())return `<h1>${t("admin_t")}</h1><div class="card" style="margin-top:14px">${t("admin_only")}</div>`;
+  const tabs=[["members",t("tab_members")],["content",t("tab_content")],["org",t("tab_org")]];
+  return `<h1>${t("admin_t")}</h1><p class="mute">${t("admin_s")}</p>
+  <div class="chips">${tabs.map(([k,l])=>`<button class="chip ${adminTab===k?"on":""}" onclick="adminTab='${k}';render(false,true)">${l}</button>`).join("")}</div>
+  ${adminTab==="members"?adminMembers():adminTab==="content"?adminContent():adminOrg()}`;
+}
+function adminMembers(){
+  const needle=memberQ.trim().toLowerCase();
+  const filts=[["all",t("filter_all")],["paid",t("filter_paid")],["unpaid",t("filter_unpaid")],["bureau",t("filter_bureau")]];
+  const activePaid=m=>Boolean(m.paid&&(!m.paid_until||isoDay(m.paid_until)>=todayStr()));
+  const list=D.members.filter(m=>{
+    if(memberFilt==="paid"&&!activePaid(m))return false;
+    if(memberFilt==="unpaid"&&activePaid(m))return false;
+    if(memberFilt==="bureau"&&m.role!=="bureau")return false;
+    if(!needle)return true;
+    return `${m.prenom||""} ${m.nom||""} ${m.email||""} ${m.helloasso_email||""}`.toLowerCase().includes(needle);
+  });
+  return `<div class="card" style="margin-bottom:14px">
+    <h3>${t("ha_tools")}</h3>
+    <p class="mute" style="margin:6px 0 12px">${t("ha_sync_info")}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sm" onclick="openImportCSV()">📥 ${t("import_csv")}</button>
+      <button class="btn ghost sm" onclick="syncHelloAsso(this)">🔄 ${t("sync_ha")}</button>
+      <button class="btn danger sm" onclick="resetAcademicYear(this)">🎓 ${t("reset_year")}</button>
+    </div>
+  </div>
+  <input class="search" placeholder="🔍  ${esc(t("search_member"))}" value="${esc(memberQ)}" oninput="memberQ=this.value;render(true)">
+  <div class="chips" style="margin-top:8px">${filts.map(([k,l])=>`<button class="chip sm ${memberFilt===k?"on":""}" onclick="memberFilt='${k}';render(false,true)">${l}</button>`).join("")}</div>
+  ${list.map(m=>{
+    const mPoles=D.memberPoles.filter(x=>x.user_id===m.id).map(x=>x.pole_id);
+    const paidNow=activePaid(m);
+    const fullName=((m.prenom||"")+" "+(m.nom||"")).trim()||m.email;
+    return `<div class="card member">
+     <div class="top"><div><b>${esc(protectProperNames(fullName))}</b> <span class="mute">${esc(m.email||"")}</span>${m.helloasso_email?` <span class="mute">(HA: ${esc(m.helloasso_email)})</span>`:""}<br>${paidNow?`<span class="tag free">${t("ha_verified")}</span>${m.paid_until?`<span class="mute" style="font-size:12px"> · ${esc(long(m.paid_until))}</span>`:""}`:`<span class="tag gray">${t("ha_unverified")}</span>`}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+       <button class="btn ${paidNow?"ghost":"gold"} sm" onclick="toggleMemberPaid('${sid(m.id)}',${!paidNow},this)">${paidNow?t("toggle_paid_off"):t("toggle_paid_on")}</button>
+       <select onchange="setRole('${sid(m.id)}',this.value,this)"><option value="membre" ${m.role!=="bureau"?"selected":""}>${t("role_member")}</option><option value="bureau" ${m.role==="bureau"?"selected":""}>${t("role_bureau")}</option></select>
+      </div></div>
+     <div class="pchips">${D.poles.map(p=>{const on=mPoles.includes(p.id);return `<button class="chip sm ${on?"on":""}" onclick="togglePole('${sid(m.id)}',${idArg(p.id)},${on},this)">${esc(p.icon||"")} ${esc(poleName(p))}</button>`}).join("")}</div>
+    </div>`;
+  }).join("")||`<div class="empty">${t("no_members")}</div>`}
+  <div class="card" style="margin-top:16px"><h3>${t("existing")} (${D.news.length})</h3>${D.news.map(n=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><span><b>${esc(T(n.title))}</b> <span class="mute">${isoDay(n.created_at)}</span></span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">✏️</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></div></div>`).join("")||`<div class="mute">${t("none_yet")}</div>`}</div>`;
+}
+async function toggleMemberPaid(uid,makePaid,btn){
+  await withBusy(btn,async()=>{
+    const until=makePaid?academicYearEnd():null;
+    const {error}=await sb.from("profiles").update({paid:makePaid,paid_until:until}).eq("id",uid);
+    if(error)return toast(errMsg(error));
+    if(makePaid){
+      await sb.from("membership_history").insert({user_id:uid,season:currentSeason(),source:"Bureau (manuel)"});
+    }
+    await loadAdmin();render(true);toast(t("t_ok"));
+  });
+}
+function openImportCSV(){
+  openSheet(`<h3>📥 ${t("import_csv")}</h3>
+    <p class="mute" style="margin-top:6px">Colle l'export CSV HelloAsso (colonnes e-mail / prénom / nom, séparateur virgule ou point-virgule).</p>
+    <form onsubmit="runImportCSV(event)">
+      <textarea id="csvArea" rows="6" required placeholder="email;prenom;nom&#10;etudiant@sorbonne.fr;Marie;Dupont"></textarea>
+      <br><button class="btn" type="submit" style="width:100%">${t("import_csv")}</button>
+    </form>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function runImportCSV(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const raw=$("#csvArea").value||"";
+    const emails=[...new Set((raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)||[]).map(x=>x.toLowerCase()))];
+    if(!emails.length)return toast(t("e_email"));
+    const until=academicYearEnd(),season=currentSeason();
+    let matched=0,queued=0;
+    for(const em of emails){
+      const existing=D.members.find(m=>(m.email||"").toLowerCase()===em||(m.helloasso_email||"").toLowerCase()===em);
+      if(existing){
+        await sb.from("profiles").update({paid:true,paid_until:until}).eq("id",existing.id);
+        await sb.from("membership_history").insert({user_id:existing.id,season,source:"CSV HelloAsso"});
+        matched++;
+      }else{
+        const {error}=await sb.from("pending_memberships").upsert({email:em,season,paid_until:until},{onConflict:"email"});
+        if(!error)queued++;
+      }
+    }
+    await loadAdmin();closeSheet();render(true);
+    toast(t("csv_done",{m:matched,q:queued}));
+  });
+}
+async function syncHelloAsso(btn){
+  await withBusy(btn,async()=>{
+    const {data,error}=await sb.functions.invoke("helloasso-sync");
+    if(error){toast(errMsg(error));return}
+    await loadAdmin();render(true);
+    toast((data&&data.message)||t("t_ok"));
+  });
+}
+async function resetAcademicYear(btn){
+  if(!confirm(t("confirm_reset_year")))return;
+  await withBusy(btn,async()=>{
+    const cut=todayStr();
+    const expired=D.members.filter(m=>m.paid&&m.paid_until&&isoDay(m.paid_until)<cut);
+    for(const m of expired){
+      await sb.from("profiles").update({paid:false}).eq("id",m.id);
+    }
+    await loadAdmin();render(true);
+    toast(t("reset_year_done",{n:expired.length}));
+  });
+}
+
+function adminContent(){
+  return `<div class="card"><h3>${t("add_ev")}</h3><form onsubmit="addEvent(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140">
+   <div class="row2"><div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${t(x)}</option>`).join("")}</select></div><div><label>${t("f_place")}</label><input name="lieu" required maxlength="140"></div></div>
+   <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required value="${todayStr()}"></div><div><label>${t("f_time")}</label><input name="heure" type="time"></div></div>
+   <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" min="0" max="5000" step="0.5" value="0"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" max="5000" value="30" required></div></div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" placeholder="ex : gala-automne-2026"><div class="mute" style="font-size:12px;margin-top:4px">${t("slug_warn")}</div>
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…">
+   <label>${t("f_img")}</label><input name="image_url" type="url" placeholder="https://…">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
+   <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
+   <br><button class="btn" type="submit">${t("publish")}</button></form></div>
+  <div class="card" style="margin-top:16px"><h3>${t("add_news")}</h3><form onsubmit="addNews(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140"><label>${t("f_text")}</label><textarea name="body" rows="3" required maxlength="2000"></textarea>
+   <br><button class="btn" type="submit">${t("publish")}</button></form></div>`;
+}
+
+function adminOrg(){
+  const cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=cfg("instagram_url")||"",li=cfg("linkedin_url")||"",hImg=cfg("hero_img")||"",cot=cfg("cotisation")||DEFAULT_COTISATION;
+  const orderedBoard=sortedBoard();
+  return `<div class="card"><h3>${t("site_settings")}</h3><form onsubmit="saveSettings(event)">
+   <label>${t("f_hero")}</label><input name="hero_img" value="${esc(hImg)}" placeholder="https://… ou photo.jpg">
+   <div class="row2"><div><label>${t("f_contact")}</label><input name="contact_email" type="email" value="${esc(cMail)}"></div><div><label>${t("f_cotisation")}</label><input name="cotisation" type="number" min="0" max="1000" step="1" value="${esc(cot)}"></div></div>
+   <div class="row2"><div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(ig)}"></div><div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(li)}"></div></div>
+   <br><button class="btn" type="submit">${t("save")}</button></form></div>
+
+  <div class="card" style="margin-top:16px"><h3>${t("manage_board")} (${orderedBoard.length})</h3>
+   ${orderedBoard.map(m=>{
+     const pUrl=boardMemberPhoto(m);
+     const init=((m.name||"?").trim()[0]||"?").toUpperCase();
+     return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">
+       <div style="display:flex;align-items:center;gap:10px">${avatarMarkup(pUrl,init,"board-photo")}<span style="width:36px;height:36px;font-size:14px;display:none"></span><div><b>${esc(protectProperNames(m.name))}</b> <span class="tag">${esc(m.role_fr)}</span>${m.bio?` <span class="mute">· bio ✓</span>`:""}</div></div>
+       <div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editBoardBio(${idArg(m.id)})">✏️ ${t("edit_bio_photo")}</button><button class="btn danger sm" onclick="delRow('board_members',${idArg(m.id)},this)">${t("del")}</button></div>
+     </div>`;
+   }).join("")}
+   <form onsubmit="addBoard(event)" style="margin-top:14px"><h4>${t("add_board")}</h4>
+    <div class="row2"><div><label>${t("fn")}</label><input name="name" required maxlength="100"></div><div><label>${t("f_photo_url")}</label><input name="photo_url" placeholder="photo.jpg ou https://…"></div></div>
+    <div class="row2"><div><label>${t("f_role_fr")}</label><input name="role_fr" required maxlength="80"></div><div><label>${t("f_role_en")}</label><input name="role_en" maxlength="80"></div></div>
+    <label>${t("f_bio")}</label><textarea name="bio" rows="2" maxlength="1000"></textarea>
+    <br><button class="btn sm" type="submit">${t("add")}</button></form></div>
+
+  <div class="card" style="margin-top:16px"><h3>${t("manage_poles")} (${D.poles.length})</h3>
+   ${D.poles.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><span>${esc(p.icon||"")} <b>${esc(p.name_fr)}</b></span><div style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editPole(${idArg(p.id)})">✏️</button><button class="btn danger sm" onclick="delRow('poles',${idArg(p.id)},this)">${t("del")}</button></div></div>`).join("")}
+   <form onsubmit="addPole(event)" style="margin-top:14px"><h4>${t("add_pole")}</h4>
+    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name_fr" required maxlength="80"></div><div><label>${t("f_name_en")}</label><input name="name_en" maxlength="80"></div></div>
+    <div class="row2"><div><label>${t("f_icon")}</label><input name="icon" maxlength="8" placeholder="🏛️"></div><div><label>${t("f_drive")}</label><input name="drive_url" type="text" placeholder="https://drive.google.com/…"></div></div>
+    <label>${t("f_desc_fr")}</label><textarea name="desc_fr" rows="2" maxlength="300"></textarea>
+    <label>${t("f_desc_en")}</label><textarea name="desc_en" rows="2" maxlength="300"></textarea>
+    <br><button class="btn sm" type="submit">${t("add")}</button></form></div>
+
+  <div class="card" style="margin-top:16px"><h3>${t("manage_partners")} (${D.partners.length})</h3>
+   ${D.partners.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><span><b>${esc(p.name)}</b></span><button class="btn danger sm" onclick="delRow('partners',${idArg(p.id)},this)">${t("del")}</button></div>`).join("")}
+   <form onsubmit="addPartner(event)" style="margin-top:14px"><h4>${t("add_partner")}</h4>
+    <div class="row2"><div><label>${t("f_name_fr")}</label><input name="name" required maxlength="100"></div><div><label>${t("f_site")}</label><input name="url" type="text" placeholder="https://…"></div></div>
+    <br><button class="btn sm" type="submit">${t("add")}</button></form></div>`;
+}
+
+async function saveSettings(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const rawHero=String(f.get("hero_img")||"").trim(),hero=rawHero?safeAsset(rawHero):null;
+    const rawIg=String(f.get("instagram_url")||"").trim(),ig=rawIg?normalizeUrl(rawIg,"instagram"):null;
+    const rawLi=String(f.get("linkedin_url")||"").trim(),li=rawLi?normalizeUrl(rawLi,"linkedin"):null;
+    if((rawHero&&!hero)||(rawIg&&!ig)||(rawLi&&!li))return toast(t("e_url"));
+    const entries=[
+      {key:"hero_img",value:hero||""},
+      {key:"contact_email",value:String(f.get("contact_email")||"").trim()||DEFAULT_CONTACT},
+      {key:"instagram_url",value:ig||""},
+      {key:"linkedin_url",value:li||""},
+      {key:"cotisation",value:String(Number(f.get("cotisation"))||DEFAULT_COTISATION)}
+    ];
+    for(const row of entries){
+      const {error}=await sb.from("site_settings").upsert(row,{onConflict:"key"});
+      if(error)return toast(errMsg(error));
+    }
+    await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+async function addBoard(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawPhoto=String(f.get("photo_url")||"").trim(),photo=rawPhoto?safeAsset(rawPhoto):null;
+    if(rawPhoto&&!photo)return toast(t("e_url"));
+    const {error}=await sb.from("board_members").insert({name:protectProperNames(f.get("name").trim()),role_fr:f.get("role_fr").trim(),role_en:(f.get("role_en")||"").trim()||null,bio:(f.get("bio")||"").trim()||null,photo_url:photo,sort:D.board.length+1});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function addPole(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target),rawDrive=String(f.get("drive_url")||"").trim(),drive=rawDrive?normalizeUrl(rawDrive):null;
+    if(rawDrive&&!drive)return toast(t("e_url"));
+    const {error}=await sb.from("poles").insert({name_fr:f.get("name_fr").trim(),name_en:(f.get("name_en")||"").trim()||null,desc_fr:(f.get("desc_fr")||"").trim(),desc_en:(f.get("desc_en")||"").trim()||null,icon:(f.get("icon")||"").trim()||null,drive_url:drive,sort:D.poles.length+1});
+    if(error)return toast(errMsg(error));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+  });
+}
+async function addPartner(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const f=new FormData(ev.target),rawUrl=String(f.get("url")||"").trim(),url=rawUrl?normalizeUrl(rawUrl):null;
     if(rawUrl&&!url)return toast(t("e_url"));
-    const row={name:f.get("name").trim(),url};
-    const {error}=id==null?await sb.from("partners").insert(row):await sb.from("partners").update(row).eq("id",id);
+    const {error}=await sb.from("partners").insert({name:f.get("name").trim(),url,sort:D.partners.length+1});
     if(error)return toast(errMsg(error));
-    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
   });
 }
 
+async function setRole(uid,role,sel){
+  sel.disabled=true;
+  try{
+    const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+    if(error)return toast(errMsg(error));
+    const m=D.members.find(x=>x.id===uid);if(m)m.role=role;
+    if(S.user&&uid===S.user.id){S.profile.role=role;render()}else toast(t("t_ok"));
+  }finally{sel.disabled=false}
+}
+async function togglePole(uid,pid,on,btn){
+  await withBusy(btn,async()=>{
+    const {error}=on
+      ?await sb.from("pole_members").delete().eq("user_id",uid).eq("pole_id",pid)
+      :await sb.from("pole_members").insert({user_id:uid,pole_id:pid,role:"member"});
+    if(error)return toast(errMsg(error));
+    if(on)D.memberPoles=D.memberPoles.filter(x=>!(x.user_id===uid&&String(x.pole_id)===String(pid)));
+    else D.memberPoles.push({user_id:uid,pole_id:pid,role:"member"});
+    if(S.user&&uid===S.user.id){D.myPoles=D.memberPoles.filter(x=>x.user_id===uid).map(x=>x.pole_id)}
+    render(true);
+  });
+}
+function evRow(f){
+  const prix=Number(f.get("prix"))||0,img=(f.get("image_url")||"").trim()||null,formRaw=(f.get("form_url")||"").trim(),formUrl=formRaw?normalizeUrl(formRaw):null;
+  if(img&&!safeUrl(img))return {err:t("e_url")};
+  if(formRaw&&!formUrl)return {err:t("e_url")};
+  return {row:{title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,parseInt(f.get("places"),10)||30),description:(f.get("description")||"").trim()||null,image_url:img,form_url:formUrl,helloasso_slug:prix>0?normalizeSlug(f.get("helloasso_slug")):null,members_only:Boolean(f.get("members_only"))}};
+}
 function openNewEvent(){
-  openSheet(`<h3>${t("add_ev")}</h3><form onsubmit="addEvent(event,true)">
-   <label>${t("f_title")}</label><input name="title" required maxlength="120">
-   <div class="row2">
-     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${I18N[lang][x]||x}</option>`).join("")}</select></div>
-     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_date")}</label><input name="date" type="date" required></div>
-     <div><label>${t("f_time")}</label><input name="heure" type="time"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="0"></div>
-     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" value="30" required></div>
-   </div>
-   <label>${t("f_slug")}</label><input name="helloasso_slug" placeholder="ex : gala-somun-2026">
-   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…">
-   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…">
+  if(!isStaff())return toast(t("admin_only"));
+  openSheet(`<h3>${t("add_ev")}</h3><form onsubmit="submitNewEvent(event)">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140">
+   <div class="row2"><div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}">${t(x)}</option>`).join("")}</select></div><div><label>${t("f_place")}</label><input name="lieu" required maxlength="140"></div></div>
+   <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required value="${todayStr()}"></div><div><label>${t("f_time")}</label><input name="heure" type="time"></div></div>
+   <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" min="0" max="5000" step="0.5" value="0"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" max="5000" value="30" required></div></div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" placeholder="ex : gala-automne-2026"><div class="mute" style="font-size:12px;margin-top:4px">${t("slug_warn")}</div>
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…">
+   <label>${t("f_img")}</label><input name="image_url" type="url" placeholder="https://…">
    <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000"></textarea>
    <label class="inline"><input type="checkbox" name="members_only"> ${t("f_members")}</label>
    <br><button class="btn" type="submit" style="width:100%">${t("publish")}</button></form>
    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
 }
-async function addEvent(ev,fromModal){
+async function submitNewEvent(ev){
   ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0),slug=normalizeSlug(f.get("helloasso_slug"));
-    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?normalizeUrl(rawImg):null;
-    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
-    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
-    const {error}=await sb.from("events").insert({title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,Number(f.get("places"))||30),helloasso_slug:slug,form_url:formUrl,image_url:img,description:(f.get("description")||"").trim()||null,members_only:f.get("members_only")==="on"});
+    const {row,err}=evRow(new FormData(ev.target));
+    if(err)return toast(err);
+    const {error}=await sb.from("events").insert(row);
     if(error)return toast(errMsg(error));
-    ev.target.reset();if(fromModal)closeSheet();
-    await loadPublic();render(true);
-    toast(prix>0&&!slug&&!formUrl?t("slug_warn"):t("t_pub"));
+    closeSheet();await loadPublic();render(true);toast(t("t_pub"));
   });
 }
-function editEvent(id){
-  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
-  openSheet(`<h3>${t("edit_ev")}</h3><form onsubmit="saveEvent(event,${idArg(e.id)})">
-   <label>${t("f_title")}</label><input name="title" required maxlength="120" value="${esc(e.title)}">
-   <div class="row2">
-     <div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}" ${e.type===x?"selected":""}>${I18N[lang][x]||x}</option>`).join("")}</select></div>
-     <div><label>${t("f_place")}</label><input name="lieu" required maxlength="120" value="${esc(e.lieu)}"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_date")}</label><input name="date" type="date" required value="${esc(isoDay(e.date))}"></div>
-     <div><label>${t("f_time")}</label><input name="heure" type="time" value="${esc(hhmm(e.heure))}"></div>
-   </div>
-   <div class="row2">
-     <div><label>${t("f_price")}</label><input name="prix" type="number" min="0" value="${Number(e.prix)||0}"></div>
-     <div><label>${t("f_cap")}</label><input name="places" type="number" min="1" required value="${Math.max(1,Number(e.places)||30)}"></div>
-   </div>
-   <label>${t("f_slug")}</label><input name="helloasso_slug" value="${esc(e.helloasso_slug||"")}">
-   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://forms.gle/…" value="${esc(e.form_url||"")}">
-   <label>${t("f_img")}</label><input name="image_url" type="text" placeholder="https://…" value="${esc(e.image_url||"")}">
-   <label>${t("f_desc")}</label><textarea name="description" rows="4" maxlength="2000">${esc(e.description||"")}</textarea>
-   <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
-   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
-   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-async function saveEvent(ev,id){
+async function addEvent(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),prix=Math.max(0,Number(f.get("prix"))||0),slug=normalizeSlug(f.get("helloasso_slug"));
-    const rawImg=String(f.get("image_url")||"").trim(),img=rawImg?normalizeUrl(rawImg):null;
-    const rawForm=String(f.get("form_url")||"").trim(),formUrl=rawForm?normalizeUrl(rawForm):null;
-    if((rawImg&&!img)||(rawForm&&!formUrl))return toast(t("e_url"));
-    const {error}=await sb.from("events").update({title:f.get("title").trim(),type:f.get("type"),lieu:f.get("lieu").trim(),date:f.get("date"),heure:f.get("heure")||null,prix,places:Math.max(1,Number(f.get("places"))||30),helloasso_slug:slug,form_url:formUrl,image_url:img,description:(f.get("description")||"").trim()||null,members_only:f.get("members_only")==="on"}).eq("id",id);
+    const {row,err}=evRow(new FormData(ev.target));
+    if(err)return toast(err);
+    const {error}=await sb.from("events").insert(row);
     if(error)return toast(errMsg(error));
-    closeSheet();await loadPublic();render(true);
-    toast(prix>0&&!slug&&!formUrl?t("slug_warn"):t("t_ok"));
-  });
-}
-function editNews(id){
-  const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
-  openSheet(`<h3>${t("edit_news")}</h3><form onsubmit="saveNews(event,${idArg(n.id)})">
-   <label>${t("f_title")}</label><input name="title" required maxlength="120" value="${esc(n.title)}">
-   <label>${t("f_text")}</label><textarea name="body" rows="5" required maxlength="1500">${esc(n.body)}</textarea>
-   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
-   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
-}
-async function saveNews(ev,id){
-  ev.preventDefault();
-  const btn=ev.target.querySelector("button[type=submit]");
-  await withBusy(btn,async()=>{
-    const f=new FormData(ev.target);
-    const {error}=await sb.from("news").update({title:f.get("title").trim(),body:f.get("body").trim()}).eq("id",id);
-    if(error)return toast(errMsg(error));
-    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+    ev.target.reset();await loadPublic();toast(t("t_pub"));
   });
 }
 async function addNews(ev){
@@ -2764,7 +2681,55 @@ async function addNews(ev){
     const f=new FormData(ev.target);
     const {error}=await sb.from("news").insert({title:f.get("title").trim(),body:f.get("body").trim()});
     if(error)return toast(errMsg(error));
-    ev.target.reset();await loadPublic();render(true);toast(t("t_pub"));
+    ev.target.reset();await loadPublic();toast(t("t_pub"));
+  });
+}
+function editEvent(id){
+  if(!isStaff())return toast(t("admin_only"));
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  openSheet(`<h3>${t("edit_ev")}</h3><form onsubmit="saveEvent(event,${idArg(e.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(e.title)}">
+   <div class="row2"><div><label>${t("f_type")}</label><select name="type">${["Training","Conférence","Visite","Voyage","Soirée"].map(x=>`<option value="${x}" ${e.type===x?"selected":""}>${t(x)}</option>`).join("")}</select></div><div><label>${t("f_place")}</label><input name="lieu" required maxlength="140" value="${esc(e.lieu)}"></div></div>
+   <div class="row2"><div><label>${t("f_date")}</label><input name="date" type="date" required value="${isoDay(e.date)}"></div><div><label>${t("f_time")}</label><input name="heure" type="time" value="${hhmm(e.heure)}"></div></div>
+   <div class="row2"><div><label>${t("f_price")}</label><input name="prix" type="number" min="0" max="5000" step="0.5" value="${Number(e.prix)||0}"></div><div><label>${t("f_cap")}</label><input name="places" type="number" min="1" max="5000" value="${Math.max(1,Number(e.places)||30)}" required></div></div>
+   <label>${t("f_slug")}</label><input name="helloasso_slug" maxlength="140" value="${esc(e.helloasso_slug||"")}">
+   <label>${t("f_form_url")}</label><input name="form_url" type="text" placeholder="https://docs.google.com/forms/…" value="${esc(e.form_url||"")}">
+   <label>${t("f_img")}</label><input name="image_url" type="url" value="${esc(e.image_url||"")}">
+   <label>${t("f_desc")}</label><textarea name="description" rows="3" maxlength="2000">${esc(e.description||"")}</textarea>
+   <label class="inline"><input type="checkbox" name="members_only" ${e.members_only?"checked":""}> ${t("f_members")}</label>
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveEvent(ev,id){
+  ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {row,err}=evRow(new FormData(ev.target));
+    if(err)return toast(err);
+    const {error}=await sb.from("events").update(row).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
+  });
+}
+function editNews(id){
+  if(!isStaff())return toast(t("admin_only"));
+  const n=D.news.find(x=>String(x.id)===String(id));if(!n)return;
+  openSheet(`<h3>${t("edit_news")}</h3><form onsubmit="saveNews(event,${idArg(n.id)})">
+   <label>${t("f_title")}</label><input name="title" required maxlength="140" value="${esc(n.title)}">
+   <label>${t("f_text")}</label><textarea name="body" rows="4" required maxlength="2000">${esc(n.body)}</textarea>
+   <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form>
+   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function saveNews(ev,id){
+  ev.preventDefault();
+  if(!isStaff())return toast(t("admin_only"));
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const f=new FormData(ev.target);
+    const {error}=await sb.from("news").update({title:f.get("title").trim(),body:f.get("body").trim()}).eq("id",id);
+    if(error)return toast(errMsg(error));
+    closeSheet();await loadPublic();render(true);toast(t("t_ok"));
   });
 }
 async function delRow(table,id,btn){
@@ -2784,293 +2749,244 @@ async function delEventFromView(id,btn){
   });
 }
 
-/* ===== JEU : LOGIQUE, INTERFACE, CONFETTIS & CLASSEMENT ===== */
-const G={run:null,lbBusy:false};
+/* ===== JEU : QUIZ DES ROP ===== */
 const QZ_LEVELS=[
-  [0,  "🎓",["Délégué stagiaire","Trainee delegate"]],
-  [100,"🗣️",["Orateur de l'Assemblée","Assembly speaker"]],
-  [250,"✍️",["Rédacteur de résolutions","Resolution drafter"]],
-  [450,"🤝",["Négociateur chevronné","Seasoned negotiator"]],
-  [700,"🏛️",["Président de séance","Chairperson"]],
-  [900,"🌍",["Secrétaire général","Secretary-General"]]
+  [0,  "🌱",{fr:"Observateur",           en:"Observer"}],
+  [100,"🕊️",{fr:"Délégué junior",        en:"Junior Delegate"}],
+  [250,"📜",{fr:"Négociateur",           en:"Negotiator"}],
+  [450,"🏛️",{fr:"Ambassadeur",           en:"Ambassador"}],
+  [700,"⚖️",{fr:"Vice-président",        en:"Vice-Chair"}],
+  [1000,"🔨",{fr:"Président du Conseil", en:"Chair of the Council"}]
 ];
-const qzLevel=pts=>{let cur=QZ_LEVELS[0],next=null;for(const l of QZ_LEVELS){if(pts>=l[0])cur=l;else if(!next)next=l}return{cur,next}};
-const qzMastered=()=>QUIZ.filter(q=>D.quiz[q.id]?.mastered).length;
-const qzPoints=()=>qzMastered()*10;
-const qzAccuracy=()=>{let a=0,c=0;for(const v of Object.values(D.quiz)){a+=v.attempts||0;c+=v.correct||0}return a?Math.round(c/a*100):0};
-const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r};
-const qzPack=q=>q[lang]||q.fr;
-function qzRing(pct,size=132,sw=11){
-  const r=(size-sw)/2,c=2*Math.PI*r,off=c*(1-pct/100);
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="${sw}"/>
-    <circle class="qz-ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${sw}" stroke-linecap="round"
-      style="--c:${c.toFixed(1)}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
+const QZ_PTS=10;
+const qzQ=q=>q[lang]||q.fr;
+const qzMastered=()=>Object.values(D.quiz).filter(x=>x&&x.mastered).length;
+const qzPoints=()=>qzMastered()*QZ_PTS;
+function qzLevel(pts){
+  let i=0;for(let k=0;k<QZ_LEVELS.length;k++)if(pts>=QZ_LEVELS[k][0])i=k;
+  const cur=QZ_LEVELS[i],nxt=QZ_LEVELS[i+1];
+  return {ico:cur[1],name:cur[2][lang],nextPts:nxt?nxt[0]:null,nextName:nxt?nxt[2][lang]:null};
+}
+let G={mode:null,ch:null,ids:[],i:0,picked:null,streak:0,bestStreak:0,gain:0,wrong:[],done:false};
+function qzShuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function qzStart(mode,ch){
+  let pool=ch?QUIZ.filter(q=>q.ch===ch):QUIZ.slice();
+  if(mode==="weak"){const w=pool.filter(q=>!(D.quiz[q.id]&&D.quiz[q.id].mastered));if(!w.length){toast(t("qz_all_mastered"));return}pool=w}
+  const ids=qzShuffle(pool).slice(0,mode==="mix"?20:pool.length).map(q=>q.id);
+  G={mode,ch:ch||null,ids,i:0,picked:null,streak:0,bestStreak:0,gain:0,wrong:[],done:false};
+  render(true);window.scrollTo(0,0);
+}
+function qzRing(pct,size=120,stroke=10){
+  const r=size/2-stroke,c=(2*Math.PI*r).toFixed(1),off=(c*(1-Math.max(0,Math.min(100,pct))/100)).toFixed(1);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true" style="--c:${c}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="${stroke}"/>
+    <circle class="qz-ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#EBC000" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/>
   </svg>`;
 }
-function startQuiz(mode,chId){
-  let pool=mode==="ch"?QUIZ.filter(q=>q.ch===chId):mode==="weak"?QUIZ.filter(q=>!D.quiz[q.id]?.mastered):[...QUIZ];
-  if(!pool.length){toast(t("qz_all_mastered"));return}
-  pool=shuffle(pool);if(mode==="mix")pool=pool.slice(0,20);
-  const items=pool.map(q=>{const [prompt,...opts]=qzPack(q);const order=shuffle(opts.map((_,i)=>i));return{q,prompt,opts:order.map(i=>opts[i]),good:order.indexOf(0)}});
-  G.run={mode,chId,items,i:0,picked:null,streak:0,best:0,right:0,gain:0,beforeLv:qzLevel(qzPoints()).cur[0],wrong:[],dirty:[]};
-  render(false,true);
-}
-function pickAnswer(idx){
-  const r=G.run;if(!r||r.picked!==null)return;
-  r.picked=idx;const it=r.items[r.i],ok=idx===it.good;
-  const prev=D.quiz[it.q.id]||{attempts:0,correct:0,mastered:false};
-  const was=Boolean(prev.mastered);
-  const next={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:was||ok};
-  D.quiz[it.q.id]=next;r.dirty.push(it.q.id);
-  if(ok){r.right++;r.streak++;r.best=Math.max(r.best,r.streak);if(!was)r.gain+=10}
-  else{r.streak=0;r.wrong.push(it)}
-  render(true,true);
-}
-async function nextQuestion(){
-  const r=G.run;if(!r)return;
-  r.i++;r.picked=null;
-  if(r.i>=r.items.length){
-    const after=qzLevel(qzPoints()).cur[0];
-    r.leveledUp=after>r.beforeLv;
-    if(r.right===r.items.length||r.leveledUp)confetti();
-    render(false,true);
-    await saveQuiz();
-  }else render(true,true);
-}
-function quitQuiz(){const had=G.run&&G.run.dirty.length;G.run=null;render(false,true);if(had)saveQuiz()}
-async function saveQuiz(){
-  if(!configured||!S.user||!G.run||!G.run.dirty.length)return;
-  const ids=[...new Set(G.run.dirty)];G.run.dirty=[];
-  const rows=ids.map(id=>({user_id:S.user.id,q_id:id,attempts:D.quiz[id].attempts,correct:D.quiz[id].correct,mastered:D.quiz[id].mastered,updated_at:new Date().toISOString()}));
-  const {error}=await sb.from("quiz_progress").upsert(rows,{onConflict:"user_id,q_id"});
-  if(error){console.error(error);if(isMissingTableErr(error))toast(t("qz_save_err"));return}
-  D.lb=null;loadLeaderboard();
-}
-async function loadLeaderboard(){
-  if(!configured||G.lbBusy)return;G.lbBusy=true;
-  const r=await sb.rpc("quiz_leaderboard");
-  G.lbBusy=false;
-  if(!r.error){D.lb=r.data||[];if(route==="quiz"&&!G.run)softRender()}
-}
-async function resetQuiz(){
-  if(!confirm(t("qz_reset_ask")))return;
-  D.quiz={};D.lb=null;
-  if(configured&&S.user)await sb.from("quiz_progress").delete().eq("user_id",S.user.id);
-  render(true,true);toast(t("qz_reset_done"));loadLeaderboard();
-}
-function confetti(){
-  const host=document.createElement("div");host.className="confetti";
-  const cols=["#EBC000","#00008E","#ffffff","#ffd84d","#2e31d4"];
-  for(let i=0;i<54;i++){
-    const p=document.createElement("i");
-    p.style.cssText=`left:${Math.random()*100}%;background:${cols[i%cols.length]};--dx:${(Math.random()*220-110).toFixed(0)}px;--rot:${(Math.random()*720-360).toFixed(0)}deg;animation-delay:${(Math.random()*.45).toFixed(2)}s`;
-    host.appendChild(p);
-  }
-  document.body.appendChild(host);setTimeout(()=>host.remove(),2900);
-}
 function vJeu(){
-  if(G.run)return G.run.i>=G.run.items.length?vQuizEnd():vQuizPlay();
-  if(D.lb===null&&configured&&!G.lbBusy)loadLeaderboard();
-  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),acc=qzAccuracy();
-  const {cur,next}=qzLevel(pts),lvName=cur[2][lang==="fr"?0:1];
-  const lvPct=next?Math.round((pts-cur[0])/(next[0]-cur[0])*100):100;
-  const weak=total-m;
+  if(G.ids.length&&!G.done)return qzPlay();
+  if(G.done)return qzEnd();
+  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),lv=qzLevel(pts);
+  const pct=total?Math.round(m/total*100):0;
+  const lvPct=lv.nextPts?Math.min(100,Math.round((pts-QZ_LEVELS.find(x=>x[2][lang]===lv.name)[0])/(lv.nextPts-QZ_LEVELS.find(x=>x[2][lang]===lv.name)[0])*100)):100;
+  const attempts=Object.values(D.quiz).reduce((s,x)=>s+(x.attempts||0),0),correct=Object.values(D.quiz).reduce((s,x)=>s+(x.correct||0),0);
+  const acc=attempts?Math.round(correct/attempts*100):0,weakN=QUIZ.filter(q=>!(D.quiz[q.id]&&D.quiz[q.id].mastered)).length;
+
   return `<h1>${t("game_t")}</h1><p class="mute">${t("game_s")}</p>
-  <section class="qz-hero">
-    <div class="qz-ringbox">${qzRing(Math.round(m/total*100))}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
+  <div class="qz-hero">
+    <div class="qz-ringbox">${qzRing(pct,124,10)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
     <div class="qz-herotxt">
-      <div class="qz-lv"><span class="qz-lvico">${cur[1]}</span>${esc(lvName)}</div>
+      <div class="qz-lv"><span class="qz-lvico">${lv.ico}</span><span>${esc(lv.name)}</span></div>
       <div class="qz-pts"><b>${pts}</b> ${t("qz_points")}</div>
       <div class="qz-lvbar"><span style="width:${lvPct}%"></span></div>
-      <div class="qz-lvtxt">${next?t("qz_next_level",{n:next[0]-pts,l:next[2][lang==="fr"?0:1]}):t("qz_max")}</div>
-      <div class="qz-mini"><span>🎯 ${m}/${total} ${t("qz_mastered")}</span><span>✓ ${acc}% ${t("qz_accuracy")}</span></div>
+      <div class="qz-lvtxt">${lv.nextPts?esc(t("qz_next_level",{n:lv.nextPts-pts,l:lv.nextName})):t("qz_max")}</div>
+      <div class="qz-mini"><span>${pct}% ${t("qz_mastered")}</span><span>${acc}% ${t("qz_accuracy")}</span></div>
     </div>
-  </section>
-  ${S.user?"":`<div class="card qz-guest"><span>💾 ${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+  </div>
+  ${!S.user?`<div class="card qz-guest"><span>${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`:""}
   <div class="qz-modes">
-    <button class="qz-mode" onclick="startQuiz('mix')"><span class="qz-mode-ico">⚡</span><b>${t("qz_mix")}</b><small>${t("qz_mix_d")}</small></button>
-    <button class="qz-mode" onclick="startQuiz('weak')" ${weak?"":"disabled"}><span class="qz-mode-ico">🎯</span><b>${t("qz_weak")}</b><small>${t("qz_weak_d",{n:weak})}</small></button>
-    <button class="qz-mode" onclick="startQuiz('all')"><span class="qz-mode-ico">🏆</span><b>${t("qz_all")}</b><small>${t("qz_all_d")}</small></button>
+    <button class="qz-mode" onclick="qzStart('mix')"><span class="qz-mode-ico">⚡</span><b>${t("qz_mix")}</b><small>${t("qz_mix_d")}</small></button>
+    <button class="qz-mode" onclick="qzStart('weak')"><span class="qz-mode-ico">🎯</span><b>${t("qz_weak")}</b><small>${esc(t("qz_weak_d",{n:weakN}))}</small></button>
+    <button class="qz-mode" onclick="qzStart('all')"><span class="qz-mode-ico">🏆</span><b>${t("qz_all")}</b><small>${t("qz_all_d")}</small></button>
   </div>
   <h2>${t("qz_chapters")}</h2>
   <div class="grid">${QUIZ_CH.map(c=>{
-    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>D.quiz[q.id]?.mastered).length,pct=Math.round(done/qs.length*100);
+    const qs=QUIZ.filter(q=>q.ch===c.id),cm=qs.filter(q=>D.quiz[q.id]&&D.quiz[q.id].mastered).length;
     return `<div class="card qz-ch reveal">
-      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">${lang==="fr"?"Art.":"Sec."} ${esc(c.rop)}</span></div>
-      <h3>${esc(c[lang]||c.fr)}</h3>
-      <div class="bar-p" style="margin:12px 0 8px"><span style="width:${pct}%"></span></div>
-      <div class="qz-ch-meta"><span>${done} / ${qs.length} ${t("qz_mastered")}</span><span>${pct}%</span></div>
-      <button class="btn sm" style="margin-top:12px;width:100%" onclick="startQuiz('ch',${c.id})">${done===qs.length?t("qz_replay"):t("qz_play")}</button>
+      <div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">${esc("ROP "+c.rop)}</span></div>
+      <h3>${esc(c[lang])}</h3>
+      <div class="bar-p"><span style="width:${Math.round(cm/qs.length*100)}%"></span></div>
+      <div class="qz-ch-meta"><span>${cm} / ${qs.length} ${t("qz_mastered")}</span><span>${cm*QZ_PTS} ${t("qz_points")}</span></div>
+      <div class="foot"><button class="btn sm" onclick="qzStart('ch',${c.id})">${cm===qs.length?t("qz_replay"):t("qz_play")}</button></div>
     </div>`;
   }).join("")}</div>
-  <h2>${t("qz_lb")}</h2>${leaderboardHTML()}
-  ${m>0?`<p style="text-align:center;margin-top:26px"><button class="linkish mute" style="font-size:13px" onclick="resetQuiz()">${t("qz_reset")}</button></p>`:""}`;
+  <h2>${t("qz_lb")}</h2>${qzLeaderboard()}
+  ${S.user&&m?`<div style="margin-top:24px;text-align:center"><button class="btn ghost sm" onclick="qzReset()">${t("qz_reset")}</button></div>`:""}`;
 }
-function leaderboardHTML(){
-  if(!configured)return "";
-  if(D.lb===null)return `<div class="sk" style="min-height:110px"></div>`;
+function qzPlay(){
+  const q=QUIZ.find(x=>x.id===G.ids[G.i]),ch=QUIZ_CH.find(c=>c.id===q.ch),arr=qzQ(q),right=arr[1];
+  if(!q.order)q.order=qzShuffle([1,2,3,4]);
+  const done=G.picked!==null,pct=Math.round((G.i+(done?1:0))/G.ids.length*100);
+  const letters=["A","B","C","D"];
+  return `<div class="qz-top"><button class="chip sm" onclick="G.ids=[];G.done=false;render(true)">${t("qz_quit")}</button><div class="qz-top-r">${G.streak>=2?`<span class="qz-streak">🔥 ${G.streak}</span>`:""}<span class="qz-run">${esc(t("qz_q",{i:G.i+1,n:G.ids.length}))}</span></div></div>
+  <div class="bar-p qz-prog"><span style="width:${pct}%"></span></div>
+  <div class="card qz-card qz-in" key="${G.i}">
+    <div class="qz-meta"><span class="tag">${esc(ch.ico+" "+ch[lang])}</span><span class="mute">${esc(t("qz_rule")+" "+q.ref)}</span></div>
+    <h2 class="qz-q">${esc(arr[0])}</h2>
+    <div class="qz-opts">${q.order.map((idx,k)=>{
+      const txt=arr[idx];let cls="qz-opt";
+      if(done){if(txt===right)cls+=" good";else if(G.picked===txt)cls+=" bad";else cls+=" dim"}
+      return `<button class="${cls}" ${done?"disabled":""} onclick="qzPick(${idx},this)"><b>${letters[k]}</b><span>${esc(txt)}</span></button>`;
+    }).join("")}</div>
+    ${done?`<div class="qz-fb ${G.picked===right?"ok":"ko"}">
+      <div class="qz-fb-t">${G.picked===right?t("qz_good"):t("qz_bad")}</div>
+      ${G.picked!==right?`<div class="qz-fb-a">${esc(right)}</div>`:""}
+      <div class="qz-fb-r">${esc(t("qz_rule")+" "+q.ref+" · "+ch[lang])}</div>
+    </div>
+    <div class="qz-actions"><button class="btn" onclick="qzNext()">${G.i+1<G.ids.length?t("qz_next"):t("qz_finish")}</button></div>`:""}
+  </div>`;
+}
+async function qzPick(idx,btn){
+  if(G.picked!==null)return;
+  const q=QUIZ.find(x=>x.id===G.ids[G.i]),arr=qzQ(q),right=arr[1],choice=arr[idx];
+  G.picked=choice;q.order=null;
+  const ok=choice===right;
+  if(ok){G.streak++;if(G.streak>G.bestStreak)G.bestStreak=G.streak}
+  else{G.streak=0;G.wrong.push({q,right,choice})}
+  const prev=D.quiz[q.id]||{attempts:0,correct:0,mastered:false};
+  const mastered=prev.mastered||ok;
+  if(ok&&!prev.mastered)G.gain+=QZ_PTS;
+  D.quiz[q.id]={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered};
+  render(true);
+  if(S.user){
+    const {error}=await sb.from("quiz_progress").upsert({user_id:S.user.id,q_id:q.id,attempts:D.quiz[q.id].attempts,correct:D.quiz[q.id].correct,mastered},{onConflict:"user_id,q_id"});
+    if(error&&!G.warned){G.warned=1;toast(t("qz_save_err"))}
+  }
+}
+function qzNext(){
+  G.picked=null;
+  if(G.i+1<G.ids.length){G.i++;render(true);window.scrollTo(0,0)}
+  else{G.done=true;if(S.user)D.lb=null;render(true);window.scrollTo(0,0);if(G.gain>0)qzConfetti()}
+}
+function qzEnd(){
+  const n=G.ids.length,okN=n-G.wrong.length,acc=n?Math.round(okN/n*100):0,totalPts=qzPoints();
+  const oldLv=qzLevel(totalPts-G.gain),newLv=qzLevel(totalPts);
+  const msg=acc===100?t("qz_m100"):acc>=80?t("qz_m80"):acc>=50?t("qz_m50"):t("qz_m0");
+  return `<div class="card qz-card qz-end">
+    <div class="qz-endring">${qzRing(acc,140,11)}<div class="qz-ringtxt"><b>${okN}/${n}</b><span>${acc}%</span></div></div>
+    <h1 style="margin-top:12px">${t("qz_end_t")}</h1><p class="mute">${esc(msg)}</p>
+    ${oldLv.name!==newLv.name?`<div class="qz-up">🎉 ${esc(t("qz_levelup",{l:newLv.ico+" "+newLv.name}))}</div>`:""}
+    <div class="qz-stats">
+      <div class="qz-stat gold"><b>+${G.gain}</b><span>${t("qz_gain")}</span></div>
+      <div class="qz-stat"><b>${totalPts}</b><span>${t("qz_total")}</span></div>
+      <div class="qz-stat"><b>${G.bestStreak}</b><span>${t("qz_streak")}</span></div>
+    </div>
+    ${G.gain===0&&okN>0?`<p class="mute" style="font-size:13px">${t("qz_gain0")}</p>`:""}
+    ${G.wrong.length?`<details class="qz-wrong" open><summary>${esc(t("qz_review",{n:G.wrong.length}))}</summary>${G.wrong.map(w=>`<div class="qz-wq"><b>${esc(qzQ(w.q)[0])}</b><div>✓ ${esc(w.right)}</div><small>${esc(t("qz_rule")+" "+w.q.ref)}</small></div>`).join("")}</details>`:""}
+    <div class="qz-actions">
+      <button class="btn" onclick="qzStart(G.mode,G.ch)">${t("qz_again")}</button>
+      <button class="btn ghost" onclick="G.ids=[];G.done=false;render(true)">${t("qz_back")}</button>
+      <button class="btn ghost" onclick="go('ressources')">${t("qz_open_rop")}</button>
+    </div>
+  </div>`;
+}
+function qzLeaderboard(){
+  if(D.lb===null){
+    D.lb=[];
+    sb.rpc("quiz_leaderboard").then(({data,error})=>{if(!error&&data){D.lb=data;if(route==="quiz"&&!G.ids.length)render(true)}});
+  }
   if(!D.lb.length)return `<div class="card empty">${t("qz_lb_empty")}</div>`;
   const medals=["🥇","🥈","🥉"];
-  return `<div class="card qz-board">${D.lb.map((u,i)=>{
-    const me=S.user&&u.user_id===S.user.id;
-    const lv=qzLevel(Number(u.points)||0).cur;
-    return `<div class="qz-row ${me?"me":""}">
-      <span class="qz-rank">${medals[i]||i+1}</span>
-      <span class="qz-name">${esc(protectProperNames(u.prenom||""))} ${esc(u.nom||"")}${me?` <em>(${t("qz_you")})</em>`:""}</span>
-      <span class="tag">${lv[1]} ${esc(lv[2][lang==="fr"?0:1])}</span>
-      <span class="qz-score">${Number(u.points)||0} pts</span>
-    </div>`;
+  return `<div class="card qz-board">${D.lb.map((r,i)=>{
+    const me=S.user&&r.user_id===S.user.id,pts=(Number(r.mastered)||0)*QZ_PTS,lv=qzLevel(pts);
+    return `<div class="qz-row ${me?"me":""}"><span class="qz-rank">${medals[i]||i+1}</span><span class="qz-name">${esc(protectProperNames(r.display_name||"Membre"))} ${me?`<em>(${t("qz_you")})</em>`:""}</span><span class="tag">${esc(lv.ico+" "+lv.name)}</span><span class="qz-score">${pts} pts</span></div>`;
   }).join("")}</div>`;
 }
-function vQuizPlay(){
-  const r=G.run,it=r.items[r.i],ch=QUIZ_CH.find(c=>c.id===it.q.ch),answered=r.picked!==null,ok=r.picked===it.good;
-  const pct=Math.round((r.i+(answered?1:0))/r.items.length*100);
-  const letters=["A","B","C","D"];
-  return `<div class="qz-top">
-    <button class="chip sm" onclick="quitQuiz()">✕ ${t("qz_quit")}</button>
-    <div class="qz-top-r">${r.streak>=2?`<span class="qz-streak">🔥 ${r.streak}</span>`:""}<span class="qz-run">+${r.gain} pts</span></div>
-  </div>
-  <div class="bar-p qz-prog"><span style="width:${pct}%"></span></div>
-  <div class="qz-card ${answered?"":"qz-in"}">
-    <div class="qz-meta"><span>${ch.ico} ${esc(ch[lang]||ch.fr)} · <b>${esc(it.q.ref)}</b></span><span class="mute">${t("qz_q",{i:r.i+1,n:r.items.length})}</span></div>
-    <h2 class="qz-q">${esc(it.prompt)}</h2>
-    <div class="qz-opts">${it.opts.map((o,idx)=>{
-      let cls="qz-opt";
-      if(answered){if(idx===it.good)cls+=" good";else if(idx===r.picked)cls+=" bad";else cls+=" dim"}
-      return `<button class="${cls}" ${answered?"disabled":""} onclick="pickAnswer(${idx})"><b>${letters[idx]}</b><span>${esc(o)}</span></button>`;
-    }).join("")}</div>
-    ${answered?`<div class="qz-fb ${ok?"ok":"ko"}">
-      <div class="qz-fb-t">${ok?"✓ "+t("qz_good"):"✕ "+t("qz_bad")}</div>
-      ${ok?"":`<div class="qz-fb-a">${esc(it.opts[it.good])}</div>`}
-      <div class="qz-fb-r">${t("qz_rule")} ${esc(it.q.ref)} · ${esc(ch[lang]||ch.fr)}</div>
-    </div>
-    <button class="btn" style="width:100%;margin-top:14px" onclick="nextQuestion()">${r.i+1<r.items.length?t("qz_next"):t("qz_finish")} →</button>`:""}
-  </div>`;
+async function qzReset(){
+  if(!confirm(t("qz_reset_ask")))return;
+  const {error}=await sb.from("quiz_progress").delete().eq("user_id",S.user.id);
+  if(error)return toast(errMsg(error));
+  D.quiz={};D.lb=null;toast(t("qz_reset_done"));render(true);
 }
-function vQuizEnd(){
-  const r=G.run,n=r.items.length,pct=Math.round(r.right/n*100),lv=qzLevel(qzPoints()).cur;
-  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
-  return `<div class="qz-card qz-end">
-    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${r.right}/${n}</b><span>${pct}%</span></div></div>
-    <h1 style="margin:14px 0 4px">${t("qz_end_t")}</h1>
-    <p class="mute" style="margin:0 0 18px">${esc(msg)}</p>
-    <div class="qz-stats">
-      <div class="qz-stat gold"><b>+${r.gain}</b><span>${t("qz_gain")}</span></div>
-      <div class="qz-stat"><b>${qzPoints()}</b><span>${t("qz_total")}</span></div>
-      <div class="qz-stat"><b>🔥 ${r.best}</b><span>${t("qz_streak")}</span></div>
-    </div>
-    ${r.gain===0&&r.right>0?`<p class="mute" style="font-size:13px;margin:10px 0 0">${t("qz_gain0")}</p>`:""}
-    ${r.leveledUp?`<div class="qz-up">${lv[1]} ${t("qz_levelup",{l:lv[2][lang==="fr"?0:1]})}</div>`:""}
-    ${r.wrong.length?`<details class="qz-wrong"><summary>${t("qz_review",{n:r.wrong.length})}</summary>${r.wrong.map(w=>`<div class="qz-wq"><b>${esc(w.prompt)}</b><div>✓ ${esc(w.opts[w.good])}</div><small>${t("qz_rule")} ${esc(w.q.ref)}</small></div>`).join("")}</details>`:""}
-    <div class="qz-actions">
-      <button class="btn" onclick="startQuiz('${r.mode}',${r.chId||0})">${t("qz_again")}</button>
-      <button class="btn ghost" onclick="G.run=null;render(false,true)">${t("qz_back")}</button>
-      <button class="btn ghost" onclick="G.run=null;go('ressources')">${t("qz_open_rop")}</button>
-    </div>
-  </div>`;
+function qzConfetti(){
+  if(matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const box=document.createElement("div");box.className="confetti";
+  const cols=["#EBC000","#00008E","#ff5e6c","#22c55e","#fff"];
+  for(let i=0;i<36;i++){
+    const p=document.createElement("i");
+    p.style.left=Math.random()*100+"%";p.style.background=cols[i%cols.length];
+    p.style.animationDelay=(Math.random()*.5).toFixed(2)+"s";
+    p.style.setProperty("--dx",(Math.random()*240-120)+"px");
+    p.style.setProperty("--rot",(Math.random()*720-360)+"deg");
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3100);
 }
-document.addEventListener("keydown",e=>{
-  if(route!=="quiz"||!G.run||G.run.i>=G.run.items.length)return;
-  if(e.target&&["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName))return;
-  const k=e.key.toUpperCase(),idx="ABCD".indexOf(k);
-  if(G.run.picked===null&&idx>=0&&idx<G.run.items[G.run.i].opts.length)pickAnswer(idx);
-  else if(G.run.picked!==null&&(e.key==="Enter"||e.key===" ")){e.preventDefault();nextQuestion()}
-});
 
-/* ===== DÉMARRAGE & SYNCHRONISATION ===== */
-async function init(){
-  readHash();syncHash(true);
-  if(!configured){D.loading=false;render(false,true);return}
-  sb.auth.onAuthStateChange((ev,session)=>{
-    if(ev==="SIGNED_OUT"){clearUser();render(true);return}
-    if(ev==="PASSWORD_RECOVERY"){S.user=session&&session.user;go("reset");return}
-    if(ev==="USER_UPDATED"&&session){S.user=session.user;render(true);return}
-    if(ev==="SIGNED_IN"&&session){
-      const prev=S.user&&S.user.id;S.user=session.user;
-      if(prev!==S.user.id){
-        if(location.hash.includes("type=signup")){toast(t("t_mail_confirmed"));syncHash(true)}
-        loadPrivate().then(()=>render(true));
-      }
-    }
-  });
-  const [ses]=await Promise.all([sb.auth.getSession(),loadPublic()]);
-  S.user=ses.data&&ses.data.session?ses.data.session.user:null;
-  if(S.user)await loadPrivate();
-  D.loading=false;render(false,true);
-  if(route==="pole"&&poleSel)loadTasks().then(()=>render(true));
-  if(route==="event")loadRegistrants();
-}
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"&&configured&&Date.now()-lastSync>30000)refreshAll();
-});
-
-/* =====================================================================
-   COUCHE « DYNAMISME » (JS autonome)
-   ===================================================================== */
+/* ===== DÉMARRAGE ===== */
+function setSession(sess){S.user=(sess&&sess.user)||null}
 const TABICON={
-  home:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
-  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>',
-  ticket:'<svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 7v10" stroke-dasharray="2 2"/></svg>',
-  users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19.5c.8-3.5 3.6-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.7"/><path d="M16 14.3c2.4.3 4.6 2 5.3 5.2"/></svg>',
-  menu:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>'
+  home:`<svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>`,
+  cal:`<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>`,
+  ticket:`<svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 6v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0 0-6V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M13 5v2M13 11v2M13 17v2" stroke-dasharray="2 2"/></svg>`,
+  users:`<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  menu:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>`
 };
-const GLOW=".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button";
-document.addEventListener("pointermove",e=>{
-  const c=e.target&&e.target.closest&&e.target.closest(GLOW);
-  if(!c)return;
-  const r=c.getBoundingClientRect();
-  c.style.setProperty("--gx",(e.clientX-r.left)+"px");
-  c.style.setProperty("--gy",(e.clientY-r.top)+"px");
-},{passive:true});
-let raf=0;
-function onScroll(){
-  if(raf)return;
-  raf=requestAnimationFrame(()=>{
-    raf=0;
-    const h=document.documentElement.scrollHeight-innerHeight;
-    const sp=$("#sp");if(sp)sp.style.transform=`scaleX(${h>0?Math.min(1,Math.max(0,scrollY/h)):0})`;
-    const hero=$(".hero");
-    if(hero){const r=hero.getBoundingClientRect();hero.style.setProperty("--py",Math.max(-40,Math.min(40,-r.top*.14))+"px")}
-  });
-}
-addEventListener("scroll",onScroll,{passive:true});
-addEventListener("resize",onScroll,{passive:true});
+const reduceMotionGlobe=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
 function stagger(){
-  let i=0;
-  document.querySelectorAll(".reveal").forEach(el=>{
-    if(el.getBoundingClientRect().top<innerHeight*1.05){
-      el.style.transitionDelay=Math.min(i++,6)*65+"ms";
-      setTimeout(()=>{el.style.transitionDelay=""},900);
-    }
+  let n=0;
+  document.querySelectorAll("#app .view:not(.view-ghost) .grid .card,#app .view:not(.view-ghost) .pole-pick button,#app .view:not(.view-ghost) .qz-modes .qz-mode").forEach(el=>{
+    if(el.getBoundingClientRect().top<innerHeight*1.05){el.style.animation="fxRise .6s var(--fx) "+(Math.min(n++,8)*.06)+"s both"}
   });
 }
 function animateStats(){
-  document.querySelectorAll(".stat b").forEach(el=>{
-    const to=parseInt(el.textContent,10);
-    if(!to||el.dataset.done)return;
-    el.dataset.done=1;
-    const t0=performance.now(),dur=850;
-    const step=t=>{const p=Math.min(1,(t-t0)/dur);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)};
-    requestAnimationFrame(step);
+  const noMo=reduceMotionGlobe();
+  document.querySelectorAll("#app .view:not(.view-ghost) .stat b").forEach(b=>{
+    const end=Number(b.textContent);if(!Number.isFinite(end)||end<=0)return;
+    if(noMo)return;
+    b.textContent="0";const t0=performance.now(),dur=650;
+    const tick=now=>{const p=Math.min(1,(now-t0)/dur);b.textContent=Math.round((1-Math.pow(1-p,3))*end);if(p<1)requestAnimationFrame(tick)};
+    requestAnimationFrame(tick);
   });
 }
-
-const reduceMotionGlobe=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
-document.addEventListener("pointermove",e=>{
-  if(e.pointerType!=="mouse"||reduceMotionGlobe())return;
-  const h=e.target&&e.target.closest&&e.target.closest(".hero");
-  if(!h)return;
-  const r=h.getBoundingClientRect();
-  h.style.setProperty("--mx",(((e.clientX-r.left)/r.width-.5)*2).toFixed(3));
-  h.style.setProperty("--my",(((e.clientY-r.top)/r.height-.5)*2).toFixed(3));
+addEventListener("scroll",()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  $("#sp").style.transform="scaleX("+(h>0?Math.min(1,scrollY/h):0)+")";
+  const hero=$("#app .view:not(.view-ghost) .hero");
+  if(hero&&!reduceMotionGlobe()){const r=hero.getBoundingClientRect();hero.style.setProperty("--py",Math.max(-36,Math.min(36,-r.top*.18)).toFixed(1)+"px")}
 },{passive:true});
-document.addEventListener("pointerout",e=>{
-  const h=e.target&&e.target.closest&&e.target.closest(".hero");
-  if(h&&(!e.relatedTarget||!h.contains(e.relatedTarget))){h.style.setProperty("--mx","0");h.style.setProperty("--my","0")}
-});
+addEventListener("pointermove",e=>{
+  if(e.pointerType!=="mouse"||reduceMotionGlobe())return;
+  const hero=e.target.closest&&e.target.closest(".hero");
+  if(hero){const r=hero.getBoundingClientRect();hero.style.setProperty("--mx",((e.clientX-r.left)/r.width-.5).toFixed(3));hero.style.setProperty("--my",((e.clientY-r.top)/r.height-.5).toFixed(3))}
+  const card=e.target.closest&&e.target.closest(".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button");
+  if(card){const r=card.getBoundingClientRect();card.style.setProperty("--gx",(e.clientX-r.left)+"px");card.style.setProperty("--gy",(e.clientY-r.top)+"px")}
+},{passive:true});
 
-init();
+async function boot(){
+  const h=location.hash||"";
+  if(h.includes("type=recovery")){readHash();route="reset";render()}
+  else if(h.includes("type=signup")||h.includes("type=email")){readHash();toast(t("t_mail_confirmed"));render()}
+  else{readHash();syncHash(true);render()}
+  if(!configured){D.loading=false;render();return}
+  let initDone=false;
+  sb.auth.onAuthStateChange(async(ev,sess)=>{
+    if(ev==="PASSWORD_RECOVERY"){setSession(sess);route="reset";render();return}
+    if(!initDone)return;
+    const prevId=S.user&&S.user.id;setSession(sess);const nextId=S.user&&S.user.id;
+    if(ev==="SIGNED_OUT"||!nextId){clearUser();render();return}
+    if(prevId!==nextId){await loadPrivate();if(poleSel)await loadTasks();render(true);if(route==="event")loadRegistrants()}
+  });
+  try{
+    const {data:{session}}=await sb.auth.getSession();setSession(session);
+    await Promise.all([loadPublic(),loadPrivate()]);
+    if(poleSel)await loadTasks();
+  }catch(e){console.error(e);D.err=D.err||e.message}
+  initDone=true;D.loading=false;render(true);
+  if(route==="event")loadRegistrants();
+  setInterval(()=>{if(!document.hidden&&configured&&Date.now()-lastSync>45000)refreshAll()},15000);
+}
+boot();
 </script>
 </body>
 </html>
