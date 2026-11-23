@@ -565,6 +565,499 @@ body:has(.bureau-wrap) footer a,body:has(.bureau-wrap) footer .f-link-btn{color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
+
+<!-- 1) BOUTON D'ONGLET (à placer à côté de l'onglet Événements) -->
+<button
+  type="button"
+  id="tab-btn-conferences"
+  data-tab="conferences"
+  onclick="switchTab('conferences')"
+  class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+>
+  <span>Conférences</span>
+  <span id="conf-selected-badge" class="hidden text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+    Délégué ✓
+  </span>
+</button>
+
+<!-- 2) VUE & SCRIPT ONGLET CONFÉRENCES (à placer après la vue Événements) -->
+<section id="view-conferences" class="tab-view hidden space-y-6">
+  <!-- En-tête -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight">Conférences MUN</h2>
+      <p class="text-sm text-gray-400">
+        Candidatures réservées aux adhérents à jour • Logistique réservée aux délégués sélectionnés.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        onclick="loadConferencesTab()"
+        class="px-3 py-2 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 border border-white/10 transition"
+      >
+        Actualiser
+      </button>
+      <button
+        type="button"
+        id="btn-toggle-conf-form"
+        onclick="toggleConferenceForm()"
+        class="hidden px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition"
+      >
+        + Nouvelle conférence
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerte si membre non à jour -->
+  <div id="conf-not-paid-banner" class="hidden rounded-xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+    Votre adhésion n'est pas à jour (ou votre compte n'est pas synchronisé). Vous pouvez consulter les conférences, mais l'accès aux candidatures et aux espaces délégués nécessite une adhésion valide.
+  </div>
+
+  <!-- Formulaire Bureau : Création / Édition conférence -->
+  <form
+    id="conf-admin-form"
+    onsubmit="saveConference(event)"
+    class="hidden rounded-2xl border border-indigo-400/30 bg-white/5 p-5 space-y-4"
+  >
+    <div class="flex items-center justify-between">
+      <h3 id="conf-form-title" class="text-base font-semibold text-indigo-300">Ajouter une conférence</h3>
+      <button type="button" onclick="toggleConferenceForm(false)" class="text-xs text-gray-400 hover:text-white">
+        Fermer
+      </button>
+    </div>
+
+    <input type="hidden" id="conf-edit-id" />
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Nom de la conférence *</label>
+        <input id="conf-title" type="text" required placeholder="Ex: COMPIMUN 2026" class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Lieu / Ville *</label>
+        <input id="conf-location" type="text" required placeholder="Ex: Madrid, Espagne" class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Date de début</label>
+        <input id="conf-start-date" type="date" class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Date de fin</label>
+        <input id="conf-end-date" type="date" class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Lien candidature (Formulaire adhérents)</label>
+        <input id="conf-apply-url" type="url" placeholder="https://forms.google.com/..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Lien MyMUN / Inscription conférence</label>
+        <input id="conf-mymun-url" type="url" placeholder="https://mymun.com/..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Lien Delegate Handbook (Pôle logistique)</label>
+        <input id="conf-handbook-url" type="url" placeholder="https://drive.google.com/..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 mb-1">Hôtel / Hébergement (Délégués)</label>
+        <input id="conf-hotel-info" type="text" placeholder="Ex: Hotel Silken Puerta, Calle..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm" />
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs text-gray-300 mb-1">Infos départ / retour & logistique (Délégués)</label>
+      <textarea id="conf-travel-info" rows="2" placeholder="Ex: Départ CDG le 18/11 à 07h15, retour le 22/11..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm"></textarea>
+    </div>
+
+    <div>
+      <label class="block text-xs text-gray-300 mb-1">Description générale</label>
+      <textarea id="conf-description" rows="2" placeholder="Présentation de la conférence, comités, deadlines..." class="w-full rounded-lg bg-black/30 border border-white/15 px-3 py-2 text-sm"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition">
+        Enregistrer la conférence
+      </button>
+    </div>
+  </form>
+
+  <!-- Panneau Bureau : Attribution du statut "Délégué sélectionné" -->
+  <div id="conf-delegates-manager" class="hidden rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="text-base font-semibold">Délégués sélectionnés par conférence</h3>
+        <p class="text-xs text-gray-400">Attribuez le statut spécial pour déverrouiller les infos départ/retour, hôtel, MyMUN et Handbook.</p>
+      </div>
+      <select
+        id="conf-select-delegate-target"
+        onchange="renderDelegateAssignmentList()"
+        class="rounded-lg bg-black/40 border border-white/15 px-3 py-2 text-xs"
+      ></select>
+    </div>
+    <div id="conf-delegate-assignment-list" class="divide-y divide-white/10 text-sm"></div>
+  </div>
+
+  <!-- Liste des conférences -->
+  <div id="conferences-list" class="grid grid-cols-1 gap-4">
+    <div class="text-sm text-gray-400">Chargement des conférences...</div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const state = {
+      conferences: [],
+      selectedConfIds: new Set(),
+      members: [],
+      assignments: []
+    };
+
+    function getClient() {
+      return window.supabaseClient || window.sb || null;
+    }
+
+    function getCurrentUser() {
+      return window.currentUser || window.user || null;
+    }
+
+    function getCurrentProfile() {
+      return window.currentProfile || window.profile || {};
+    }
+
+    function isBureau() {
+      const p = getCurrentProfile();
+      return p?.role === 'bureau' || p?.is_bureau === true;
+    }
+
+    function isPaidMember() {
+      const p = getCurrentProfile();
+      return isBureau() || p?.paid === true || p?.is_paid === true || p?.membership_active === true;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDates(start, end) {
+      if (!start && !end) return 'Dates à confirmer';
+      if (start && !end) return `À partir du ${start}`;
+      if (!start && end) return `Jusqu'au ${end}`;
+      return `${start} → ${end}`;
+    }
+
+    window.toggleConferenceForm = function (show, conf = null) {
+      const form = document.getElementById('conf-admin-form');
+      if (!form) return;
+      const shouldShow = typeof show === 'boolean' ? show : form.classList.contains('hidden');
+      form.classList.toggle('hidden', !shouldShow);
+
+      document.getElementById('conf-form-title').textContent = conf
+        ? `Modifier : ${conf.title}`
+        : 'Ajouter une conférence';
+
+      document.getElementById('conf-edit-id').value = conf?.id || '';
+      document.getElementById('conf-title').value = conf?.title || '';
+      document.getElementById('conf-location').value = conf?.location || '';
+      document.getElementById('conf-start-date').value = conf?.start_date || '';
+      document.getElementById('conf-end-date').value = conf?.end_date || '';
+      document.getElementById('conf-apply-url').value = conf?.application_url || '';
+      document.getElementById('conf-mymun-url').value = conf?.mymun_url || '';
+      document.getElementById('conf-handbook-url').value = conf?.handbook_url || '';
+      document.getElementById('conf-hotel-info').value = conf?.hotel_info || '';
+      document.getElementById('conf-travel-info').value = conf?.travel_info || '';
+      document.getElementById('conf-description').value = conf?.description || '';
+    };
+
+    window.saveConference = async function (e) {
+      e.preventDefault();
+      if (!isBureau()) return;
+      const sb = getClient();
+      if (!sb) return alert('Client Supabase introuvable.');
+
+      const editId = document.getElementById('conf-edit-id').value;
+      const payload = {
+        title: document.getElementById('conf-title').value.trim(),
+        location: document.getElementById('conf-location').value.trim(),
+        start_date: document.getElementById('conf-start-date').value || null,
+        end_date: document.getElementById('conf-end-date').value || null,
+        application_url: document.getElementById('conf-apply-url').value.trim() || null,
+        mymun_url: document.getElementById('conf-mymun-url').value.trim() || null,
+        handbook_url: document.getElementById('conf-handbook-url').value.trim() || null,
+        hotel_info: document.getElementById('conf-hotel-info').value.trim() || null,
+        travel_info: document.getElementById('conf-travel-info').value.trim() || null,
+        description: document.getElementById('conf-description').value.trim() || null
+      };
+
+      const res = editId
+        ? await sb.from('conferences').update(payload).eq('id', editId)
+        : await sb.from('conferences').insert(payload);
+
+      if (res.error) {
+        alert('Erreur enregistrement conférence : ' + res.error.message);
+        return;
+      }
+
+      window.toggleConferenceForm(false);
+      await window.loadConferencesTab();
+    };
+
+    window.deleteConference = async function (id) {
+      if (!isBureau()) return;
+      if (!confirm('Supprimer cette conférence ?')) return;
+      const sb = getClient();
+      const { error } = await sb.from('conferences').delete().eq('id', id);
+      if (error) return alert('Erreur suppression : ' + error.message);
+      await window.loadConferencesTab();
+    };
+
+    window.editConferenceById = function (id) {
+      const conf = state.conferences.find((c) => String(c.id) === String(id));
+      if (conf) window.toggleConferenceForm(true, conf);
+    };
+
+    window.toggleDelegateSelection = async function (userId, isChecked) {
+      if (!isBureau()) return;
+      const sb = getClient();
+      const confId = document.getElementById('conf-select-delegate-target').value;
+      if (!confId) return;
+
+      if (isChecked) {
+        const { error } = await sb
+          .from('conference_delegates')
+          .upsert({ conference_id: confId, user_id: userId }, { onConflict: 'conference_id,user_id' });
+        if (error) return alert('Erreur ajout délégué : ' + error.message);
+      } else {
+        const { error } = await sb
+          .from('conference_delegates')
+          .delete()
+          .eq('conference_id', confId)
+          .eq('user_id', userId);
+        if (error) return alert('Erreur retrait délégué : ' + error.message);
+      }
+
+      await window.loadConferencesTab();
+    };
+
+    function renderDelegateAssignmentList() {
+      const container = document.getElementById('conf-delegate-assignment-list');
+      const confId = document.getElementById('conf-select-delegate-target')?.value;
+      if (!container || !confId) return;
+
+      const selectedSet = new Set(
+        state.assignments
+          .filter((a) => String(a.conference_id) === String(confId))
+          .map((a) => String(a.user_id))
+      );
+
+      if (!state.members.length) {
+        container.innerHTML = '<p class="py-3 text-xs text-gray-400">Aucun membre chargé depuis la table profiles/members.</p>';
+        return;
+      }
+
+      container.innerHTML = state.members
+        .map((m) => {
+          const uid = m.id || m.user_id;
+          const label = m.full_name || m.name || m.email || uid;
+          const checked = selectedSet.has(String(uid)) ? 'checked' : '';
+          return `
+            <label class="py-2.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-white/5 px-2 rounded-lg">
+              <div>
+                <div class="font-medium text-sm">${escapeHtml(label)}</div>
+                <div class="text-xs text-gray-400">${escapeHtml(m.email || '')}</div>
+              </div>
+              <input
+                type="checkbox"
+                ${checked}
+                onchange="toggleDelegateSelection('${escapeHtml(String(uid))}', this.checked)"
+                class="h-4 w-4 accent-emerald-500"
+              />
+            </label>
+          `;
+        })
+        .join('');
+    }
+    window.renderDelegateAssignmentList = renderDelegateAssignmentList;
+
+    function renderConferences() {
+      const listEl = document.getElementById('conferences-list');
+      const paid = isPaidMember();
+      const bureau = isBureau();
+
+      document.getElementById('conf-not-paid-banner')?.classList.toggle('hidden', paid);
+      document.getElementById('btn-toggle-conf-form')?.classList.toggle('hidden', !bureau);
+      document.getElementById('conf-delegates-manager')?.classList.toggle('hidden', !bureau);
+      document.getElementById('conf-selected-badge')?.classList.toggle('hidden', state.selectedConfIds.size === 0);
+
+      if (bureau) {
+        const selectEl = document.getElementById('conf-select-delegate-target');
+        const currentVal = selectEl.value;
+        selectEl.innerHTML = state.conferences
+          .map((c) => `<option value="${escapeHtml(String(c.id))}">${escapeHtml(c.title)}</option>`)
+          .join('');
+        if (currentVal && state.conferences.some((c) => String(c.id) === String(currentVal))) {
+          selectEl.value = currentVal;
+        }
+        renderDelegateAssignmentList();
+      }
+
+      if (!state.conferences.length) {
+        listEl.innerHTML = '<div class="rounded-xl border border-white/10 bg-white/5 p-6 text-sm text-gray-400">Aucune conférence publiée pour le moment.</div>';
+        return;
+      }
+
+      listEl.innerHTML = state.conferences
+        .map((c) => {
+          const isSelectedDelegate = bureau || state.selectedConfIds.has(String(c.id));
+
+          const applyButton = paid
+            ? c.application_url
+              ? `<a href="${escapeHtml(c.application_url)}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition">Candidater (Adhérent)</a>`
+              : `<span class="text-xs text-gray-400">Candidature bientôt ouverte</span>`
+            : `<span class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-400 border border-white/10">Adhésion requise pour candidater</span>`;
+
+          const delegateBox = isSelectedDelegate
+            ? `
+              <div class="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-emerald-300">
+                    Espace Délégué sélectionné
+                  </span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">Accès débloqué</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-200">
+                  <div>
+                    <span class="text-gray-400 block">Départ / Retour & Logistique :</span>
+                    <span>${escapeHtml(c.travel_info || 'Infos départ/retour à venir.')}</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-400 block">Hôtel / Hébergement :</span>
+                    <span>${escapeHtml(c.hotel_info || 'Hôtel à confirmer.')}</span>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2 pt-1">
+                  ${
+                    c.mymun_url
+                      ? `<a href="${escapeHtml(c.mymun_url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition">MyMUN / Inscription conférence</a>`
+                      : ''
+                  }
+                  ${
+                    c.handbook_url
+                      ? `<a href="${escapeHtml(c.handbook_url)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">Delegate Handbook (Logistique)</a>`
+                      : ''
+                  }
+                </div>
+              </div>
+            `
+            : '';
+
+          const bureauActions = bureau
+            ? `
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="editConferenceById('${escapeHtml(String(c.id))}')" class="px-2.5 py-1 rounded text-xs bg-white/10 hover:bg-white/20">Modifier</button>
+                <button type="button" onclick="deleteConference('${escapeHtml(String(c.id))}')" class="px-2.5 py-1 rounded text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-200">Supprimer</button>
+              </div>
+            `
+            : '';
+
+          return `
+            <article class="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-lg font-bold">${escapeHtml(c.title)}</h3>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full bg-white/10 text-gray-200">${escapeHtml(c.location)}</span>
+                    <span class="text-xs text-gray-400">${escapeHtml(formatDates(c.start_date, c.end_date))}</span>
+                  </div>
+                  ${c.description ? `<p class="mt-2 text-sm text-gray-300">${escapeHtml(c.description)}</p>` : ''}
+                </div>
+                ${bureauActions}
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                ${applyButton}
+              </div>
+
+              ${delegateBox}
+            </article>
+          `;
+        })
+        .join('');
+    }
+
+    window.loadConferencesTab = async function () {
+      const sb = getClient();
+      const user = getCurrentUser();
+      const listEl = document.getElementById('conferences-list');
+
+      if (!sb) {
+        if (listEl) listEl.innerHTML = '<div class="text-sm text-rose-300">Connexion Supabase non initialisée.</div>';
+        return;
+      }
+
+      const { data: confData, error: confErr } = await sb
+        .from('conferences')
+        .select('*')
+        .order('start_date', { ascending: true });
+
+      if (confErr) {
+        if (listEl) listEl.innerHTML = `<div class="text-sm text-rose-300">Erreur chargement : ${escapeHtml(confErr.message)}</div>`;
+        return;
+      }
+      state.conferences = confData || [];
+
+      state.selectedConfIds.clear();
+      if (user?.id) {
+        const { data: myDel } = await sb
+          .from('conference_delegates')
+          .select('conference_id')
+          .eq('user_id', user.id);
+        (myDel || []).forEach((row) => state.selectedConfIds.add(String(row.conference_id)));
+      }
+
+      if (isBureau()) {
+        const [{ data: delAll }, { data: profs }] = await Promise.all([
+          sb.from('conference_delegates').select('conference_id, user_id'),
+          sb.from('profiles').select('id, full_name, email, role')
+        ]);
+        state.assignments = delAll || [];
+        state.members = profs || [];
+      }
+
+      renderConferences();
+    };
+
+    // Branchement doux avec ta fonction d'onglets si elle s'appelle switchTab / showTab
+    const origSwitch = window.switchTab || window.showTab;
+    function handleTabChange(tabName) {
+      document.querySelectorAll('.tab-view').forEach((el) => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach((el) => el.classList.remove('active', 'bg-white/15'));
+      if (tabName === 'conferences') {
+        document.getElementById('view-conferences')?.classList.remove('hidden');
+        document.getElementById('tab-btn-conferences')?.classList.add('active', 'bg-white/15');
+        window.loadConferencesTab();
+      }
+    }
+
+    if (typeof origSwitch === 'function') {
+      const wrapped = function (tabName, ...args) {
+        const res = origSwitch.apply(this, [tabName, ...args]);
+        handleTabChange(tabName);
+        return res;
+      };
+      if (window.switchTab === origSwitch) window.switchTab = wrapped;
+      if (window.showTab === origSwitch) window.showTab = wrapped;
+    } else {
+      window.switchTab = handleTabChange;
+    }
+  })();
+</script>
+
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_qbTr9jyjy7pXDiz81KDjEg_jHqKR9br";
