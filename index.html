@@ -884,6 +884,21 @@ const configured=keysConfigured&&sdkLoaded;
 const helloassoReady=Boolean(HELLOASSO_ORG)&&!HELLOASSO_ORG.includes("VOTRE-");
 const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 
+<footer>
+  <nav aria-label="Liens de pied de page">
+    <a href="#contact">Contact</a>
+    <a href="#mentions-legales">Mentions légales</a>
+  </nav>
+</footer>
+
+<section id="mentions-legales">
+  <h2>Mentions légales</h2>
+  <p><strong>Éditeur :</strong> SOMUN (Sorbonne Model United Nations), association étudiante rattachée à l’Université Paris 1 Panthéon-Sorbonne.</p>
+  <p><strong>Direction de la publication :</strong> Présidence / Bureau de SOMUN.</p>
+  <p><strong>Hébergement :</strong> Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis) — Dépôt sur GitHub.</p>
+  <p><strong>Données personnelles :</strong> Les données recueillies via HelloAsso ou les formulaires d’inscription servent uniquement à la gestion des membres, événements et délégations.</p>
+</section>
+  
 /* ===== TEXTES FR / EN ===== */
 const I18N={
 fr:{jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
