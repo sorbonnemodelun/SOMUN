@@ -2032,7 +2032,7 @@ const sentence = s => { s = capFirst(String(s).trim()); return /[.!?…»]$/.tes
 /* ---------- Banque de phrases par axe ---------- */
 const SPEECH = {
   obl: {
-    pos: { strong: ["Ma délégation est convaincue que seules des obligations claires permettront {de but}. Des engagements volontaires ont déjà été pris par le passé ; ils n'ont pas suffi.", "Le temps des déclarations d'intention est passé : le texte que nous adopterons doit comporter des engagements précis, assortis d'échéances.", "Nous voulons un texte ferme, qui engage réellement les États et ne se limite pas à de simples encouragements."],
+    pos: { strong: ["Ma délégation est convaincue que seules des obligations claires permettront de {but}. Des engagements volontaires ont déjà été pris par le passé ; ils n'ont pas suffi.", "Le temps des déclarations d'intention est passé : le texte que nous adopterons doit comporter des engagements précis, assortis d'échéances.", "Nous voulons un texte ferme, qui engage réellement les États et ne se limite pas à de simples encouragements."],
            mid: ["Nous souhaitons que le texte aille au-delà des simples encouragements, sans imposer pour autant un cadre rigide.", "Ma délégation est favorable à des engagements plus précis, à condition qu'ils restent réalistes."] },
     neg: { strong: ["Ma délégation ne peut accepter que ce texte impose des obligations nouvelles aux États : chaque pays doit rester libre de choisir les moyens adaptés à sa situation.", "Nous mettons en garde contre la tentation d'un texte contraignant. Les engagements définis par chaque État sont ceux qui sont réellement appliqués."],
            mid: ["Nous préférons un texte incitatif, qui laisse aux États une marge d'appréciation dans sa mise en œuvre.", "Ma délégation privilégie la souplesse : des recommandations bien conçues valent mieux que des obligations difficiles à appliquer."] }
@@ -2814,6 +2814,9 @@ const AI = {
    Rendu par chaînes HTML et délégation d'événements (data-a = action,
    data-x / data-y = paramètres, data-k = champ de saisie mémorisé).
    L'état de la partie est sauvegardé dans le navigateur après chaque action.
+   Version 1.1 : la partie se joue sur une « scène » sombre, avec une barre
+   « Maintenant » qui donne toujours la prochaine étape, et des infographies
+   (voir 72-infographics.js).
    ===================================================================== */
 const KEY_CUR = "somun_sim_v1_current", KEY_HIST = "somun_sim_v1_history";
 const LS = {
@@ -2833,6 +2836,7 @@ function validGame(S) { return S && S.v === 1 && BODIES[S.bodyId] && ISSUE_BY_ID
 function loadGame() { const S = LS.get(KEY_CUR, null); if (validGame(S)) { G = S; UI.tab = S.uiTab || defaultTab(S.phase); } else if (S) LS.del(KEY_CUR); }
 function save() {
   if (!G) return;
+  try { recordTrace(); } catch (e) { /* la courbe n'est qu'une aide */ }
   G.updated = Date.now(); G.uiTab = UI.tab;
   if (!LS.set(KEY_CUR, G) && !save.warned) { save.warned = true; toast("La sauvegarde automatique n'est pas disponible dans ce navigateur : la partie sera perdue si vous fermez la page."); }
 }
@@ -2848,9 +2852,11 @@ const plq = (code, cls) => `<span class="sim-plq${code === (G && G.player) ? " m
 const btn = (label, a, o = {}) => `<button type="button" class="sim-btn${o.cls ? " " + o.cls : ""}" data-a="${a}"${o.x != null ? ` data-x="${H(o.x)}"` : ""}${o.y != null ? ` data-y="${H(o.y)}"` : ""}${o.dis ? " disabled" : ""}${o.title ? ` title="${H(o.title)}"` : ""}${o.pressed != null ? ` aria-pressed="${o.pressed}"` : ""}>${label}</button>`;
 const voteWord = v => ({ yes: "Pour", no: "Contre", abs: "Abstention" })[v] || "Inconnu";
 const relLabel = r => r >= 45 ? ["Excellente", "r5"] : r >= 15 ? ["Bonne", "r4"] : r > -15 ? ["Neutre", "r3"] : r > -45 ? ["Tendue", "r2"] : ["Difficile", "r1"];
+const relMeter = r => { const k = Number(relLabel(r)[1].slice(1)); return `<span class="sim-relm r${k}" aria-hidden="true">${[1, 2, 3, 4, 5].map(i => `<i${i <= k ? ' class="on"' : ""}></i>`).join("")}</span>`; };
 const inflLabel = n => n >= 5 ? "très forte" : n >= 4 ? "forte" : n >= 3 ? "moyenne" : "modeste";
 const groupName = code => { const b = BODIES[G.bodyId]; return b.org === "UNESCO" ? UNESCO_GROUPS[COUNTRIES[code].unesco] : UN_GROUPS[COUNTRIES[code].un]; };
 const mins = n => `${n} min`;
+const orgName = b => b.org === "ONU" ? "Nations Unies" : "UNESCO";
 const PHASE_DESC = [
   "La présidence ouvre la séance et présente la question inscrite à l'ordre du jour.",
   "Vous recevez les instructions confidentielles de votre capitale et choisissez votre ligne.",
@@ -2886,20 +2892,34 @@ function aiNote() {
 }
 
 /* ---------- Écran d'accueil ---------- */
+function miniTally(x) {
+  const t = Math.max(1, (x.yes || 0) + (x.no || 0) + (x.abs || 0));
+  return `<span class="sim-mt" title="${x.yes} pour, ${x.no} contre, ${x.abs} abstention(s)"><i class="v-yes" style="width:${(x.yes / t * 100).toFixed(1)}%"></i><i class="v-abs" style="width:${(x.abs / t * 100).toFixed(1)}%"></i><i class="v-no" style="width:${(x.no / t * 100).toFixed(1)}%"></i></span>`;
+}
 function vHome() {
   const hist = LS.get(KEY_HIST, []);
   const cur = G && G.phase < 7 ? G : null;
   return `<div class="sim-home">
-  <div class="sim-hero"><div><h1>Simulation diplomatique</h1>
-  <p class="sim-lead">Représentez un État à l'ONU ou à l'UNESCO. Écoutez les délégations, négociez avec elles, rédigez un projet de texte et faites-le adopter selon les règles de vote de l'organe.</p></div>
-  <div class="sim-hero-art">${heroScene()}</div></div>
-  ${cur ? `<div class="sim-resume"><div><div class="sim-resume-k">Partie en cours</div><b>${H(issueOf(cur).title)}</b><div class="sim-mute">${H(BODIES[cur.bodyId].name)} · délégation ${H(deName(cur.player))} · phase ${cur.phase} sur 7 (${H(PHASES[cur.phase - 1].toLowerCase())})</div></div><div class="sim-row">${btn("Reprendre", "resume", { cls: "primary" })}${btn("Abandonner", "abandon", { cls: "ghost" })}</div></div>` : ""}
-  <div class="sim-cta">${btn("Nouvelle simulation", "new", { cls: "primary lg" })}${aiNote()}</div>
-  <h2>Déroulement d'une séance</h2>
-  <ol class="sim-phases">${PHASES.map((p, i) => `<li><b>${H(p)}</b><span>${H(PHASE_DESC[i])}</span></li>`).join("")}</ol>
-  <h2>Parties précédentes</h2>
-  ${hist.length ? `<ul class="sim-hist">${hist.map(x => `<li><div><b>${H(x.title)}</b><span class="sim-mute">${H((BODIES[x.bodyId] || {}).name || "")} · délégation ${H(deName(x.player))} · ${new Date(x.date).toLocaleDateString("fr-FR")}</span></div><div class="sim-hist-r"><span class="sim-res ${x.adopted ? "ok" : "ko"}">${x.adopted ? "Adopté" : "Non adopté"} · ${x.yes}-${x.no}-${x.abs}</span>${x.score != null ? `<span class="sim-hist-score">${x.score}/100</span>` : ""}${x.genOpts ? btn("Rejouer", "replay", { cls: "ghost sm", x: x.id }) : ""}</div></li>`).join("")}</ul>
-  <p>${btn("Effacer l'historique", "clearHist", { cls: "link" })}</p>` : `<p class="sim-mute">Vos parties terminées apparaîtront ici, avec leur résultat.</p>`}
+  <section class="sim-hero">
+    <div class="h-txt">
+      <p class="sim-kick">Simulation diplomatique de SOMUN</p>
+      <h1 class="h-title"><em>1</em> voix sur 193</h1>
+      <p class="h-lead">Chaque État membre des Nations Unies dispose d'une voix. Le temps d'une séance, vous représentez l'un d'eux : vous écoutez, vous négociez, vous rédigez, puis la salle vote.</p>
+      <p class="h-lead2">Vous ne choisissez pas les autres délégations. Vous choisissez ce que vous leur dites.</p>
+      ${cur ? `<div class="sim-resume"><span class="sim-kick">Séance en cours · étape ${cur.phase} sur 7 : ${H(PHASES[cur.phase - 1].toLowerCase())}</span><b>${H(issueOf(cur).title)}</b><span class="sim-mute">${H(BODIES[cur.bodyId].name)} · délégation ${H(deName(cur.player))}</span><div class="sim-row">${btn("Reprendre la séance", "resume", { cls: "primary" })}${btn("Nouvelle simulation", "new", { cls: "ghost" })}${btn("Abandonner", "abandon", { cls: "link" })}</div></div>${aiNote()}`
+      : `<div class="sim-cta">${btn("Nouvelle simulation", "new", { cls: "primary lg" })}${aiNote()}</div>`}
+    </div>
+    <figure class="h-art">${heroDots()}<figcaption><span><i class="hd-k"></i>193 États membres de l'ONU</span><span><i class="hd-k c"></i>15 siègent au Conseil de sécurité</span><span><i class="hd-k me"></i>1 délégation : la vôtre</span></figcaption></figure>
+  </section>
+  <section class="sim-how"><h2>Comment ça marche ?</h2><div class="how-grid">
+    <div><h3>Une délégation parmi d'autres</h3><p>Vous recevez un organe, un pays et une question fictive. Les autres délégations ont leurs intérêts, leurs alliés et leurs lignes rouges : à vous de les découvrir.</p></div>
+    <div><h3>Le temps de la séance</h3><p>Sept étapes, de l'ouverture au vote. Pendant les négociations, chaque démarche consomme du temps de séance : vous ne pourrez pas tout faire.</p></div>
+    <div><h3>Des règles réelles</h3><p>Le vote suit la règle exacte de chaque organe : 9 voix sans veto au Conseil de sécurité, deux tiers pour certaines décisions. Le simulateur compte les voix, jamais l'IA.</p></div>
+  </div></section>
+  <section><h2>Les sept étapes d'une séance</h2><ol class="sim-phases">${PHASES.map((p, i) => `<li><span class="s7-n">${i + 1}</span><b>${H(p)}</b><span>${H(PHASE_DESC[i])}</span></li>`).join("")}</ol></section>
+  <section><h2>Vos séances</h2>
+  ${hist.length ? `<div class="sim-hist">${hist.map(x => `<article class="hist-c"><span class="sim-kick">${new Date(x.date).toLocaleDateString("fr-FR")}</span><b>${H(x.title)}</b><span class="sim-mute">${H((BODIES[x.bodyId] || {}).name || "")} · délégation ${H(deName(x.player))}</span>${miniTally(x)}<div class="hist-r"><span class="sim-res ${x.adopted ? "ok" : "ko"}">${x.adopted ? "Adopté" : "Non adopté"} · ${x.yes} pour, ${x.no} contre, ${x.abs} abst.</span>${x.score != null ? `<span class="sim-hist-score">${x.score}<small>/100</small></span>` : ""}</div>${x.genOpts ? btn("Rejouer", "replay", { cls: "ghost sm", x: x.id }) : ""}</article>`).join("")}</div>
+  <p>${btn("Effacer l'historique", "clearHist", { cls: "link" })}</p>` : `<p class="sim-mute">Vos séances terminées apparaîtront ici, avec leur résultat et votre score.</p>`}</section>
   <p class="sim-fine">Les scénarios sont fictifs. Les profils des États sont des simplifications pédagogiques et ne reflètent pas les positions officielles des gouvernements. Les règles de vote appliquées sont celles des textes constitutifs de chaque organe.</p>
 </div>`;
 }
@@ -2907,13 +2927,13 @@ function vHome() {
 /* ---------- Préparation d'une partie ---------- */
 function vSetup() {
   const st = UI.setup, steps = ["Organe", "Délégation", "Scénario"];
-  const crumbs = `<ol class="sim-crumbs">${steps.map((s, i) => `<li class="${i + 1 === st.step ? "on" : i + 1 < st.step ? "done" : ""}">${i + 1 < st.step ? `<button type="button" data-a="setupStep" data-x="${i + 1}">${s}</button>` : s}</li>`).join("")}</ol>`;
+  const crumbs = `<ol class="sim-crumbs">${steps.map((s, i) => `<li class="${i + 1 === st.step ? "on" : i + 1 < st.step ? "done" : ""}"><span class="cr-n">${i + 1}</span>${i + 1 < st.step ? `<button type="button" data-a="setupStep" data-x="${i + 1}">${s}</button>` : s}</li>`).join("")}</ol>`;
   let body = "";
   if (st.step === 1) {
-    const card = id => { const b = BODIES[id], [d, r] = BODY_SHORT[id]; return `<button type="button" class="sim-body${st.bodyId === id ? " on" : ""}" data-a="pickBody" data-x="${id}" aria-pressed="${st.bodyId === id}"><span class="sim-body-n">${H(b.name.replace(" (session pédagogique)", ""))}${id === "TRUST" ? ` <span class="sim-tag">pédagogique</span>` : ""}</span><span class="sim-body-d">${H(d)}</span><span class="sim-body-m">${H(sizeText(b))}</span><span class="sim-body-v">${H(r)}</span></button>`; };
-    body = `<h1>Choisissez un organe</h1><p class="sim-lead">Chaque organe a ses propres pouvoirs et sa propre règle de vote. Le simulateur refuse les mesures qui sortent de ses compétences.</p>
-    <h2>Nations Unies</h2><div class="sim-bodies">${BODY_ORDER["Nations Unies"].map(card).join("")}</div>
-    <h2>UNESCO</h2><div class="sim-bodies">${BODY_ORDER.UNESCO.map(card).join("")}</div>
+    const card = id => { const b = BODIES[id], [d, r] = BODY_SHORT[id]; return `<button type="button" class="sim-body${st.bodyId === id ? " on" : ""}" data-a="pickBody" data-x="${id}" aria-pressed="${st.bodyId === id}"><span class="sim-body-n">${H(b.name.replace(" (session pédagogique)", ""))}${id === "TRUST" ? ` <span class="sim-tag">pédagogique</span>` : ""}</span><span class="sim-body-d">${H(d)}</span>${seatGlyph(b)}<span class="sim-body-m">${H(sizeText(b))}</span>${ruleGlyph(b)}<span class="sim-body-v">${H(r)}</span></button>`; };
+    body = `<h1>Choisissez un organe</h1><p class="sim-lead">Chaque organe a ses propres pouvoirs et sa propre règle de vote. La barre dorée indique la part des voix qu'il faut réunir ; le simulateur refuse les mesures qui sortent des compétences de l'organe.</p>
+    <h2 class="sim-org-h">Nations Unies</h2><div class="sim-bodies">${BODY_ORDER["Nations Unies"].map(card).join("")}</div>
+    <h2 class="sim-org-h">UNESCO</h2><div class="sim-bodies">${BODY_ORDER.UNESCO.map(card).join("")}</div>
     ${st.bodyId === "UNESCO_PC" ? `<div class="sim-pcpick"><b>Commission</b><div class="sim-chips">${Object.entries(BODIES.UNESCO_PC.commissions).map(([k, v]) => `<button type="button" class="sim-chip${st.pc === k ? " on" : ""}" data-a="pickPc" data-x="${k}" aria-pressed="${st.pc === k}">${H(v)}</button>`).join("")}</div></div>` : ""}
     <div class="sim-cta">${st.bodyId === "UNESCO_PC" ? btn("Continuer", "setupStep", { cls: "primary", x: 2, dis: !st.pc }) : ""}${btn("Retour", "home", { cls: "ghost" })}</div>`;
   } else if (st.step === 2) {
@@ -2934,68 +2954,67 @@ function countryList() {
   if (!list.length) return `<p class="sim-mute">Aucun pays ne correspond à cette recherche.</p>`;
   const groups = {};
   for (const c of list) (groups[COUNTRIES[c][key]] = groups[COUNTRIES[c][key]] || []).push(c);
-  return Object.keys(names).filter(g => groups[g]).map(g => `<div class="sim-cgroup"><h3>${H(names[g])}</h3><div class="sim-countries">${sortFr(groups[g]).map(c => `<button type="button" class="sim-country" data-a="pickCountry" data-x="${c}">${H(cnm(c))}${b.id === "UNSC" && P5.includes(c) ? `<small>membre permanent</small>` : ""}</button>`).join("")}</div></div>`).join("");
+  return Object.keys(names).filter(g => groups[g]).map(g => `<div class="sim-cgroup"><h3><i class="sim-gdot" style="background:${GROUP_COLORS[g]}"></i>${H(names[g])}</h3><div class="sim-countries">${sortFr(groups[g]).map(c => `<button type="button" class="sim-country" data-a="pickCountry" data-x="${c}">${H(cnm(c))}${b.id === "UNSC" && P5.includes(c) ? `<small>membre permanent</small>` : ""}</button>`).join("")}</div></div>`).join("");
 }
 function scenarioPreview() {
   const st = UI.setup, sc = st.gen.scen, issue = ISSUE_BY_ID[sc.issueId], b = BODIES[sc.bodyId];
   const V = Object.assign({}, issue.v, sc.vars);
   const cons = sc.constraints.map(id => CONSTRAINTS.find(c => c.id === id).text);
-  return `<h1>${H(issue.title)}</h1>
-  <p class="sim-lead">${H(b.name)}${sc.pc ? " · " + H(b.commissions[sc.pc]) : ""} · votre délégation : <b>${H(cnm(st.player))}</b> <span class="sim-tag">Scénario fictif</span></p>
+  const P = { bodyId: sc.bodyId, scen: sc, player: st.player };
+  return `<p class="sim-kick">Scénario fictif · ${H(orgName(b))} · ${H(b.name)}${sc.pc ? " · " + H(b.commissions[sc.pc]) : ""}</p>
+  <h1 class="sc-title">${H(issue.title)}</h1>
+  <p class="sc-who">Vous représentez <b>${H(cnm(st.player))}</b>, une délégation sur ${sc.members.length}.</p>
+  <p class="sim-lead sc-lead">${H(capFirst(sc.triggerShort))}.</p>
+  ${statCards(sc.facts, "Données du scénario, fictives")}
   <div class="sim-cols">
-    <div>
-      <h3>Ce qui s'est passé</h3><p>${H(capFirst(sc.triggerShort))}.</p>
-      <h3>Contexte</h3><p>${H(fill(issue.background, V))}</p>
-      <h3>Éléments de contexte de la séance</h3><ul class="sim-ul">${cons.map(c => `<li>${H(c)}</li>`).join("")}</ul>
-    </div>
-    <div>
-      <h3>Données du scénario (fictives)</h3><dl class="sim-facts">${sc.facts.map(f => `<div><dt>${H(f.label)}</dt><dd>${H(fmtFact(f))}</dd></div>`).join("")}</dl>
-      <h3>Règle de vote</h3><p>${H(b.ruleText)}</p>
-      <h3>Délégations présentes (${sc.members.length})</h3><div class="sim-plqs">${sc.members.map(c => plq(c, c === st.player ? "me" : "")).join("")}</div>
-    </div>
+    <div><h3>Contexte</h3><p>${H(fill(issue.background, V))}</p>
+      <h3>Ce qui pèse sur la séance</h3><ul class="sim-ul">${cons.map(c => `<li>${H(c)}</li>`).join("")}</ul></div>
+    <div><h3>Règle de vote</h3><p>${H(b.ruleText)}</p>${ruleGlyph(b)}
+      <h3>Délégations présentes</h3><div class="sim-plqs">${sc.members.map(c => plq(c, c === st.player ? "me" : "")).join("")}</div></div>
   </div>
-  <div class="sim-mapbox">${worldMap({ bodyId: sc.bodyId, scen: sc, player: st.player }, "group", { click: false, player: st.player })}${mapLegend({ bodyId: sc.bodyId, scen: sc, player: st.player }, "group")}</div>
+  <figure class="sim-mapbox">${dotMap(P, "group", { click: false, player: st.player })}${mapLegend(P, "group")}</figure>
   <div class="sim-cta">${btn("Ouvrir la séance", "start", { cls: "primary lg" })}${btn("Autre scénario", "reroll", { cls: "ghost" })}${btn("Changer de délégation", "setupStep", { cls: "ghost", x: 2 })}</div>`;
 }
 
-/* ---------- Partie : en-tête, étapes, onglets ---------- */
-const TABS = [["board", "Tableau de bord"], ["room", "Salle de conférence"], ["diplo", "Espace diplomatique"], ["draft", "Salle de rédaction"], ["vote", "Salle de vote"], ["log", "Chronologie"]];
+/* ---------- Partie : en-tête, étapes, salles, barre « Maintenant » ---------- */
+const TABS = [["board", "Ma délégation"], ["room", "Salle de conférence"], ["diplo", "Espace diplomatique"], ["draft", "Salle de rédaction"], ["vote", "Salle de vote"], ["log", "Chronologie"]];
 function defaultTab(phase) { return ({ 1: "room", 2: "board", 3: "room", 4: "diplo", 5: "draft", 6: "vote", 7: "board" })[phase] || "board"; }
-function phaseBar() {
+function nowBar() {
   const S = G;
   let txt = "", action = "";
   switch (S.phase) {
-    case 1: txt = "La présidence ouvre la séance et présente la question."; action = btn("Recevoir les instructions de ma capitale", "brief", { cls: "primary" }); break;
+    case 1: txt = "La présidence a ouvert la séance. Recevez les instructions de votre capitale."; action = btn("Recevoir mes instructions", "brief", { cls: "primary" }); break;
     case 2: txt = "Lisez vos instructions confidentielles, puis choisissez votre ligne de négociation."; action = UI.tab !== "board" ? btn("Lire mes instructions", "tab", { cls: "primary", x: "board" }) : btn("Choisir ma ligne", "jump", { cls: "primary", x: ".sim-orients" }); break;
     case 3: {
       const pos = S.order.indexOf(S.player) + 1;
-      if (isMyTurn(S)) { txt = "La présidence vous donne la parole."; action = UI.tab !== "room" ? btn("Prendre la parole", "tab", { cls: "primary", x: "room" }) : ""; }
-      else if (debateOver(S)) { txt = "Toutes les délégations inscrites se sont exprimées."; action = btn("Clore le débat et ouvrir les négociations", "endDebate", { cls: "primary" }); }
-      else { txt = S.playerSpoke ? "Débat général : les dernières délégations s'expriment." : `Débat général : vous êtes ${pos === 1 ? "le premier orateur" : `le ${pos}e orateur`} inscrit.`; action = btn("Orateur suivant", "next", { cls: "primary", dis: !!UI.busy }); }
+      if (isMyTurn(S)) { txt = "La présidence vous donne la parole."; action = UI.tab !== "room" ? btn("Prendre la parole", "tab", { cls: "primary", x: "room" }) : btn("Préparer mon intervention", "jump", { cls: "primary", x: ".sim-myturn" }); }
+      else if (debateOver(S)) { txt = "Toutes les délégations inscrites se sont exprimées."; action = btn("Ouvrir les négociations", "endDebate", { cls: "primary" }); }
+      else { txt = S.playerSpoke ? "Débat général : les dernières délégations s'expriment." : `Débat général : vous êtes ${pos === 1 ? "le premier orateur" : `le ${pos}e orateur`} inscrit.`; action = btn(UI.busy ? "La délégation s'exprime…" : "Orateur suivant", "next", { cls: "primary", dis: !!UI.busy }); }
       break;
     }
-    case 4: txt = `Consultations informelles : ${mins(S.time.neg)} de négociation restantes.`; action = btn("Passer à l'examen du texte", "endNego", { cls: "primary" }); break;
-    case 5: txt = `Examen du projet : ${mins(S.time.draft)} restantes. Traitez les amendements, puis mettez le texte aux voix.`; action = UI.tab !== "draft" ? btn("Ouvrir la salle de rédaction", "tab", { cls: "primary", x: "draft" }) : ""; break;
-    case 6: txt = S.vote ? "Le vote est terminé." : "Le texte est mis aux voix. Exprimez le vote de votre délégation."; action = S.vote ? btn("Voir le bilan", "finish", { cls: "primary" }) : (UI.tab !== "vote" ? btn("Aller à la salle de vote", "tab", { cls: "primary", x: "vote" }) : ""); break;
+    case 4: txt = `Négociations : il vous reste ${mins(timeLeft(S))}.`; action = btn("Passer à l'examen du texte", "endNego", { cls: "primary" }); break;
+    case 5: txt = `Examen du texte : il vous reste ${mins(timeLeft(S))}. Traitez les amendements, puis mettez le texte aux voix.`; action = UI.tab !== "draft" ? btn("Ouvrir la salle de rédaction", "tab", { cls: "primary", x: "draft" }) : btn("Voir les amendements", "jump", { cls: "primary", x: ".sim-tools" }); break;
+    case 6: txt = S.vote ? "Le vote est terminé." : "Le texte est mis aux voix. Exprimez le vote de votre délégation."; action = S.vote ? btn("Voir le bilan", "finish", { cls: "primary" }) : (UI.tab !== "vote" ? btn("Aller à la salle de vote", "tab", { cls: "primary", x: "vote" }) : btn("Voter", "jump", { cls: "primary", x: ".sim-votebtns" })); break;
     case 7: txt = "La séance est levée."; action = btn("Nouvelle simulation", "new", { cls: "primary" }); break;
   }
-  return `<div class="sim-phasebar"><p>${H(txt)}</p>${action}</div>`;
+  return `<div class="sim-now" role="region" aria-label="Prochaine étape"><span class="now-k">Maintenant</span><p>${H(txt)}</p>${action}</div>`;
 }
 function vGame() {
   const S = G, b = bodyOf(S), issue = issueOf(S);
   const pend = pendingAmendments(S).length, inbox = S.inbox.filter(m => m.status === "pending").length;
   const badge = S.phase <= 5 ? { diplo: inbox, draft: pend } : {};
-  const rail = `<ol class="sim-rail" aria-label="Étapes de la séance">${PHASES.map((p, i) => `<li class="${i + 1 === S.phase ? "on" : i + 1 < S.phase ? "done" : ""}"${i + 1 === S.phase ? ' aria-current="step"' : ""}><span class="n">${i + 1}</span><span class="l">${H(p)}</span></li>`).join("")}</ol>`;
+  const mast = `<div class="sim-mast">
+    <div class="m-top"><span class="m-org">${H(orgName(b))}</span><span class="m-body">${H(b.name.replace(" (session pédagogique)", ""))}${S.scen.pc ? " · " + H(b.commissions[S.scen.pc]) : ""}</span><span class="sim-tag">Scénario fictif</span><time class="m-clock" title="Horloge de séance">${H(clockStr(S))}</time></div>
+    <h1 class="m-title">${H(issue.title)}</h1>
+    <div class="m-me"><span>Vous représentez</span>${plq(S.player)}<span class="m-of">1 délégation sur ${S.scen.members.length}</span>${btn("Menu du jeu", "home", { cls: "link" })}</div>
+  </div>`;
+  const rail = `<ol class="sim-rail" aria-label="Étapes de la séance" style="--p:${((S.phase - 1) / 6).toFixed(3)}">${PHASES.map((p, i) => `<li class="${i + 1 === S.phase ? "on" : i + 1 < S.phase ? "done" : ""}"${i + 1 === S.phase ? ' aria-current="step"' : ""}><span class="n">${i + 1}</span><span class="l">${H(p)}</span></li>`).join("")}</ol>`;
   const tabs = `<div class="sim-tabs" role="tablist">${TABS.map(([k, l]) => `<button type="button" role="tab" aria-selected="${UI.tab === k}" class="${UI.tab === k ? "on" : ""}" data-a="tab" data-x="${k}">${H(l)}${badge[k] ? `<span class="sim-badge" aria-label="${badge[k]} en attente">${badge[k]}</span>` : ""}</button>`).join("")}</div>`;
   const content = ({ board: tBoard, room: tRoom, diplo: tDiplo, draft: tDraft, vote: tVote, log: tLog })[UI.tab] || tBoard;
-  return `<div class="sim-game">
-  <div class="sim-ghead">
-    <div><div class="sim-org">${H(b.org === "ONU" ? "Nations Unies" : "UNESCO")} · ${H(b.name)}${S.scen.pc ? " · " + H(b.commissions[S.scen.pc]) : ""}</div>
-    <div class="sim-issue">${H(issue.title)} <span class="sim-tag">Scénario fictif</span></div></div>
-    <div class="sim-me">${plq(S.player)}<span>Votre délégation · ${btn("Menu du jeu", "home", { cls: "link" })}</span></div>
-  </div>
-  ${rail}${phaseBar()}${tabs}
-  <div class="sim-layout"><div class="sim-main" role="tabpanel">${content()}</div><aside class="sim-aside">${situation()}</aside></div>
+  const help = UI.tab === defaultTab(S.phase) ? phaseHelp(S) : "";
+  return `<div class="sim-game">${mast}${rail}${tabs}
+  <div class="sim-layout${S.phase === 7 ? " wide" : ""}"><div class="sim-main" role="tabpanel">${help}${content()}</div>${S.phase === 7 ? "" : `<aside class="sim-aside" aria-label="Situation">${situation()}</aside>`}</div>
+  ${nowBar()}
 </div>`;
 }
 
@@ -3023,63 +3042,72 @@ function estimate(S) {
 function situation() {
   const S = G;
   const parts = [];
-  if (S.phase === 3) {
+  if (S.phase === 3 && UI.tab !== "room") {
     const last = [...S.speeches].reverse().find(sp => sp.code && sp.kind === "debate"), nx = currentSpeaker(S);
     parts.push(`<div class="sim-sit sim-sit-room"><h3>Dans la salle</h3>${roomSVG(S, { mini: true })}<p class="sim-mute">${last ? `À la parole : <b>${H(cnm(last.code))}</b>.` : "La présidence ouvre le débat."}${nx ? ` Prochain orateur : ${nx === S.player ? "<b>vous</b>" : H(cnm(nx))}.` : ""}</p></div>`);
   }
+  if (S.phase === 3) {
+    const others = S.scen.members.filter(c => c !== S.player), known = others.filter(c => S.dels[c].known.pos);
+    parts.push(`<div class="sim-sit"><h3>Ce que vous savez</h3><div class="sim-known">${others.map(c => `<i class="${S.dels[c].known.pos ? "on" : ""}" title="${H(cnm(c))}${S.dels[c].known.pos ? "" : " : position inconnue"}"></i>`).join("")}</div><p class="sim-mute"><b>${known.length} position${known.length > 1 ? "s" : ""} connue${known.length > 1 ? "s" : ""}</b> sur ${others.length}. Pour connaître une position, demandez une précision à la délégation après son intervention ; pendant les négociations, vous pourrez la sonder.</p></div>`);
+  }
   if (S.phase === 4 || S.phase === 5) {
     const tot = S.phase === 4 ? 120 : 60, left = timeLeft(S);
-    parts.push(`<div class="sim-sit"><h3>Temps ${S.phase === 4 ? "de négociation" : "d'examen du texte"}</h3><div class="sim-time"><b>${left}</b> min restantes</div><div class="sim-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${tot}" aria-valuenow="${left}"><i style="width:${Math.round(left / tot * 100)}%"></i></div><p class="sim-mute">Horloge de séance : ${clockStr(S)}</p></div>`);
+    parts.push(`<div class="sim-sit"><h3>Temps ${S.phase === 4 ? "de négociation" : "d'examen du texte"}</h3><div class="sim-time"><b>${left}</b><span>min sur ${tot}</span></div><div class="sim-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${tot}" aria-valuenow="${left}"><i style="width:${Math.round(left / tot * 100)}%"></i></div><p class="sim-mute">Horloge de séance : ${H(clockStr(S))}</p></div>`);
   }
-  if (S.phase >= 4 && S.phase <= 6 && !S.vote) {
-    const e = estimate(S);
-    parts.push(`<div class="sim-sit"><h3>Estimation du vote</h3><div class="sim-est"><span class="e-yes"><b>${e.counts.yes}</b>pour</span><span class="e-no"><b>${e.counts.no}</b>contre</span><span class="e-abs"><b>${e.counts.abs}</b>abst.</span><span class="e-unk"><b>${e.counts.unk}</b>inconnus</span></div><p class="sim-est-s ${e.status}">${e.status === "ok" ? "En l'état, le texte serait adopté." : e.status === "ko" ? "En l'état, le texte serait rejeté." : "Issue incertaine : certaines positions restent inconnues."}</p><p class="sim-mute">Règle : ${H(e.rule.label)}.</p></div>`);
-  }
+  if (S.phase >= 4 && S.phase <= 6 && !S.vote) parts.push(`<div class="sim-sit"><h3>Si l'on votait maintenant</h3>${voteDots(S)}</div>`);
   if (S.phase >= 2 && S.phase < 7) {
     const objs = S.vote ? evalObjectives(S) : S.phase >= 4 ? liveObjectives(S) : objectives(S).map(o => Object.assign({}, o, { ok: null }));
-    parts.push(`<div class="sim-sit"><h3>Vos objectifs</h3><ul class="sim-objs">${objs.map(o => `<li class="${o.ok === true ? "ok" : o.ok === false ? "no" : ""}"><span class="sim-dot" aria-hidden="true"></span>${H(o.text)}${o.ok === true ? `<span class="sr">(atteint pour l'instant)</span>` : ""}</li>`).join("")}</ul></div>`);
+    const done = objs.filter(o => o.ok === true).length;
+    parts.push(`<div class="sim-sit"><h3>Vos objectifs${S.phase >= 4 ? ` <span class="sim-count">${done} sur ${objs.length}</span>` : ""}</h3><ul class="sim-objs">${objs.map(o => `<li class="${o.ok === true ? "ok" : o.ok === false ? "no" : ""}"><span class="sim-dot" aria-hidden="true"></span>${H(o.text)}${o.ok === true ? `<span class="sr">(atteint pour l'instant)</span>` : ""}</li>`).join("")}</ul></div>`);
   }
   if (S.phase >= 4 && S.phase < 7) parts.push(`<div class="sim-sit"><h3>Soutiens</h3><p>${S.draft.cosponsors.length ? `Coauteurs : ${S.draft.cosponsors.map(c => H(cnm(c))).join(", ")}.` : "Aucun coauteur pour l'instant."} ${S.deals.filter(d => d.status === "active").length ? `${S.deals.filter(d => d.status === "active").length} accord(s) en cours.` : ""}</p></div>`);
   parts.push(`<div class="sim-sit sim-sit-mode">${aiNote()}</div>`);
   return parts.join("");
 }
 
-/* ---------- Tableau de bord ---------- */
+/* ---------- Ma délégation (tableau de bord) ---------- */
 function tBoard() {
   const S = G, b = bodyOf(S), issue = issueOf(S), V = speechVars(S), out = [];
   if (S.phase === 7 && S.report) out.push(debrief());
-  out.push(`<div class="sim-inline-sit">${situation()}</div>`);
+  if (S.phase < 7) out.push(`<div class="sim-inline-sit">${situation()}</div>`);
   if (S.phase >= 2) out.push(briefNote());
   out.push(`<section class="sim-card"><h2>La question</h2>
-    <p><b>${H(capFirst(S.scen.triggerShort))}.</b></p><p>${H(fill(issue.background, V))}</p>
-    <dl class="sim-facts">${S.scen.facts.map(f => `<div><dt>${H(f.label)}</dt><dd>${H(fmtFact(f))}</dd></div>`).join("")}</dl>
+    <p class="sim-qlead">${H(capFirst(S.scen.triggerShort))}.</p><p>${H(fill(issue.background, V))}</p>
+    ${statCards(S.scen.facts, "Données du scénario, fictives")}
     <p class="sim-fine">Les faits et les données de ce scénario sont fictifs ; les textes juridiques cités sont réels.</p></section>`);
   out.push(`<section class="sim-card"><h2>Les délégations présentes</h2>${mapBlock(S, S.phase >= 4 ? ["group", "vote", "rel"] : S.phase >= 3 ? ["group", "rel"] : ["group"], UI.mapMode || "group")}</section>`);
   out.push(`<section class="sim-card"><h2>${H(b.name)}</h2><p>${H(b.desc)}</p>
-    <div class="sim-cols"><div><h3>Ce que l'organe peut faire</h3><ul class="sim-ul">${b.powers.map(p => `<li>${H(p)}</li>`).join("")}</ul></div><div><h3>Ce qu'il ne peut pas faire</h3><ul class="sim-ul">${b.limits.map(p => `<li>${H(p)}</li>`).join("")}</ul></div></div>
+    <div class="sim-cols"><div><h3>Ce que l'organe peut faire</h3><ul class="sim-ul ok">${b.powers.map(p => `<li>${H(p)}</li>`).join("")}</ul></div><div><h3>Ce qu'il ne peut pas faire</h3><ul class="sim-ul ko">${b.limits.map(p => `<li>${H(p)}</li>`).join("")}</ul></div></div>
     <h3>Règle de vote</h3><p>${H(b.ruleText)}</p>${ruleDiagram(S)}</section>`);
   return out.join("");
 }
+/* Positions sur les points clés, en curseurs « vers où penche… » */
 function axisBars(S, code, opts = {}) {
-  const d = S.dels[code], issue = issueOf(S), R = textVec(S), showR = S.phase >= 4;
-  const known = code === S.player || d.known.pos, red = code === S.player || d.known.red;
-  return `<div class="sim-axes">${issue.axes.map(a => {
-    const p = d.pos[a], pct = x => Math.round((clamp(x, -1, 1) + 1) * 50);
+  const d = S.dels[code], issue = issueOf(S), R = textVec(S), showR = S.phase >= 4, mine = code === S.player;
+  const known = mine || d.known.pos, red = mine || d.known.red, me = S.dels[S.player];
+  const rows = issue.axes.map(a => {
     const rl = red ? d.red.find(r => r.axis === a) : null;
-    return `<div class="sim-ax"><div class="sim-ax-h"><span>${H(AXES[a].name)}</span>${code === S.player ? `<span class="sim-mute">${d.w[a] >= 0.8 ? "priorité majeure" : d.w[a] >= 0.55 ? "point important" : "point secondaire"}</span>` : ""}</div>
-      <div class="sim-track">${rl ? `<span class="sim-red ${rl.dir}" style="left:${pct(rl.thr)}%" title="Ligne rouge"></span>` : ""}${known ? `<span class="sim-pos" style="left:${pct(p)}%" title="Position"></span>` : ""}${showR ? `<span class="sim-txt" style="left:${pct(R[a])}%" title="Texte actuel"></span>` : ""}</div>
-      <div class="sim-ax-l"><span>${H(AXES[a].neg)}</span><span>${H(AXES[a].pos)}</span></div></div>`;
-  }).join("")}${opts.legend !== false ? `<p class="sim-legend"><span><i class="lg-pos"></i>position${code === S.player ? " de votre capitale" : ""}</span>${showR ? `<span><i class="lg-txt"></i>texte actuel</span>` : ""}${red && d.red.length ? `<span><i class="lg-red"></i>ligne rouge</span>` : ""}${!known ? `<span>position inconnue</span>` : ""}</p>` : ""}</div>`;
+    const marks = [known ? { v: d.pos[a], k: mine ? "cap" : "del", t: mine ? "Position de votre capitale" : "Position de la délégation" } : null, !mine ? { v: me.pos[a], k: "cap sm", t: "Position de votre capitale" } : null, showR ? { v: R[a], k: "txt", t: "Texte actuel" } : null];
+    const tag = mine ? (d.w[a] >= 0.8 ? "priorité majeure" : d.w[a] >= 0.55 ? "point important" : "point secondaire") : (known ? "" : "position inconnue");
+    const say = mine ? `Votre capitale penche ${H(leanWord(d.pos[a], a))}${showR ? ` ; le texte, ${H(leanWord(R[a], a))}` : ""}.` : known ? `Penche ${H(leanWord(d.pos[a], a))}.` : "";
+    return leanRow(a, marks, { red: rl, tag, say });
+  }).join("");
+  const legend = opts.legend === false ? "" : `<p class="sim-legend"><span><i class="lg-cap"></i>${mine ? "position de votre capitale" : "votre capitale"}</span>${!mine && known ? `<span><i class="lg-del"></i>cette délégation</span>` : ""}${showR ? `<span><i class="lg-txt"></i>texte actuel</span>` : ""}${red && d.red.length ? `<span><i class="lg-red"></i>ligne rouge</span>` : ""}</p>`;
+  return `<div class="sim-axes">${rows}${legend}</div>`;
 }
 function briefNote() {
-  const S = G, br = briefing(S);
+  const S = G, br = briefing(S), b = bodyOf(S);
   const orient = S.phase === 2 ? `<h3>Choisissez votre ligne de négociation</h3><p class="sim-mute">Votre ligne combine les instructions de votre capitale et l'orientation choisie. Elle guide vos interventions et le premier projet de texte.</p>
-    <div class="sim-orients">${br.orientations.map(o => `<button type="button" class="sim-orient" data-a="orient" data-x="${o.k}"><b>${H(o.name)}</b>${o.recommended ? `<span class="sim-tag gold">conseillée par votre capitale</span>` : ""}<span>${H(o.desc)}</span><span class="sim-fit">Compatibilité avec vos instructions : ${Math.round(o.fit * 100)} %</span></button>`).join("")}</div>`
+    <div class="sim-orients">${br.orientations.map(o => `<button type="button" class="sim-orient" data-a="orient" data-x="${o.k}"><b>${H(o.name)}</b>${o.recommended ? `<span class="sim-tag gold">conseillée par votre capitale</span>` : ""}<span>${H(o.desc)}</span><span class="sim-fit"><span class="fit-bar"><i style="width:${Math.round(o.fit * 100)}%"></i></span>Compatibilité avec vos instructions : ${Math.round(o.fit * 100)} %</span></button>`).join("")}</div>`
     : `<p class="sim-mute">Ligne retenue : <b>${H(ORIENTATIONS[S.orientation].name)}</b>.</p>`;
-  return `<section class="sim-card sim-brief"><div class="sim-conf">Confidentiel</div><h2>${H(br.title)}</h2><p>${H(br.lead)}</p>
+  return `<section class="sim-card sim-brief">
+    <div class="tg-head"><span>Télégramme diplomatique</span><span class="sim-conf">Confidentiel</span></div>
+    <dl class="tg-meta"><div><dt>De</dt><dd>Votre capitale</dd></div><div><dt>À</dt><dd>Délégation ${H(deName(S.player))} auprès ${H(b.de)}</dd></div><div><dt>Objet</dt><dd>${H(issueOf(S).title)}</dd></div></dl>
+    <h2>${H(br.title)}</h2><p>${H(br.lead)}</p>
     <h3>Intérêts nationaux</h3><ul class="sim-ul">${br.interests.map(x => `<li>${H(capFirst(x))}</li>`).join("")}</ul>
-    <h3>Position sur les points clés</h3><ul class="sim-ul">${br.axes.map(a => `<li><b>${H(a.name)}</b> (${H(a.importance)}) : ${H(a.text)}</li>`).join("")}</ul>
+    <h3>Où penche votre capitale</h3><p class="sim-mute">Sur chaque point clé, le curseur montre la position que votre capitale vous demande de défendre.</p>
     ${axisBars(S, S.player)}
+    <ul class="sim-ul sim-axnotes">${br.axes.map(a => `<li><b>${H(a.name)}</b> : ${H(a.text)}</li>`).join("")}</ul>
     ${br.red.length ? `<h3>Lignes rouges</h3><ul class="sim-ul sim-redlist">${br.red.map(r => `<li>${H(r.text)}</li>`).join("")}</ul>` : ""}
     ${br.domestic ? `<h3>Contrainte intérieure</h3><p>${H(br.domestic)}</p>` : ""}
     <div class="sim-cols"><div><h3>Partenaires probables</h3><div class="sim-plqs">${br.allies.map(c => plq(c)).join("")}</div></div><div><h3>Positions éloignées</h3><div class="sim-plqs">${br.rivals.map(c => plq(c)).join("")}</div></div></div>
@@ -3090,16 +3118,21 @@ function debrief() {
   const S = G, R = S.report, t = S.vote.t;
   const rel = R.rel.filter(x => Math.abs(x.d) >= 5);
   const up = rel.filter(x => x.d > 0).slice(0, 3), down = rel.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 3);
+  const maxD = Math.max(10, ...rel.map(x => Math.abs(x.d)));
+  const relRow = x => `<div class="sim-relrow">${plq(x.code, "sm")}<span class="rr-bar ${x.d > 0 ? "up" : "down"}"><i style="width:${(Math.abs(x.d) / maxD * 100).toFixed(0)}%"></i></span><span class="${x.d > 0 ? "sim-up" : "sim-down"}">${x.d > 0 ? "+" : ""}${x.d}</span></div>`;
+  const trace = roomTrace(S);
+  const ok = R.objs.filter(o => o.ok).length;
   return `<section class="sim-debrief">
-    <div class="sim-verdict ${({ "Succès diplomatique": "ok", "Échec diplomatique": "ko" })[R.verdict.k] || "mid"}"><div><div class="sim-verdict-k">${H(R.verdict.k)}</div><p>${H(R.verdict.c)}</p><p class="sim-verdict-v">${t.yes} pour, ${t.no} contre, ${t.abs} abstention${t.abs > 1 ? "s" : ""} · ${t.adopted ? "texte adopté" : "texte non adopté"}${t.veto.length ? ` (vote négatif ${t.veto.map(deName).join(", ")})` : ""}</p></div><div class="sim-overall"><b>${R.overall}</b><span>sur 100</span></div></div>
-    <h2>Analyse de votre performance</h2>
-    <div class="sim-scores">${R.scores.map(s => `<div class="sim-score"><div class="sim-score-h"><span>${H(s.k)}</span><b>${s.v}</b></div><div class="sim-bar"><i style="width:${s.v}%"></i></div><p>${H(s.c)}</p></div>`).join("")}</div>
-    <h2>Objectifs de votre capitale</h2><ul class="sim-objs final">${R.objs.map(o => `<li class="${o.ok ? "ok" : "no"}"><span class="sim-dot" aria-hidden="true"></span><span>${H(o.text)}<small>${o.ok ? "Atteint" : "Non atteint"} : ${H(o.note)}</small></span></li>`).join("")}</ul>
+    <div class="sim-verdict ${({ "Succès diplomatique": "ok", "Échec diplomatique": "ko" })[R.verdict.k] || "mid"}"><div><span class="sim-kick">Bilan de la séance</span><div class="sim-verdict-k">${H(R.verdict.k)}</div><p>${H(R.verdict.c)}</p><p class="sim-verdict-v">${t.yes} pour, ${t.no} contre, ${t.abs} abstention${t.abs > 1 ? "s" : ""} · ${t.adopted ? "texte adopté" : "texte non adopté"}${t.veto.length ? ` (vote négatif ${t.veto.map(deName).join(", ")})` : ""}</p></div><div class="sim-overall"><b>${R.overall}</b><span>sur 100</span></div></div>
+    <div class="sim-grain"><div class="gr-fig">${scoreFlower(R)}</div><div><h2>Votre performance</h2><p class="sim-mute">Chaque pétale mesure l'un des six aspects de votre travail, sur 100 : plus il est long, meilleur est le score.</p>
+      <ul class="sim-scorelist">${R.scores.map(s => `<li><div class="sl-h"><span>${H(s.k)}</span><b>${s.v}</b></div><span class="sl-bar"><i style="width:${s.v}%"></i></span><p>${H(s.c)}</p></li>`).join("")}</ul></div></div>
+    ${trace ? `<h2>La salle, démarche après démarche</h2><p class="sim-mute">Chaque colonne montre les intentions de vote que vous connaissiez après une démarche : vous découvrez les positions, puis vous les faites bouger.</p>${trace}` : ""}
+    <h2>Objectifs de votre capitale <span class="sim-count">${ok} sur ${R.objs.length}</span></h2><ul class="sim-objs final">${R.objs.map(o => `<li class="${o.ok ? "ok" : "no"}"><span class="sim-dot" aria-hidden="true"></span><span>${H(o.text)}<small>${o.ok ? "Atteint" : "Non atteint"} : ${H(o.note)}</small></span></li>`).join("")}</ul>
     <div class="sim-cols"><div><h2>Conséquences</h2><ul class="sim-ul">${R.consequences.map(c => `<li>${H(c)}</li>`).join("")}</ul></div>
     <div><h2>Concessions et accords</h2>${R.concessions.length ? `<ul class="sim-ul">${R.concessions.map(c => `<li>${H(cnm(c.by))} : ${H(c.label)}${c.deal ? ` <span class="sim-deal ${c.deal}">${c.deal === "broken" ? "promesse rompue" : c.deal === "honored" ? "tenu" : "en cours"}</span>` : ""}</li>`).join("")}</ul>` : `<p class="sim-mute">Aucune concession ni aucun accord.</p>`}
     ${R.coalitions.length ? `<h3>Coalitions</h3><ul class="sim-ul">${R.coalitions.map(c => `<li>${H(c)}</li>`).join("")}</ul>` : ""}</div></div>
-    <h2>Le vote sur la carte</h2>${worldMap(S, "vote")}${mapLegend(S, "vote")}
-    <h2>Relations</h2><div class="sim-cols"><div><h3>En progrès</h3>${up.length ? up.map(x => `<div class="sim-relrow">${plq(x.code)}<span class="sim-up">+${x.d}</span></div>`).join("") : `<p class="sim-mute">Aucune évolution notable.</p>`}</div><div><h3>En recul</h3>${down.length ? down.map(x => `<div class="sim-relrow">${plq(x.code)}<span class="sim-down">${x.d}</span></div>`).join("") : `<p class="sim-mute">Aucune dégradation notable.</p>`}</div></div>
+    <h2>Le vote sur la carte</h2><figure class="sim-mapbox">${dotMap(S, "vote")}${mapLegend(S, "vote")}</figure>
+    <h2>Relations</h2><div class="sim-cols"><div><h3>En progrès</h3>${up.length ? up.map(relRow).join("") : `<p class="sim-mute">Aucune évolution notable.</p>`}</div><div><h3>En recul</h3>${down.length ? down.map(relRow).join("") : `<p class="sim-mute">Aucune dégradation notable.</p>`}</div></div>
     <div class="sim-cta">${btn("Nouvelle simulation", "new", { cls: "primary" })}${btn("Rejouer ce scénario", "replayCur", { cls: "ghost" })}${btn("Revoir la chronologie", "tab", { cls: "ghost", x: "log" })}</div>
   </section>`;
 }
@@ -3110,19 +3143,19 @@ const KIND_LABEL = { debate: "Intervention", reply: "Réponse", support: "Appui"
 function speechHTML(S, sp, i) {
   if (sp.chair) return `<div class="sim-chair"><span>${H(chairTitle(S))}</span>${sp.paras.map(p => `<p>${H(p)}</p>`).join("")}</div>`;
   const can = S.phase === 3 && !sp.mine && sp.kind === "debate" && (S.reactions || 0) < MAX_REACTIONS && !(S.reacted || {})[sp.code];
-  return `<article class="sim-sp ${sp.mine ? "mine" : ""} k-${sp.kind}" id="sim-sp-${i}"><div class="sim-sp-h">${plq(sp.code)}<span class="sim-sp-m">${H(KIND_LABEL[sp.kind] || "")} · ${H(sp.t || "")}${sp.ai ? " · formulée par l'IA" : ""}</span></div>
+  return `<article class="sim-sp ${sp.mine ? "mine" : ""} k-${sp.kind}" id="sim-sp-${i}"><div class="sim-sp-h">${plq(sp.code)}<span class="sim-sp-m">${H(KIND_LABEL[sp.kind] || "")}${sp.t ? ` <time>${H(sp.t)}</time>` : ""}${sp.ai ? " · formulée par l'IA" : ""}</span></div>
     ${sp.pending ? `<p class="sim-wait">La délégation prend la parole…</p>` : sp.paras.map(p => `<p>${H(p)}</p>`).join("")}
     ${sp.mine && sp.notes && sp.notes.length ? `<p class="sim-notes">Perception de votre intervention : ${H(sp.notes.join(", "))}.</p>` : ""}
     ${can ? `<div class="sim-react">${btn("Appuyer", "react", { cls: "ghost sm", x: sp.code, y: "support" })}${btn("Contester", "react", { cls: "ghost sm", x: sp.code, y: "contest" })}${btn("Demander une précision", "react", { cls: "ghost sm", x: sp.code, y: "clarify" })}</div>` : ""}</article>`;
 }
 function tRoom() {
   const S = G;
-  const room = `<figure class="sim-roombox">${roomSVG(S)}<figcaption>${roomLegend(S)}</figcaption></figure>`;
+  const cam = camera(S) + roomLegend(S);
   if (S.phase <= 2) {
-    return `<section class="sim-card"><h2>Ouverture de la séance</h2>${room}<div class="sim-chair big"><span>${H(chairTitle(S))}</span>${chairOpening(S).map(p => `<p>${H(p)}</p>`).join("")}</div>
+    return `<section class="sim-card sim-roomcard"><h2>Ouverture de la séance</h2>${cam}<div class="sim-chair big"><span>${H(chairTitle(S))}</span>${chairOpening(S).map(p => `<p>${H(p)}</p>`).join("")}</div>
     ${S.phase === 1 ? `<div class="sim-cta">${btn("Recevoir les instructions de ma capitale", "brief", { cls: "primary" })}</div>` : `<div class="sim-cta">${btn("Lire mes instructions", "tab", { cls: "primary", x: "board" })}</div>`}</section>`;
   }
-  const speakers = `<ol class="sim-speakers" aria-label="Liste des orateurs">${S.order.map((c, i) => `<li class="${i < S.debateIdx ? "done" : i === S.debateIdx && S.phase === 3 ? "cur" : ""}${c === S.player ? " me" : ""}">${H(cnm(c))}</li>`).join("")}</ol>`;
+  const speakers = `<div class="sim-queue"><span class="sim-kick">Liste des orateurs</span><ol class="sim-speakers" aria-label="Liste des orateurs">${S.order.map((c, i) => `<li class="${i < S.debateIdx ? "done" : i === S.debateIdx && S.phase === 3 ? "cur" : ""}${c === S.player ? " me" : ""}"><span>${i + 1}</span>${H(cnm(c))}</li>`).join("")}</ol></div>`;
   const feed = `<div class="sim-feed">${S.speeches.map((sp, i) => speechHTML(S, sp, i)).join("")}</div>`;
   let ctrl = "";
   if (S.phase === 3) {
@@ -3131,7 +3164,7 @@ function tRoom() {
     else ctrl = `<div class="sim-cta">${btn(UI.busy ? "La délégation s'exprime…" : "Orateur suivant", "next", { cls: "primary", dis: !!UI.busy })}${!S.playerSpoke ? btn("Aller jusqu'à mon tour", "toMe", { cls: "ghost", dis: !!UI.busy }) : btn("Entendre les dernières délégations", "toEnd", { cls: "ghost", dis: !!UI.busy })}</div>
       <p class="sim-mute">Réactions possibles : ${MAX_REACTIONS - (S.reactions || 0)} sur ${MAX_REACTIONS}. Appuyer une délégation améliore vos relations ; la contester marque votre différence.</p>`;
   }
-  return `<section class="sim-card"><h2>${S.phase === 3 ? "Débat général" : "Compte rendu des débats"}</h2>${room}${speakers}${feed}${ctrl}</section>`;
+  return `<section class="sim-card sim-roomcard"><h2>${S.phase === 3 ? "Débat général" : "Compte rendu des débats"}</h2>${cam}${speakers}${feed}${ctrl}</section>`;
 }
 function myTurn() {
   const S = G, opts = playerOptions(S);
@@ -3143,7 +3176,7 @@ function myTurn() {
     <textarea id="sim-speech" rows="9" data-k="speech" data-live="speech" placeholder="${H(S.chairName)}, ma délégation…">${H(UI.drafts.speech || "")}</textarea>
     <div id="sim-live-speech" aria-live="polite">${liveSpeech()}</div>
     <div class="sim-cta">${btn(UI.busy ? "Analyse en cours…" : "Prononcer mon intervention", "speakFree", { cls: "primary", dis: !!UI.busy || !(UI.drafts.speech || "").trim() })}</div>`;
-  return `<section class="sim-myturn"><h3>La parole est à votre délégation</h3>${seg}${body}</section>`;
+  return `<section class="sim-myturn"><span class="sim-kick">La présidence vous donne la parole</span><h3>À vous de parler</h3>${seg}${body}</section>`;
 }
 function liveSpeech() {
   const S = G, txt = UI.drafts.speech || "";
@@ -3151,7 +3184,7 @@ function liveSpeech() {
   const a = analyzeSpeech(S, txt);
   const st = Object.keys(a.stance);
   return `<div class="sim-analysis"><div><b>Position perçue</b> ${st.length ? st.map(ax => `<span class="sim-chip sm">${H(AXES[ax].name)} : ${H(a.stance[ax] > 0 ? AXES[ax].pos : AXES[ax].neg)}</span>`).join("") : `<span class="sim-mute">aucune position claire pour l'instant</span>`}</div>
-    <div><b>Qualité estimée</b> ${Math.round(a.quality * 100)}/100${a.notes.length ? ` · ${H(a.notes.join(", "))}` : ""}</div>
+    <div><b>Qualité estimée</b> <span class="sim-q"><i style="width:${Math.round(a.quality * 100)}%"></i></span> ${Math.round(a.quality * 100)}/100${a.notes.length ? ` · ${H(a.notes.join(", "))}` : ""}</div>
     <div class="sim-mute">${a.words} mots${AI.usable(S) ? " · l'analyse finale sera faite par l'IA" : ""}</div></div>`;
 }
 
@@ -3177,8 +3210,8 @@ function delegList(full) {
   const S = G, proj = full ? projection(S) : null;
   const others = sortFr(S.scen.members.filter(c => c !== S.player));
   return `<div class="sim-dels">${others.map(c => {
-    const d = S.dels[c], [rl, rc] = relLabel(d.rel), v = proj && d.known.pos ? proj.votes[c] : null;
-    return `<button type="button" class="sim-delrow${UI.sel === c ? " on" : ""}" data-a="sel" data-x="${c}" aria-pressed="${UI.sel === c}">${plq(c, "sm")}<span class="sim-rel ${rc}">${rl}</span>${full ? `<span class="sim-vchip v-${v || "unk"}">${v ? voteWord(v) : "?"}</span>` : ""}${d.cosponsor ? `<span class="sim-tag">coauteur</span>` : ""}</button>`;
+    const d = S.dels[c], [rl] = relLabel(d.rel), v = proj && d.known.pos ? proj.votes[c] : null;
+    return `<button type="button" class="sim-delrow${UI.sel === c ? " on" : ""}" data-a="sel" data-x="${c}" aria-pressed="${UI.sel === c}">${plq(c, "sm")}<span class="sim-rel" title="Relation : ${H(rl.toLowerCase())}">${relMeter(d.rel)}<span class="sr">Relation : ${H(rl.toLowerCase())}</span></span>${full ? `<span class="sim-vchip v-${v || "unk"}">${v ? voteWord(v) : "?"}</span>` : ""}${d.cosponsor ? `<span class="sim-tag">coauteur</span>` : ""}</button>`;
   }).join("")}</div>`;
 }
 function delegDetail(code, live) {
@@ -3199,8 +3232,9 @@ function delegDetail(code, live) {
       <p class="sim-mute">Une promesse non tenue rompt l'accord et dégrade vos relations avec la délégation et ses partenaires.</p>
       <div class="sim-row">${btn("Proposer l'accord · 20 min", "deal", { cls: "primary sm", dis: !canAct(S, "deal") || !offers.length })}${btn("Annuler", "panel", { cls: "ghost sm", x: "" })}</div></div>`;
   }
+  const [rl] = relLabel(d.rel);
   return `<div class="sim-dhead">${plq(code)}<span class="sim-mute">${H(groupName(code))}${blocs.length ? " · " + H(blocs.join(", ")) : ""}</span></div>
-    <dl class="sim-kv"><div><dt>Relation</dt><dd>${relLabel(d.rel)[0]} (${d.rel > 0 ? "+" : ""}${d.rel})</dd></div><div><dt>Influence</dt><dd>${inflLabel(c.infl)}</dd></div><div><dt>Vote estimé</dt><dd>${vi ? voteWord(vi.v) : "inconnu"}</dd></div><div><dt>Attitude</dt><dd>${d.known.pet ? H(PERSONALITIES[d.pers].name) + " : " + H(PERSONALITIES[d.pers].desc) : "à découvrir en la sondant"}</dd></div></dl>
+    <div class="sim-kv"><div><span class="kv-k">Relation</span><span class="kv-v">${relMeter(d.rel)} ${H(rl)} (${d.rel > 0 ? "+" : ""}${d.rel})</span></div><div><span class="kv-k">Influence</span><span class="kv-v">${H(inflLabel(c.infl))}</span></div><div><span class="kv-k">Vote estimé</span><span class="kv-v"><span class="sim-vchip v-${vi ? vi.v : "unk"}">${vi ? voteWord(vi.v) : "inconnu"}</span></span></div><div class="kv-w"><span class="kv-k">Attitude</span><span class="kv-v">${d.known.pet ? H(PERSONALITIES[d.pers].name) + " : " + H(PERSONALITIES[d.pers].desc) : "à découvrir en la sondant"}</span></div></div>
     ${axisBars(S, code)}
     ${pet ? `<p class="sim-pet">Souhaite voir figurer dans le texte : « ${H(capFirst(clauseText(S, instClausePreview(S, pet))))} ».</p>` : ""}
     ${talks.length ? `<div class="sim-talk">${talks.slice(-8).map(t => `<div class="sim-msg ${t.who}"><span>${t.who === "me" ? "Votre délégation" : H(cnm(code))} · ${H(t.t)}</span><p>${H(t.text)}</p></div>`).join("")}</div>` : ""}
@@ -3234,7 +3268,7 @@ function tDraft() {
     <ol class="sim-ops">${ops.map((c, i) => opItem(S, c, i, i === last, edit)).join("")}</ol>
   </div>`;
   const tools = edit ? draftTools() : "";
-  return `<section class="sim-card"><h2>Salle de rédaction</h2>${edit ? `<p class="sim-mute">Le texte vous appartient : modifiez le verbe d'un paragraphe pour en changer la portée, déplacez-le, retirez-le ou ajoutez-en. Les réactions indiquées tiennent compte des seules délégations dont vous connaissez la position.</p>` : ""}${doc}${tools}</section>`;
+  return `<section class="sim-card sim-draftcard"><h2>Salle de rédaction</h2>${edit ? `<p class="sim-mute">Le texte vous appartient : modifiez le verbe d'un paragraphe pour en changer la portée, déplacez-le, retirez-le ou ajoutez-en. Sous chaque paragraphe, la barre montre les réactions des délégations dont vous connaissez la position.</p>` : ""}${doc}${tools}</section>`;
 }
 function opItem(S, c, i, isLast, edit) {
   const [v, rest] = splitVerb(S, c), chk = checkClause(S, c);
@@ -3243,8 +3277,10 @@ function opItem(S, c, i, isLast, edit) {
     const r = clauseReactions(S, c), kn = x => x.filter(m => S.dels[m].known.pos);
     const unk = S.scen.members.filter(m => m !== S.player && !S.dels[m].known.pos).length;
     const sup = kn(r.sup), opp = kn(r.opp), mod = kn(r.mod), neu = kn(r.neu);
+    const tot = Math.max(1, sup.length + mod.length + neu.length + opp.length + unk);
+    const seg = (cls, n) => n ? `<i class="${cls}" style="width:${(n / tot * 100).toFixed(1)}%"></i>` : "";
     const chip = (cls, list, label) => list.length ? `<span class="${cls}" title="${H(list.map(cnm).join(", "))}">${label} : ${list.length}</span>` : "";
-    react = `<div class="sim-op-r">${chip("r-sup", sup, "soutien")}${chip("r-mod", mod, "demandes de modification")}${chip("r-opp", opp, "opposition")}${chip("r-neu", neu, "abstention")}${unk ? `<span class="r-unk">${unk} position${unk > 1 ? "s" : ""} inconnue${unk > 1 ? "s" : ""}</span>` : ""}</div>`;
+    react = `<div class="sim-op-r"><span class="rb">${seg("r-sup", sup.length)}${seg("r-mod", mod.length)}${seg("r-neu", neu.length)}${seg("r-unk", unk)}${seg("r-opp", opp.length)}</span><span class="rt">${chip("r-sup", sup, "soutien")}${chip("r-mod", mod, "demandes de modification")}${chip("r-opp", opp, "opposition")}${chip("r-neu", neu, "abstention")}${unk ? `<span class="r-unk">${unk} position${unk > 1 ? "s" : ""} inconnue${unk > 1 ? "s" : ""}</span>` : ""}</span></div>`;
   }
   const verbs = verbsForClause(S, c);
   const tools = edit && c.form !== "raw" ? `<div class="sim-op-t">${verbs.length > 1 ? `<label class="sr" for="sim-v-${c.uid}">Verbe du paragraphe ${i + 1}</label><select id="sim-v-${c.uid}" data-a="verb" data-x="${c.uid}">${verbs.map(x => `<option${x === c.v ? " selected" : ""}>${H(x)}</option>`).join("")}</select>` : ""}${btn("Monter", "move", { cls: "ghost xs", x: c.uid, y: "-1", dis: i === 0 })}${btn("Descendre", "move", { cls: "ghost xs", x: c.uid, y: "1", dis: isLast || (S.draft.ops[i + 1] && S.draft.ops[i + 1].form === "raw") })}${btn("Retirer", "remove", { cls: "ghost xs danger", x: c.uid })}</div>` : "";
@@ -3262,7 +3298,7 @@ function draftTools() {
   const add = UI.panel === "add" ? `<div class="sim-panel"><h4>Paragraphes disponibles</h4><ul class="sim-bank">${bank.map(t => { const c = instClausePreview(S, t); return `<li><p>${H(capFirst(clauseText(S, c)))}</p><p class="sim-mute">${H((KINDS[effKind(c)] || {}).name || "")} · ${H(effectsText(S, c.fx))}</p>${btn("Ajouter", "addClause", { cls: "ghost xs", x: t.id })}</li>`; }).join("")}</ul>${btn("Fermer", "panel", { cls: "ghost sm", x: "" })}</div>` : "";
   const free = UI.panel === "free" ? freeClausePanel() : "";
   const submit = S.phase === 5 ? (UI.confirmVote ? `<div class="sim-confirm"><p>${pend.length ? `${pend.length} amendement(s) en attente deviendront caducs, ce que leurs auteurs regretteront. ` : ""}Une fois le texte mis aux voix, il ne pourra plus être modifié.</p><div class="sim-row">${btn("Confirmer la mise aux voix", "submit", { cls: "primary" })}${btn("Continuer l'examen", "confirmVote", { cls: "ghost", x: "0" })}</div></div>` : `<div class="sim-cta">${btn("Mettre le texte aux voix", "confirmVote", { cls: "primary", x: "1" })}</div>`) : `<p class="sim-mute">Pendant les négociations, vous pouvez modifier librement le texte et traiter les amendements déjà déposés. Les autres délégations déposeront la plupart de leurs amendements à l'examen du texte.</p>`;
-  return `<div class="sim-tools">${pre}<div class="sim-tool"><h3>Ajouter un paragraphe</h3><div class="sim-row">${btn("Choisir un paragraphe type", "panel", { cls: "ghost sm" + (UI.panel === "add" ? " on" : ""), x: UI.panel === "add" ? "" : "add" })}${btn("Rédiger un paragraphe", "panel", { cls: "ghost sm" + (UI.panel === "free" ? " on" : ""), x: UI.panel === "free" ? "" : "free" })}</div>${add}${free}</div>${amend}${submit}</div>`;
+  return `<div class="sim-tools">${amend}${pre}<div class="sim-tool"><h3>Ajouter un paragraphe</h3><div class="sim-row">${btn("Choisir un paragraphe type", "panel", { cls: "ghost sm" + (UI.panel === "add" ? " on" : ""), x: UI.panel === "add" ? "" : "add" })}${btn("Rédiger un paragraphe", "panel", { cls: "ghost sm" + (UI.panel === "free" ? " on" : ""), x: UI.panel === "free" ? "" : "free" })}</div>${add}${free}</div>${submit}</div>`;
 }
 function freeClausePreview() {
   const S = G, v = UI.drafts.fverb || "Encourage", txt = UI.drafts.ftext || "";
@@ -3282,11 +3318,12 @@ function freeClausePanel() {
 /* ---------- Salle de vote ---------- */
 function tVote() {
   const S = G, b = bodyOf(S);
-  if (S.phase < 6) return `<section class="sim-card"><h2>Salle de vote</h2><p>Le vote aura lieu lorsque vous mettrez le texte aux voix, à l'issue de son examen.</p><p><b>Règle applicable en l'état :</b> ${H(needRule(S).label)}.</p></section>`;
+  if (S.phase < 6) return `<section class="sim-card"><h2>Salle de vote</h2><p>Le vote aura lieu lorsque vous mettrez le texte aux voix, à l'issue de son examen.</p><p><b>Règle applicable en l'état :</b> ${H(needRule(S).label)}.</p>${S.phase >= 4 ? `<h3>Si l'on votait maintenant</h3>${voteDots(S)}` : ""}</section>`;
   if (!S.vote) {
     const me = S.dels[S.player], R = textVec(S), hard = hardBreach(me, R);
-    return `<section class="sim-card"><h2>Salle de vote</h2><p>${H(chairLine(S, "vote"))}</p>
+    return `<section class="sim-card"><h2>Salle de vote</h2><p class="sim-qlead">${H(chairLine(S, "vote"))}</p>
       ${hard ? `<p class="sim-warn">Attention : ce texte franchit l'une des lignes rouges fixées par votre capitale (${H(AXES[hard.axis].name.toLowerCase())}).</p>` : ""}
+      <h3>Si l'on votait maintenant</h3>${voteDots(S)}
       ${ruleDiagram(S)}
       <h3>Vote de votre délégation</h3><div class="sim-votebtns">${btn("Pour", "vote", { cls: "v-yes", x: "yes" })}${btn("Contre", "vote", { cls: "v-no", x: "no" })}${btn("Abstention", "vote", { cls: "v-abs", x: "abs" })}</div></section>`;
   }
@@ -3309,7 +3346,7 @@ function tVote() {
   }
   const verify = `<div class="sim-verify"><h3>Vérification de la règle</h3><ul>${checks.map(([ok, txt]) => `<li class="${ok ? "ok" : "no"}"><span class="sim-dot" aria-hidden="true"></span>${H(txt)} : <b>${ok ? "condition remplie" : "condition non remplie"}</b></li>`).join("")}</ul><p class="sim-mute">Règle appliquée : ${H(t.rule.label)}. Le résultat est calculé par le simulateur, jamais par l'IA.</p></div>`;
   return `<section class="sim-card"><h2>Salle de vote</h2>${board}<p class="sim-announce">${H(V.announce)}</p>${verify}
-    <figure class="sim-roombox">${roomSVG(S)}<figcaption>${roomLegend(S)}</figcaption></figure>
+    ${camera(S, { compact: true })}${roomLegend(S)}
     ${V.expl.length ? `<h3>Explications de vote</h3><div class="sim-expl">${V.expl.map(x => `<div class="sim-sp">${plq(x.code)}<p>${H(x.text)}</p></div>`).join("")}</div>` : ""}
     ${S.phase === 6 ? `<div class="sim-cta">${btn("Voir le bilan", "finish", { cls: "primary" })}</div>` : ""}</section>`;
 }
@@ -3319,7 +3356,7 @@ const CAT = { procedure: "Procédure", debate: "Débat", bilateral: "Entretien",
 function tLog() {
   const S = G, by = {};
   for (const e of S.log) (by[e.phase] = by[e.phase] || []).push(e);
-  return `<section class="sim-card"><h2>Chronologie de la séance</h2>${Object.keys(by).sort((a, b) => a - b).map(ph => `<h3>${ph}. ${H(PHASES[ph - 1])}</h3><ol class="sim-log">${by[ph].map(e => `<li class="c-${e.cat}"><time>${H(e.t)}</time><span class="sim-logcat">${H(CAT[e.cat] || "")}</span><p>${H(e.text)}</p></li>`).join("")}</ol>`).join("")}</section>`;
+  return `<section class="sim-card"><h2>Chronologie de la séance</h2><p class="sim-mute">Tout ce qui s'est passé, minute par minute, à l'horloge de la séance.</p>${Object.keys(by).sort((a, b) => a - b).map(ph => `<div class="sim-logph"><h3><span class="s7-n">${ph}</span>${H(PHASES[ph - 1])}</h3><ol class="sim-log">${by[ph].map(e => `<li class="c-${e.cat}"><time>${H(e.t)}</time><span class="sim-logcat">${H(CAT[e.cat] || "")}</span><p>${H(e.text)}</p></li>`).join("")}</ol></div>`).join("")}</section>`;
 }
 
 /* ---------- Rendu ---------- */
@@ -3328,9 +3365,8 @@ function inner() {
   const en = c.lang === "en" ? `<p class="sim-en">The diplomatic simulator is currently available in French only.</p>` : "";
   const flash = UI.flash ? `<div class="sim-flash" role="status">${H(UI.flash)}</div>` : "";
   UI.flash = null;
-  if (UI.screen === "game" && G) return en + flash + vGame();
-  if (UI.screen === "setup") return en + flash + vSetup();
-  return en + flash + vHome();
+  const screen = UI.screen === "game" && G ? "game" : UI.screen === "setup" ? "setup" : "home";
+  return `<div class="sim-stage s-${screen}">${en}${flash}${screen === "game" ? vGame() : screen === "setup" ? vSetup() : vHome()}</div>`;
 }
 function rerender() {
   const root = document.getElementById("sim-root");
@@ -3345,6 +3381,9 @@ function rerender() {
   afterRender(root);
 }
 function afterRender(root) {
+  // sur petit écran, la barre d'onglets défile : l'onglet actif reste visible
+  const tabs = root.querySelector(".sim-tabs"), on = tabs && tabs.querySelector("button.on");
+  if (on && tabs.scrollWidth > tabs.clientWidth + 4) tabs.scrollLeft += on.getBoundingClientRect().left - tabs.getBoundingClientRect().left - (tabs.clientWidth - on.offsetWidth) / 2;
   // sur petit écran, le plan de la salle défile horizontalement : on le centre
   root.querySelectorAll(".sim-roombox").forEach(b => { if (b.scrollWidth > b.clientWidth + 4 && !b.dataset.c) { b.scrollLeft = (b.scrollWidth - b.clientWidth) / 2; b.dataset.c = "1"; } });
   if (UI.scrollTo) {
@@ -3353,7 +3392,8 @@ function afterRender(root) {
     if (target) {
       // près du haut de page, on remonte jusqu'en haut : l'en-tête du site change de taille vers 12 px de défilement
       const top = target.getBoundingClientRect().top + window.scrollY - 90;
-      if (target === root ? window.scrollY > top : (target.getBoundingClientRect().top < 80 || target.getBoundingClientRect().bottom > window.innerHeight)) window.scrollTo({ top: top < 40 ? 0 : top, behavior: reduceMotion() ? "auto" : "smooth" });
+      const low = window.innerHeight - 130; // la barre « Maintenant » occupe le bas de l'écran
+      if (target === root ? window.scrollY > top : (target.getBoundingClientRect().top < 80 || target.getBoundingClientRect().top > low)) window.scrollTo({ top: top < 40 ? 0 : top, behavior: reduceMotion() ? "auto" : "smooth" });
     }
   }
   if (G && G.vote && !G.vote.shown && UI.tab === "vote") { G.vote.shown = true; save(); }
@@ -3431,6 +3471,7 @@ async function act(a, x, y) {
     /* --- navigation --- */
     case "tab": goTab(x); UI.scrollTo = ".sim-tabs"; break;
     case "jump": UI.scrollTo = x; break;
+    case "pause": if (S) { S.seen = S.seen || {}; S.seen[S.phase] = x === "1"; } break;
     case "mapMode": UI.mapMode = x; break;
     case "pmAxis": { const issue = issueOf(S), me = S.dels[S.player], def = issue.axes.slice().sort((a, b) => me.w[b] - me.w[a]); const cur = UI.pm || [def[0], def[1]]; cur[Number(x) || 0] = y; if (cur[0] === cur[1]) cur[1 - (Number(x) || 0)] = def.find(a => a !== y); UI.pm = cur; break; }
     case "seat": case "mapsel": {
@@ -3576,511 +3617,740 @@ function onInput(e) {
 
 /* =====================================================================
    STYLES (injectés une seule fois, tous préfixés par .sim)
-   Ils reprennent les couleurs et polices du site, avec des valeurs de
-   secours si une variable n'existe pas.
+   Version 1.1 : une scène sombre, « la salle de nuit », inspirée des pages
+   de données de 1 sur 8 milliards : chiffres en grand dans un caractère à
+   empattements (Newsreader), repères à chasse fixe (IBM Plex Mono), une
+   seule couleur d'action (l'or de SOMUN) et deux couleurs de vote
+   (pour, contre). Le texte courant garde la police du site.
    ===================================================================== */
 const SIM_CSS = `
-.sim{--sb:var(--bleu,#00008E);--so:var(--or,#EBC000);--sm:var(--marine,#020259);--sr:var(--rouge,#C12A3A);--si:var(--ink,#14143c);--su:var(--mute,#5c5e80);--sl:var(--line,#e3e4f0);--ss:var(--soft,#f5f5fb);--sbs:var(--bleu-soft,#ececf9);--sos:var(--or-soft,#fdf5d3);--srs:var(--rouge-soft,#fbe8ea);--sv:#11804a;--svs:#e3f3e9;--sgd:#7a5f00;--sft:var(--f-titre,"League Spartan",system-ui,sans-serif);--sfd:Georgia,"Times New Roman",Times,serif;color:var(--si)}
+.sim{
+  --n0:#0b1024;--n1:#131b38;--n2:#1a2349;--n3:#232d5a;
+  --ln:#2a3460;--ln2:#1e264b;
+  --tx:#e7eaf6;--tx2:#b3b9d6;--tx3:#8a92b8;
+  --gold:#ebc000;--gold2:#ffd84a;--gold-ink:#171300;--gold-s:rgba(235,192,0,.14);
+  --pour:#4cc0af;--contre:#f2788d;--abst:#a7abcf;--inc:#4a5383;
+  --pour-s:rgba(76,192,175,.15);--contre-s:rgba(242,120,141,.15);--abst-s:rgba(167,171,207,.14);
+  --warn:#f0b84c;--link:#b4c0ff;
+  --fd:"Newsreader",Georgia,"Times New Roman",serif;
+  --fm:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ft:var(--f-texte,"Poppins",system-ui,sans-serif);
+  position:relative;color:var(--tx);background:var(--n0);
+  margin:0 calc(50% - 50vw) -48px;padding:34px 0 64px;
+  background-image:radial-gradient(900px 420px at 85% -120px,rgba(90,110,220,.22),transparent 70%),radial-gradient(700px 380px at -10% 10%,rgba(235,192,0,.06),transparent 70%);
+  font:400 15px/1.62 var(--ft);-webkit-font-smoothing:antialiased;color-scheme:dark
+}
 .sim *{box-sizing:border-box}
-.sim h1{margin-bottom:6px}
-.sim h2{margin:28px 0 12px}
-.sim h3{margin:16px 0 6px}
-.sim h4{margin:6px 0 8px;font-size:14px;color:var(--sm)}
+.sim-stage{max-width:1200px;margin:0 auto;padding:0 22px}
+.sim h1,.sim h2,.sim h3,.sim h4{color:var(--tx);font-family:var(--fd);letter-spacing:0;display:block}
+.sim h2::before{display:none}
+.sim h1{font-weight:700;font-size:clamp(30px,4.2vw,46px);line-height:1.08;margin:6px 0 10px}
+.sim h2{font-weight:600;font-size:clamp(21px,2.4vw,26px);line-height:1.2;margin:34px 0 12px}
+.sim h3{font-weight:600;font-size:17.5px;line-height:1.3;margin:20px 0 6px}
+.sim h4{font-family:var(--ft);font-weight:600;font-size:14px;margin:6px 0 8px;color:var(--tx2)}
 .sim p{margin:8px 0}
+.sim b{color:inherit}
 .sim .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.sim-lead{color:var(--su);font-size:16px;max-width:64ch;margin:6px 0 18px}
-.sim-mute{color:var(--su);font-size:13.5px}
-.sim-fine{color:var(--su);font-size:12.5px;margin-top:22px;max-width:72ch}
+.sim a{color:var(--link)}
+.sim-kick{display:block;font:500 12.5px/1.4 var(--fm);color:var(--pour);letter-spacing:.01em;margin:0 0 4px}
+.sim-lead{color:var(--tx2);font-size:16.5px;max-width:66ch;margin:6px 0 18px}
+.sim-mute{color:var(--tx3);font-size:13.5px}
+.sim-fine{color:var(--tx3);font-size:12.5px;margin-top:26px;max-width:76ch}
 .sim-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.sim-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 6px}
-.sim-en,.sim-flash{padding:9px 13px;border-radius:10px;margin:0 0 12px;font-size:14px}
-.sim-en{background:var(--sos);color:var(--sgd)}
-.sim-flash{background:var(--sbs);color:var(--sb)}
+.sim-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 6px}
+.sim-en,.sim-flash{padding:10px 14px;border-radius:12px;margin:0 0 16px;font-size:14px}
+.sim-en{background:var(--gold-s);color:var(--gold2)}
+.sim-flash{background:var(--n2);border:1px solid var(--ln);color:var(--tx)}
 .sim-ul{margin:6px 0 10px;padding-left:20px}
-.sim-ul li{margin:3px 0}
+.sim-ul li{margin:4px 0}
+.sim-ul li::marker{color:var(--tx3)}
+.sim-ul.ok li::marker{color:var(--pour)}.sim-ul.ko li::marker{color:var(--contre)}
+.sim-count{font:500 12.5px var(--fm);color:var(--tx3);margin-left:6px;vertical-align:2px}
 
 /* Boutons */
-.sim-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2px solid var(--sb);background:#fff;color:var(--sb);padding:9px 18px;border-radius:99px;font:600 14px/1.25 var(--f-texte,inherit);cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s,transform .12s;text-align:center}
-.sim-btn:hover{background:var(--sbs)}
+.sim-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--ln);background:transparent;color:var(--tx);padding:9px 18px;border-radius:99px;font:600 14px/1.25 var(--ft);cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .1s}
+.sim-btn:hover{border-color:var(--tx3);background:rgba(255,255,255,.04)}
 .sim-btn:active{transform:scale(.97)}
-.sim-btn:focus-visible,.sim button:focus-visible,.sim select:focus-visible,.sim textarea:focus-visible,.sim input:focus-visible{outline:2px solid var(--so);outline-offset:2px}
-.sim-btn.primary{background:var(--sb);color:#fff}
-.sim-btn.primary:hover{background:var(--sm);border-color:var(--sm);box-shadow:0 4px 14px rgba(0,0,142,.2)}
-.sim-btn.ghost{border-color:var(--sl);color:var(--sb)}
-.sim-btn.ghost:hover{border-color:var(--sb)}
-.sim-btn.ghost.on{border-color:var(--sb);background:var(--sbs)}
-.sim-btn.lg{padding:12px 26px;font-size:15.5px}
+.sim-btn:focus-visible,.sim button:focus-visible,.sim select:focus-visible,.sim textarea:focus-visible,.sim input:focus-visible,.sim [role=button]:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sim-btn.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.sim-btn.primary:hover{background:var(--gold2);border-color:var(--gold2);box-shadow:0 6px 22px -8px rgba(235,192,0,.6)}
+.sim-btn.ghost{border-color:var(--ln);color:var(--tx)}
+.sim-btn.ghost:hover{border-color:var(--tx2)}
+.sim-btn.ghost.on{border-color:var(--gold);background:var(--gold-s);color:var(--gold2)}
+.sim-btn.lg{padding:13px 28px;font-size:16px}
 .sim-btn.sm{padding:6px 13px;font-size:13px}
-.sim-btn.xs{padding:3px 10px;font-size:12px;border-width:1.5px}
-.sim-btn.link{border:0;background:none;padding:0;color:var(--su);font-weight:500;text-decoration:underline;text-underline-offset:3px}
-.sim-btn.danger{color:var(--sr)}
-.sim-btn.danger:hover{border-color:var(--sr);background:var(--srs)}
-.sim-btn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
-.sim-btn.chip,.sim-chip{border:1.5px solid var(--sl);background:#fff;color:var(--si);padding:6px 13px;border-radius:99px;font:500 13px/1.3 var(--f-texte,inherit);cursor:pointer}
-.sim-btn.chip.on,.sim-chip.on{background:var(--sb);border-color:var(--sb);color:#fff}
+.sim-btn.xs{padding:3px 10px;font-size:12px;border-width:1px}
+.sim-btn.link{border:0;background:none;padding:0;color:var(--tx2);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.sim-btn.link:hover{color:var(--tx)}
+.sim-btn.danger{color:var(--contre)}
+.sim-btn.danger:hover{border-color:var(--contre);background:var(--contre-s)}
+.sim-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.sim-btn.chip,.sim-chip{border:1px solid var(--ln);background:var(--n1);color:var(--tx);padding:6px 13px;border-radius:99px;font:500 13px/1.3 var(--ft);cursor:pointer}
+.sim-btn.chip:hover,.sim-chip:hover{border-color:var(--tx3)}
+.sim-btn.chip.on,.sim-chip.on{background:var(--gold-s);border-color:var(--gold);color:var(--gold2)}
 .sim-chip.sm{padding:2px 9px;font-size:12px;cursor:default;margin:2px 4px 2px 0;display:inline-block}
 .sim-chips{display:flex;flex-wrap:wrap;gap:6px}
-.sim-tag{display:inline-block;font:600 11px/1.4 var(--f-texte,inherit);padding:2px 9px;border-radius:99px;background:var(--sbs);color:var(--sb);vertical-align:2px;white-space:nowrap}
-.sim-tag.gold{background:var(--sos);color:var(--sgd)}
-.sim-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--sr);color:#fff;font-size:11px;font-weight:700}
+.sim-tag{display:inline-block;font:500 11.5px/1.4 var(--fm);padding:2px 8px;border-radius:6px;background:var(--n2);color:var(--tx2);border:1px solid var(--ln);vertical-align:2px;white-space:nowrap}
+.sim-tag.gold{background:var(--gold-s);border-color:rgba(235,192,0,.4);color:var(--gold2)}
+.sim-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--contre);color:#2a0a10;font:700 11px/1 var(--ft)}
 
-/* Plaques nominatives des délégations */
-.sim-plq{display:inline-flex;align-items:center;font:700 12px/1.2 var(--sft);text-transform:uppercase;letter-spacing:.06em;color:var(--sm);background:#fff;border:1px solid var(--sl);border-bottom:3px solid var(--sm);border-radius:3px;padding:4px 8px 2px;white-space:nowrap}
-.sim-plq.me{border-bottom-color:var(--so);background:var(--sos)}
-.sim-plq.sm{font-size:10.5px;padding:3px 7px 1px}
+/* Plaques nominatives : blanches, comme dans les salles de l'ONU */
+.sim-plq{display:inline-flex;align-items:center;font:700 11.5px/1.2 var(--ft);text-transform:uppercase;letter-spacing:.07em;color:#141a3a;background:#f4f5fb;border-radius:3px;padding:4px 8px 3px;border-bottom:3px solid #5865b8;white-space:nowrap}
+.sim-plq.me{background:var(--gold);border-bottom-color:#8a6d00;color:var(--gold-ink)}
+.sim-plq.sm{font-size:10.5px;padding:3px 7px 2px}
 .sim-plqs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 
 /* Accueil */
-.sim-resume{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;border:1px solid var(--sl);border-left:5px solid var(--so);border-radius:12px;padding:14px 16px;margin:16px 0}
-.sim-resume-k{font-size:12.5px;color:var(--sgd);font-weight:600}
-.sim-mode{font-size:13px;color:var(--su);display:inline-flex;align-items:center;gap:7px}
-.sim-mode::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--su);flex:none}
-.sim-mode.on::before{background:var(--sv)}
-.sim-phases{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:ph}
-.sim-phases li{counter-increment:ph;display:grid;grid-template-columns:34px 1fr;column-gap:12px;align-items:start;align-content:start}
-.sim-phases li::before{content:counter(ph);grid-row:span 2;width:30px;height:30px;border-radius:50%;border:2px solid var(--sb);color:var(--sb);display:grid;place-items:center;font:700 14px/1 var(--sft);padding-top:2px}
-.sim-phases b{color:var(--sm)}
-.sim-phases span{color:var(--su);font-size:14px}
-.sim-hist{list-style:none;padding:0;margin:0}
-.sim-hist li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;padding:12px 0;border-bottom:1px solid var(--sl)}
-.sim-hist li>div:first-child{display:flex;flex-direction:column}
-.sim-hist-r{display:flex;align-items:center;gap:10px}
+.sim-hero{display:grid;gap:26px;align-items:center;padding:10px 0 8px}
+.sim .h-title{font:700 clamp(44px,7.2vw,96px)/.95 var(--fd);letter-spacing:-.02em;margin:8px 0 18px;white-space:nowrap}
+.sim .h-title em{font-style:italic;color:var(--gold);font-weight:600;padding-right:.04em}
+.h-lead{font-size:18px;line-height:1.6;color:var(--tx);max-width:56ch;margin:0 0 10px}
+.h-lead2{font:italic 500 19px/1.5 var(--fd);color:var(--tx2);max-width:52ch;margin:14px 0 4px}
+.h-art{margin:0;background:linear-gradient(180deg,var(--n1),rgba(19,27,56,.4));border:1px solid var(--ln);border-radius:22px;padding:24px 22px 18px}
+.sim-herodots{width:100%;height:auto;display:block}
+.sim-herodots .hd{fill:#2b3566}
+.sim-herodots .hd.c{fill:#c7ccf0}
+.sim-herodots .hd.me{fill:var(--gold);filter:drop-shadow(0 0 6px rgba(235,192,0,.8))}
+.h-art figcaption{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font:500 12.5px/1.4 var(--fm);color:var(--tx2)}
+.h-art figcaption span{display:inline-flex;align-items:center;gap:7px}
+.hd-k{width:9px;height:9px;border-radius:50%;background:#2b3566;display:inline-block}
+.hd-k.c{background:#c7ccf0}.hd-k.me{background:var(--gold)}
+.sim-mode{font-size:13px;color:var(--tx3);display:inline-flex;align-items:center;gap:7px}
+.sim-mode::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tx3);flex:none}
+.sim-mode.on::before{background:var(--pour);box-shadow:0 0 8px var(--pour)}
+.sim-resume{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid rgba(235,192,0,.45);background:linear-gradient(120deg,var(--gold-s),transparent 75%);border-radius:16px;padding:16px 18px 14px;margin:24px 0 12px;max-width:560px}
+.sim-resume b{font:600 21px/1.25 var(--fd);color:var(--tx)}
+.sim-resume .sim-row{margin-top:10px;align-items:center}
+.sim-how .how-grid{display:grid;gap:12px}
+.sim-how .how-grid>div{border-top:1px solid var(--ln);padding:12px 0 2px}
+.sim-how h3{margin:0 0 6px;font-size:19px}
+.sim-how p{color:var(--tx2);margin:0}
+.sim-phases{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.sim-phases li{display:grid;grid-template-columns:38px 1fr;column-gap:12px;align-items:start;background:var(--n1);border:1px solid var(--ln2);border-radius:14px;padding:12px 14px}
+.s7-n{grid-row:span 2;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ln);display:inline-grid;place-items:center;font:500 13px/1 var(--fm);color:var(--tx2)}
+.sim-phases b{font:600 17px/1.3 var(--fd)}
+.sim-phases span:not(.s7-n){color:var(--tx3);font-size:13.5px}
+.sim-hist{display:grid;gap:10px}
+.hist-c{display:flex;flex-direction:column;gap:5px;background:var(--n1);border:1px solid var(--ln2);border-radius:16px;padding:14px 16px}
+.hist-c>b{font:600 18px/1.25 var(--fd)}
+.hist-c .sim-kick{color:var(--tx3);margin:0}
+.hist-c .sim-btn{align-self:flex-start;margin-top:4px}
+.hist-r{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px}
 .sim-res{font-size:13px;font-weight:600}
-.sim-res.ok{color:var(--sv)}.sim-res.ko{color:var(--sr)}
-.sim-hist-score{font:700 15px var(--sft);color:var(--sm)}
+.sim-res.ok{color:var(--pour)}.sim-res.ko{color:var(--contre)}
+.sim-hist-score{font:700 26px/1 var(--fd)}
+.sim-hist-score small{font:500 12px var(--fm);color:var(--tx3);margin-left:2px}
+.sim-mt{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--n3);margin:4px 0 2px}
+.sim-mt i{display:block;height:100%}
+.sim-mt .v-yes{background:var(--pour)}.sim-mt .v-no{background:var(--contre)}.sim-mt .v-abs{background:var(--abst)}
 
 /* Préparation */
-.sim-crumbs{list-style:none;display:flex;gap:6px;padding:0;margin:0 0 8px;font-size:13px;color:var(--su);flex-wrap:wrap}
-.sim-crumbs li{display:flex;align-items:center;gap:6px}
-.sim-crumbs li+li::before{content:"";width:16px;height:1.5px;background:var(--sl)}
-.sim-crumbs li.on{color:var(--sb);font-weight:600}
-.sim-crumbs button{border:0;background:none;color:var(--sb);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:0}
+.sim-crumbs{list-style:none;display:flex;gap:6px 14px;padding:0;margin:0 0 16px;font:500 13px var(--fm);color:var(--tx3);flex-wrap:wrap}
+.sim-crumbs li{display:flex;align-items:center;gap:7px}
+.cr-n{width:22px;height:22px;border-radius:50%;border:1px solid var(--ln);display:inline-grid;place-items:center;font-size:11.5px}
+.sim-crumbs li.on{color:var(--tx)}
+.sim-crumbs li.on .cr-n{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.sim-crumbs li.done .cr-n{border-color:var(--pour);color:var(--pour)}
+.sim-crumbs button{border:0;background:none;color:var(--link);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit;padding:0}
+.sim .sim-org-h{font:500 13px var(--fm);color:var(--pour);margin:26px 0 10px}
 .sim-bodies{display:grid;gap:10px}
-.sim-body{display:flex;flex-direction:column;gap:4px;text-align:left;border:1.5px solid var(--sl);background:#fff;border-radius:14px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,background .15s}
-.sim-body:hover{border-color:var(--sb)}
-.sim-body.on{border-color:var(--sb);background:var(--sbs)}
-.sim-body-n{font:700 16.5px/1.2 var(--sft);color:var(--sm)}
-.sim-body-d{font-size:13.5px;color:var(--si)}
-.sim-body-m{font-size:12.5px;color:var(--su)}
-.sim-body-v{font-size:12.5px;color:var(--sb);font-weight:600}
-.sim-pcpick{margin:16px 0;padding:12px 14px;border-radius:12px;background:var(--ss)}
+.sim-body{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid var(--ln);background:var(--n1);border-radius:16px;padding:15px 16px 14px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,background .15s,transform .15s}
+.sim-body:hover{border-color:var(--tx3);background:var(--n2)}
+.sim-body.on{border-color:var(--gold);background:var(--gold-s)}
+.sim-body-n{font:600 19px/1.2 var(--fd);color:var(--tx)}
+.sim-body-d{font-size:13.5px;color:var(--tx2)}
+.sim-body-m{font:500 12px var(--fm);color:var(--tx3)}
+.sim-body-v{font-size:12.5px;color:var(--gold2)}
+.sim-seatd{display:grid;grid-template-columns:repeat(var(--c),1fr);gap:3px;max-width:290px;margin:4px 0 0}
+.sim-seatd i{aspect-ratio:1;border-radius:50%;background:#4a5590;max-width:12px}
+.sim-seatd i.p5{background:#c7ccf0;box-shadow:0 0 0 1.5px var(--n1),0 0 0 2.5px #c7ccf0}
+.sim-seatn{display:flex;align-items:baseline;gap:8px;margin:2px 0 0}
+.sim-seatn b{font:700 34px/1 var(--fd)}
+.sim-seatn span{font-size:12.5px;color:var(--tx3)}
+.sim-ruleg{position:relative;height:6px;border-radius:99px;background:var(--n3);margin:8px 0 2px}
+.sim-ruleg i{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:linear-gradient(90deg,rgba(235,192,0,.35),var(--gold))}
+.sim-ruleg span{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--tx)}
+.sim-pcpick{margin:16px 0;padding:14px 16px;border-radius:14px;background:var(--n1);border:1px solid var(--ln)}
 .sim-search{margin:4px 0 8px}
-.sim-search input{flex:1;min-width:200px;border:1.5px solid var(--sl);border-radius:99px;padding:9px 16px;font:inherit;font-size:15px}
-.sim-cgroup h3{font-size:14px;color:var(--su);font-weight:600;margin:16px 0 8px}
+.sim-search input{flex:1;min-width:200px}
+.sim-cgroup h3{font:500 13px var(--ft);color:var(--tx2);margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.sim-gdot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .sim-countries{display:flex;flex-wrap:wrap;gap:6px}
-.sim-country{border:1.5px solid var(--sl);background:#fff;border-radius:10px;padding:7px 12px;font:500 14px/1.2 var(--f-texte,inherit);cursor:pointer;color:var(--si);display:flex;flex-direction:column;align-items:flex-start}
-.sim-country small{font-size:11px;color:var(--sb)}
-.sim-country:hover{border-color:var(--sb);background:var(--sbs)}
-.sim-cols{display:grid;gap:4px 28px}
-.sim-facts{display:grid;gap:8px;margin:8px 0}
-.sim-facts>div{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--sl);padding-bottom:6px}
-.sim-facts dt{font-size:13.5px;color:var(--su)}
-.sim-facts dd{margin:0;font:700 15px var(--sft);color:var(--sm);white-space:nowrap}
+.sim-country{border:1px solid var(--ln);background:var(--n1);border-radius:10px;padding:7px 12px;font:500 14px/1.2 var(--ft);cursor:pointer;color:var(--tx);display:flex;flex-direction:column;align-items:flex-start}
+.sim-country small{font:500 10.5px var(--fm);color:var(--gold2);margin-top:2px}
+.sim-country:hover{border-color:var(--gold);background:var(--gold-s)}
+.sim .sc-title{font-size:clamp(32px,4.6vw,52px);max-width:22ch}
+.sc-who{font-size:17px;color:var(--tx);margin:0 0 4px}
+.sc-lead{font:italic 500 19px/1.5 var(--fd);color:var(--tx2)}
+.sim-cols{display:grid;gap:4px 34px}
+.sim-qlead{font:500 19px/1.5 var(--fd);color:var(--tx)}
 
-/* Partie : en-tête et étapes */
-.sim-ghead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:2px 0 14px}
-.sim-org{font-size:13px;color:var(--su)}
-.sim-issue{font:700 21px/1.2 var(--sft);color:var(--sm);margin-top:2px}
-.sim-me{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:11.5px;color:var(--su)}
-.sim-rail{list-style:none;display:flex;padding:0;margin:0 0 12px;gap:4px}
-.sim-rail li{flex:1;display:flex;align-items:center;gap:7px;min-width:0;position:relative;padding-bottom:8px;border-bottom:3px solid var(--sl)}
-.sim-rail .n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:700 12px/1 var(--sft);padding-top:2px;border:1.5px solid var(--sl);color:var(--su);background:#fff}
-.sim-rail .l{font-size:12px;color:var(--su);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sim-rail li.done{border-bottom-color:var(--sb)}
-.sim-rail li.done .n{background:var(--sb);border-color:var(--sb);color:#fff}
-.sim-rail li.on{border-bottom-color:var(--so)}
-.sim-rail li.on .n{background:var(--so);border-color:var(--so);color:var(--sm)}
-.sim-rail li.on .l{color:var(--sm);font-weight:600}
-.sim-phasebar{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;background:var(--sm);color:#fff;border-radius:14px;padding:11px 12px 11px 18px;margin-bottom:12px}
-.sim-phasebar p{margin:0;font-size:14.5px}
-.sim-phasebar .sim-btn.primary{background:var(--so);border-color:var(--so);color:var(--sm)}
-.sim-phasebar .sim-btn.primary:hover{background:#ffd31a;border-color:#ffd31a}
-.sim-tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--sl);scrollbar-width:none;scroll-margin-top:80px}
+/* Fiches chiffrées */
+.sim-stats{display:grid;gap:10px;margin:16px 0 8px}
+.sim-stat{display:flex;flex-direction:column;gap:4px;background:var(--n1);border:1px solid var(--ln);border-radius:14px;padding:14px 16px 12px}
+.st-k{font-size:13px;color:var(--tx2);line-height:1.4}
+.sim-stat b{font:700 34px/1.05 var(--fd);color:var(--tx);font-variant-numeric:lining-nums}
+.st-src{font:400 11.5px var(--fm);color:var(--tx3);margin-top:auto;padding-top:4px}
+
+/* Partie : en-tête, étapes, salles */
+.sim-mast{padding:2px 0 14px}
+.m-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font:500 12.5px var(--fm);color:var(--tx3)}
+.m-org{color:var(--pour)}
+.m-clock{margin-left:auto;font:600 15px var(--fm);color:var(--tx);background:var(--n1);border:1px solid var(--ln);border-radius:8px;padding:3px 10px}
+.sim .m-title{font-size:clamp(26px,3.6vw,40px);margin:10px 0 10px;max-width:30ch}
+.m-me{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px;color:var(--tx2)}
+.m-of{font:500 12.5px var(--fm);color:var(--tx3)}
+.m-me .sim-btn.link{margin-left:auto}
+.sim-rail{list-style:none;display:flex;padding:0;margin:8px 0 14px;position:relative}
+.sim-rail::before,.sim-rail::after{content:"";position:absolute;top:13px;left:13px;height:2px;border-radius:2px}
+.sim-rail::before{right:13px;background:var(--ln)}
+.sim-rail::after{width:calc((100% - 26px) * var(--p));background:linear-gradient(90deg,var(--pour),var(--gold))}
+.sim-rail li{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;position:relative;z-index:1}
+.sim-rail li:last-child{flex:0 0 auto;align-items:flex-end}
+.sim-rail .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:500 12px/1 var(--fm);border:1.5px solid var(--ln);color:var(--tx3);background:var(--n0)}
+.sim-rail .l{font-size:12.5px;color:var(--tx3);white-space:nowrap}
+.sim-rail li.done .n{border-color:var(--pour);color:var(--pour)}
+.sim-rail li.done .l{color:var(--tx2)}
+.sim-rail li.on .n{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);box-shadow:0 0 0 5px rgba(235,192,0,.16)}
+.sim-rail li.on .l{color:var(--tx);font-weight:600}
+.sim-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;scroll-margin-top:80px;padding:4px;background:var(--n1);border:1px solid var(--ln);border-radius:14px}
 .sim-tabs::-webkit-scrollbar{display:none}
-.sim-tabs button{border:0;background:none;padding:10px 12px 11px;font:500 14px/1.2 var(--f-texte,inherit);color:var(--su);cursor:pointer;white-space:nowrap;display:flex;align-items:center}
-.sim-tabs button:hover{color:var(--sb)}
-.sim-tabs button.on{color:var(--sb);font-weight:600;box-shadow:inset 0 -3px 0 var(--so)}
+.sim-tabs button{border:0;background:none;padding:9px 14px;font:500 14px/1.2 var(--ft);color:var(--tx2);cursor:pointer;white-space:nowrap;display:flex;align-items:center;border-radius:10px;transition:background .15s,color .15s}
+.sim-tabs button:hover{color:var(--tx);background:rgba(255,255,255,.04)}
+.sim-tabs button.on{color:var(--tx);background:var(--n3);box-shadow:inset 0 -2px 0 var(--gold)}
 .sim-layout{display:grid;gap:18px}
+.sim-layout.wide{grid-template-columns:minmax(0,1fr)}
+.sim-layout.wide .sim-card p:not(.ln-say),.sim-layout.wide .sim-ul li,.sim-layout.wide .sim-pause p{max-width:78ch}
+.sim-layout.wide .sim-ln{max-width:820px}
 .sim-main{min-width:0}
 .sim-aside{display:none}
-.sim-card{background:#fff;border:1px solid var(--sl);border-radius:16px;padding:16px 16px 18px;margin-top:16px}
-.sim-card>h2:first-child,.sim-debrief>h2:first-child{margin-top:2px}
-
-/* Situation */
-.sim-sit{padding:12px 0;border-bottom:1px solid var(--sl)}
-.sim-sit:first-child{padding-top:0}
-.sim-sit:last-child{border-bottom:0}
-.sim-sit h3{margin:0 0 8px;font-size:14px}
-.sim-sit p{font-size:13.5px}
-.sim-inline-sit{margin-top:16px;border:1px solid var(--sl);border-radius:16px;padding:14px 16px}
+.sim-card{background:var(--n1);border:1px solid var(--ln);border-radius:20px;padding:20px 20px 22px;margin-top:16px}
+.sim-card>h2:first-child,.sim-debrief>h2:first-child{margin-top:0}
+.sim-inline-sit{margin-top:16px;border:1px solid var(--ln);background:var(--n1);border-radius:20px;padding:16px 18px}
 .sim-inline-sit:empty{display:none}
-.sim-time{font-size:13.5px;color:var(--su)}
-.sim-time b{font:700 24px var(--sft);color:var(--sm);margin-right:4px}
-.sim-bar{height:7px;border-radius:99px;background:var(--ss);overflow:hidden;margin:6px 0}
-.sim-bar i{display:block;height:100%;background:var(--sb);border-radius:inherit;transition:width .4s}
-.sim-est{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
-.sim-est span{display:flex;flex-direction:column;font-size:11.5px;color:var(--su);padding:6px 2px;border-radius:10px;background:var(--ss)}
-.sim-est b{font:700 22px/1.1 var(--sft)}
-.sim-est .e-yes b{color:var(--sv)}.sim-est .e-no b{color:var(--sr)}.sim-est .e-abs b{color:var(--sgd)}.sim-est .e-unk b{color:var(--su)}
-.sim-est-s{font-weight:600}
-.sim-est-s.ok{color:var(--sv)}.sim-est-s.ko{color:var(--sr)}.sim-est-s.unk{color:var(--sgd)}
+
+/* Une pause : l'explication de l'étape */
+.sim-pause{margin-top:16px;border:1px solid rgba(76,192,175,.35);background:linear-gradient(135deg,rgba(76,192,175,.12),rgba(19,27,56,.2) 70%);border-radius:20px;padding:18px 20px 16px}
+.sim-pause h2{margin:2px 0 6px}
+.sim-pause p{max-width:70ch}
+.ps-k{font:500 12.5px var(--fm);color:var(--pour)}
+.ps-why b{display:block;font:500 12.5px var(--fm);color:var(--gold2);margin-bottom:2px}
+.sim-pause.min{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding:10px 16px}
+.sim-pause.min b{font:600 16px var(--fd)}
+.sim-pause.min .sim-btn.link{margin-left:auto;font-size:13px}
+
+/* La barre « Maintenant » : la prochaine étape, toujours visible */
+.sim-now{position:sticky;bottom:16px;z-index:5;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin:22px auto 0;max-width:880px;background:rgba(19,27,56,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--ln);border-radius:18px;padding:10px 10px 10px 18px;box-shadow:0 18px 40px -18px rgba(0,0,0,.8)}
+.now-k{font:500 12px var(--fm);color:var(--gold2);flex:none}
+.sim-now p{flex:1;min-width:200px;margin:0;font-size:14.5px;color:var(--tx)}
+.sim-now .sim-btn{flex:none}
+/* Le message flottant du site passe au-dessus de la barre */
+html body:has(.sim-now) .toast{bottom:96px;width:max-content;max-width:min(90vw,560px)}
+
+/* Situation (colonne latérale) */
+.sim-sit{padding:14px 0;border-bottom:1px solid var(--ln2)}
+.sim-sit:first-child{padding-top:0}
+.sim-sit:last-child{border-bottom:0;padding-bottom:0}
+.sim .sim-sit h3{margin:0 0 10px;font:500 12.5px var(--fm);color:var(--tx2)}
+.sim-sit p{font-size:13.5px}
+.sim-time{display:flex;align-items:baseline;gap:8px}
+.sim-time b{font:700 40px/1 var(--fd)}
+.sim-time span{font:500 12.5px var(--fm);color:var(--tx3)}
+.sim-bar{height:6px;border-radius:99px;background:var(--n3);overflow:hidden;margin:8px 0}
+.sim-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pour),var(--gold));border-radius:inherit;transition:width .4s}
+.sim-known{display:flex;flex-wrap:wrap;gap:5px}
+.sim-known i{width:13px;height:13px;border-radius:50%;border:1.5px dashed var(--inc)}
+.sim-known i.on{background:var(--tx2);border:0}
 .sim-objs{list-style:none;padding:0;margin:0}
-.sim-objs li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;margin:7px 0}
-.sim-objs li small{display:block;color:var(--su);font-size:12.5px}
-.sim-dot{flex:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--su);margin-top:4px}
-.sim-objs li.ok .sim-dot{background:var(--sv);border-color:var(--sv)}
-.sim-objs li.no .sim-dot{border-color:var(--sr)}
+.sim-objs li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;margin:8px 0;color:var(--tx2)}
+.sim-objs li.ok{color:var(--tx)}
+.sim-objs li small{display:block;color:var(--tx3);font-size:12.5px}
+.sim-dot{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--tx3);margin-top:5px}
+.sim-objs li.ok .sim-dot{background:var(--pour);border-color:var(--pour)}
+.sim-objs li.no .sim-dot{border-color:var(--contre)}
 .sim-objs.final li{font-size:14.5px}
 
-/* Instructions */
-.sim-brief{position:relative;border-top:5px solid var(--sm)}
-.sim-conf{position:absolute;top:14px;right:14px;font:700 11px/1 var(--sft);letter-spacing:.14em;text-transform:uppercase;color:var(--sr);border:1.5px solid var(--sr);border-radius:4px;padding:5px 7px 3px;transform:rotate(3deg)}
-.sim-brief h2{padding-right:96px}
-.sim-redlist li{color:var(--sr)}
-.sim-orients{display:grid;gap:10px;margin-top:10px}
-.sim-orient{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;border:1.5px solid var(--sl);background:#fff;border-radius:14px;padding:13px 15px;cursor:pointer;font:inherit;color:inherit}
-.sim-orient:hover{border-color:var(--sb);background:var(--sbs)}
-.sim-orient b{font:700 15.5px/1.2 var(--sft);color:var(--sm)}
-.sim-orient>span:not(.sim-tag){font-size:13.5px}
-.sim-fit{color:var(--su);font-size:12.5px!important}
-.sim-axes{margin:10px 0 6px;display:grid;gap:10px}
-.sim-ax-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;color:var(--sm)}
-.sim-ax-h .sim-mute{font-weight:400;font-size:12px}
-.sim-track{position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--sbs),var(--ss) 50%,var(--sbs));margin:5px 6px 3px}
-.sim-track::before{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--sl)}
-.sim-pos{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--sb);border:2px solid #fff;box-shadow:0 0 0 1px var(--sb);transform:translate(-50%,-50%)}
-.sim-txt{position:absolute;top:50%;width:11px;height:11px;background:var(--so);border:1.5px solid var(--sm);transform:translate(-50%,-50%) rotate(45deg)}
-.sim-red{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--sr);border-radius:2px}
-.sim-ax-l{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--su)}
-.sim-ax-l span:last-child{text-align:right}
-.sim-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--su);margin:2px 0 0}
-.sim-legend span{display:inline-flex;align-items:center;gap:5px}
-.sim-legend i{display:inline-block}
-.lg-pos{width:10px;height:10px;border-radius:50%;background:var(--sb)}
-.lg-txt{width:9px;height:9px;background:var(--so);border:1.5px solid var(--sm);transform:rotate(45deg)}
-.lg-red{width:3px;height:12px;background:var(--sr)}
+/* Points de vote face au seuil */
+.sim-vd{margin:2px 0}
+.vd-row{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px;padding:16px 0 2px}
+.sim-vd.big .vd-row{grid-template-columns:repeat(auto-fill,minmax(14px,1fr))}
+.sim .vd{display:inline-block;aspect-ratio:1;width:100%;max-width:22px;border-radius:50%;background:var(--inc);position:relative}
+.sim .vd.v-yes{background:var(--pour)}
+.sim .vd.v-no{background:var(--contre)}
+.sim .vd.v-abs{background:var(--abst)}
+.sim .vd.v-unk{background:transparent;box-shadow:inset 0 0 0 1.5px #6b74a8}
+.sim .vd.me{box-shadow:0 0 0 2px var(--n1),0 0 0 3.5px var(--gold)}
+.sim .vd.v-unk.me{box-shadow:inset 0 0 0 1.5px #6b74a8,0 0 0 2px var(--n1),0 0 0 3.5px var(--gold)}
+.sim .vd.p5::after{content:"";position:absolute;left:50%;bottom:-6px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--tx2)}
+.vd-th{position:absolute;top:0;bottom:-6px;width:2px;background:var(--tx)}
+.vd-th span{position:absolute;top:-3px;left:5px;font:500 11px var(--fm);color:var(--tx);white-space:nowrap}
+.vd-say{font-size:13.5px;color:var(--tx2);margin:12px 0 4px}
+.vd-say b{color:var(--tx)}
+.vd-status{font-size:13.5px;font-weight:600;margin:4px 0}
+.vd-status.ok{color:var(--pour)}.vd-status.ko{color:var(--contre)}.vd-status.unk{color:var(--warn)}
+.vd-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--tx3);margin:6px 0 0}
+.vd-legend span{display:inline-flex;align-items:center;gap:5px}
+.sim .vd-legend .vd{width:10px;height:10px}
+.sim .vd-legend .vd.me{background:transparent;box-shadow:inset 0 0 0 2px var(--gold)}
+.sim .vd-legend .vd.p5{background:transparent;box-shadow:none;width:4px;height:4px;background:var(--tx2)}
+.sim .vd-legend .vd.p5::after{display:none}
 
-/* Salle de conférence */
-.sim-chair{border-left:3px solid var(--sm);padding:2px 0 2px 14px;color:#1d1d2b;font-family:var(--sfd)}
-.sim-chair>span{display:block;font:600 12px/1.3 var(--sft);color:var(--sm);letter-spacing:.02em}
-.sim-chair p{margin:6px 0;font-size:15px;line-height:1.6}
-.sim-chair.big p{font-size:16px;line-height:1.7;max-width:68ch}
-.sim-speakers{list-style:none;display:flex;flex-wrap:wrap;gap:5px;padding:0;margin:4px 0 14px}
-.sim-speakers li{font-size:11.5px;padding:3px 9px;border-radius:99px;background:var(--ss);color:var(--su);border:1.5px solid transparent}
-.sim-speakers li.done{color:var(--si);background:#fff;border-color:var(--sl)}
-.sim-speakers li.cur{background:var(--sb);color:#fff}
-.sim-speakers li.me{border-color:var(--so);font-weight:600}
+/* Télégramme de la capitale */
+.sim-brief{position:relative;background:linear-gradient(180deg,#151d3d,var(--n1) 140px)}
+.tg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 12.5px var(--fm);color:var(--tx2);border-bottom:1px dashed var(--ln);padding-bottom:10px}
+.sim-conf{font:600 11px/1 var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--contre);border:1.5px solid var(--contre);border-radius:4px;padding:5px 7px 4px;transform:rotate(2deg)}
+.tg-meta{display:grid;gap:4px;margin:12px 0 4px;font-size:13.5px}
+.tg-meta div{display:grid;grid-template-columns:60px 1fr;gap:10px}
+.tg-meta dt{font:500 12.5px var(--fm);color:var(--tx3)}
+.tg-meta dd{margin:0;color:var(--tx)}
+.sim-brief h2{font-size:22px}
+.sim-redlist li{color:var(--contre)}
+.sim-axnotes{font-size:13.5px;color:var(--tx2)}
+.sim-axnotes b{color:var(--tx)}
+.sim-orients{display:grid;gap:10px;margin-top:10px;scroll-margin:90px 0 140px}
+.sim-orient{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;border:1px solid var(--ln);background:var(--n2);border-radius:16px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s,background .15s}
+.sim-orient:hover{border-color:var(--gold);background:var(--n3)}
+.sim-orient b{font:600 18px/1.25 var(--fd)}
+.sim-orient>span:not(.sim-tag){font-size:13.5px;color:var(--tx2)}
+.sim-fit{display:flex;flex-direction:column;gap:5px;width:100%;font-size:12px!important;color:var(--tx3)!important}
+.fit-bar{display:block;height:5px;border-radius:99px;background:var(--n0);overflow:hidden}
+.fit-bar i{display:block;height:100%;background:var(--gold)}
+
+/* Curseurs « vers où penche… » */
+.sim-axes{margin:12px 0 6px;display:grid;gap:16px}
+.sim-ln{display:grid;gap:6px}
+.ln-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:600 14px var(--ft)}
+.ln-h em{font:500 11.5px var(--fm);font-style:normal;color:var(--tx3)}
+.ln-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,2.4fr) minmax(0,1fr);align-items:center;gap:12px}
+.ln-end{font-size:12px;color:var(--tx3);line-height:1.3;text-align:right}
+.ln-end.r{text-align:left}
+.ln-track{position:relative;height:4px;border-radius:99px;background:var(--n3)}
+.ln-track::before{content:"";position:absolute;left:50%;top:-5px;bottom:-5px;width:1px;background:var(--ln)}
+.ln-m{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%)}
+.ln-m.cap{background:var(--gold);box-shadow:0 0 0 3px rgba(235,192,0,.22)}
+.ln-m.cap.sm{width:9px;height:9px;box-shadow:none;opacity:.75}
+.ln-m.del{background:#c7ccf0}
+.ln-m.txt{width:11px;height:11px;border-radius:2px;background:var(--tx);border:2px solid var(--n0);transform:translate(-50%,-50%) rotate(45deg)}
+.ln-red{position:absolute;top:-7px;bottom:-7px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--contre)}
+.ln-say{font-size:12.5px;color:var(--tx3);margin:0;text-align:center}
+.sim-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--tx3);margin:4px 0 0}
+.sim-legend span{display:inline-flex;align-items:center;gap:6px}
+.sim-legend i{display:inline-block}
+.lg-cap{width:10px;height:10px;border-radius:50%;background:var(--gold)}
+.lg-del{width:10px;height:10px;border-radius:50%;background:#c7ccf0}
+.lg-txt{width:8px;height:8px;background:var(--tx);transform:rotate(45deg)}
+.lg-red{width:3px;height:12px;background:var(--contre)}
+
+/* Salle de conférence : une caméra sur la salle, avec sous-titres */
+.sim-cam{position:relative;margin:12px 0 6px;border-radius:22px;overflow:hidden;background:#070b1c;border:1px solid var(--ln)}
+.cam-top{position:absolute;top:12px;left:14px;right:14px;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:6px;pointer-events:none}
+.cam-tag{font:600 11px/1 var(--fm);padding:5px 8px;border-radius:6px;background:rgba(7,11,28,.78);color:var(--tx);border:1px solid rgba(255,255,255,.12)}
+.cam-tag.rec::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--contre);margin-right:6px;vertical-align:0}
+.cam-tag.dim{color:var(--tx2)}
+.cam-where{font:500 11.5px var(--fm);color:var(--tx3)}
+.cam-clock{margin-left:auto;font:600 12px/1 var(--fm);padding:5px 8px;border-radius:6px;background:rgba(7,11,28,.78);color:var(--tx);border:1px solid rgba(255,255,255,.12)}
+.cam-view{padding:38px 6px 0}
+.cam-sub{position:relative;margin:-58px 16px 0;z-index:2;padding:0 0 16px;text-align:center}
+.cam-name{display:inline-block;font:700 12px/1 var(--ft);text-transform:uppercase;letter-spacing:.07em;color:#141a3a;background:#f4f5fb;border-radius:3px;padding:5px 8px 4px;border-bottom:3px solid #5865b8}
+.cam-name.me{background:var(--gold);border-bottom-color:#8a6d00;color:var(--gold-ink)}
+.cam-role{display:inline-block;font:500 11.5px/1 var(--fm);color:var(--tx);background:rgba(242,120,141,.85);border-radius:3px;padding:5px 7px;margin-left:6px;vertical-align:1px}
+.cam-sub p{margin:10px auto 0;max-width:62ch;font:500 16px/1.45 var(--ft);color:#fff;background:rgba(7,11,28,.82);border-radius:10px;padding:10px 14px;text-wrap:balance}
+.sim-cam.compact .cam-sub p{font-size:14.5px}
+.sim-camlegend{justify-content:center;margin:8px 0 14px}
+.sim-room{width:100%;height:auto;display:block;max-width:820px;margin:0 auto}
+.sim-floor{stroke:rgba(255,255,255,.05)}
+.fl-a{stop-color:#1f2a5c}.fl-b{stop-color:#0b1028}
+.sim-table{fill:none;stroke:#2f3b74}
+.sim-table-edge{fill:none;stroke:#3a4787;stroke-width:1.2}
+.sim-desk{fill:#17204a;stroke:#3a4787;stroke-width:1.2}
+.sim-desk.rostrum{fill:rgba(235,192,0,.18);stroke:var(--gold)}
+.sim-room-note{font:500 10.5px var(--fm);fill:var(--tx3);text-anchor:middle}
+.sim-seat{cursor:pointer;outline:none}
+.sim-av-ring{fill:none;stroke:transparent;stroke-width:2.4}
+.sim-seat:hover .sim-av-ring,.sim-seat:focus-visible .sim-av-ring{stroke:var(--tx2);stroke-dasharray:3 3}
+.sim-av-ring.on{stroke:var(--gold);stroke-width:3;stroke-dasharray:none}
+.sim-av-ring.on.speak{stroke:#9fb2ff;stroke-width:3.2;animation:simRing 1.6s ease-in-out infinite}
+.sim-seat.me .sim-av-ring.on.speak{stroke:var(--gold)}
+.sim-seat-l{font:700 9.5px var(--ft);letter-spacing:.05em;text-transform:uppercase}
+.sim-room .sim-seat-l{fill:#d6daf2}
+.sim-room .sim-seat.me .sim-seat-l{fill:var(--gold2)}
+.sim-room .sim-plate+.sim-seat-l{fill:#141a3a}
+.sim-room .sim-seat.me .sim-plate+.sim-seat-l{fill:var(--gold-ink)}
+.sim-seat:hover .sim-seat-l,.sim-seat:focus-visible .sim-seat-l{text-decoration:underline}
+.sim-room .sim-seat-l.chair{fill:var(--tx2);font-size:10.5px}
+.sim-plate{fill:#eef0fa;stroke:#5865b8;stroke-width:.8}
+.sim-seat.me .sim-plate{fill:var(--gold);stroke:#8a6d00}
+.sim-light{stroke:#0b1024;stroke-width:1.6}
+.sim-seat.v-yes .sim-plate{fill:#bfece4;stroke:var(--pour)}.sim-seat.v-no .sim-plate{fill:#fbd0d8;stroke:var(--contre)}.sim-seat.v-abs .sim-plate{fill:#dcdef0;stroke:var(--abst)}
+.sim-room.mini{max-width:100%;margin:4px 0}
+.sim-sit-room p{margin:4px 0 0}
+.sim-light.v-yes{fill:var(--pour)}.sim-light.v-no{fill:var(--contre)}.sim-light.v-abs{fill:var(--abst)}
+.sim-co{fill:var(--gold);stroke:#0b1024;stroke-width:1.2}
+.sim-bubble path{fill:#f4f5fb;stroke:#0b1024;stroke-width:1.3}
+.sim-bubble circle{fill:#141a3a}
+.sim-gavel rect{fill:var(--gold)}
+.sim-legend .lg-me{width:11px;height:11px;border-radius:50%;border:2.5px solid var(--gold);background:var(--n3)}
+.sim-legend .lg-speak{width:11px;height:11px;border-radius:50%;border:2.5px solid #9fb2ff}
+.sim-legend .lg-co{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.sim-legend .lg-v{width:10px;height:10px;border-radius:50%}
+.sim-legend .lg-v.yes{background:var(--pour)}.sim-legend .lg-v.no{background:var(--contre)}.sim-legend .lg-v.abs{background:var(--abst)}
+.sim-legend .lg-sq{width:11px;height:11px;border-radius:3px}
+.sim-legend .lg-sq.round{border-radius:50%}
+@keyframes simRing{50%{stroke-opacity:.3}}
+.sim-queue{margin:6px 0 14px}
+.sim-queue .sim-kick{color:var(--tx3)}
+.sim-speakers{list-style:none;display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:4px 0 0}
+.sim-speakers li{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 10px 3px 4px;border-radius:99px;background:var(--n2);color:var(--tx3);border:1px solid transparent}
+.sim-speakers li span{font:500 10.5px var(--fm);width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;background:var(--n0);color:var(--tx3)}
+.sim-speakers li.done{color:var(--tx2)}
+.sim-speakers li.done span{color:var(--pour)}
+.sim-speakers li.cur{background:var(--n3);color:var(--tx);border-color:#9fb2ff}
+.sim-speakers li.me{border-color:var(--gold);color:var(--gold2)}
 .sim-feed{display:flex;flex-direction:column;gap:12px;margin:8px 0}
-.sim-sp{border:1px solid var(--sl);border-radius:12px;padding:12px 14px;background:#fff;scroll-margin:90px 0 120px}
+.sim-sp{border:1px solid var(--ln);border-radius:16px;padding:14px 16px;background:var(--n2);scroll-margin:90px 0 140px}
 .sim-sp-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-.sim-sp-m{font-size:12px;color:var(--su)}
-.sim-sp p{margin:8px 0 0;font-size:14.5px;line-height:1.62}
-.sim-sp.mine{border-left:4px solid var(--so);background:#fffcf0}
-.sim-sp.k-reply,.sim-sp.k-support,.sim-sp.k-contest,.sim-sp.k-question{margin-left:22px;background:var(--ss);border-color:transparent}
-.sim-sp.k-reply{background:#fff;border-color:var(--sl)}
-.sim-wait{color:var(--su);font-style:italic;animation:simPulse 1.2s ease-in-out infinite}
-.sim-notes{font-size:12.5px!important;color:var(--su)}
-.sim-react{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.sim-myturn{border:2px solid var(--so);border-radius:16px;padding:14px 16px 16px;background:#fffcf0;margin-top:14px;scroll-margin-top:90px}
-.sim-myturn>h3{margin-top:0;font:700 17px var(--sft);color:var(--sm)}
-.sim-seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:#fff;border:1px solid var(--sl);border-radius:99px;padding:3px;margin:2px 0 12px}
-.sim-seg .sim-btn{border:0;padding:6px 14px;font-size:13px;color:var(--su);background:none}
-.sim-seg .sim-btn.on{background:var(--sb);color:#fff}
+.sim-sp-m{font-size:12.5px;color:var(--tx3)}
+.sim-sp-m time{font:500 12px var(--fm);color:var(--tx3);margin-left:4px}
+.sim-sp p{margin:10px 0 0;font-size:15px;line-height:1.65;color:var(--tx)}
+.sim-sp.mine{border-color:rgba(235,192,0,.55);background:linear-gradient(90deg,rgba(235,192,0,.10),var(--n2) 60%)}
+.sim-sp.k-reply,.sim-sp.k-support,.sim-sp.k-contest,.sim-sp.k-question{margin-left:22px;background:var(--n1)}
+.sim-wait{color:var(--tx3);font-style:italic;animation:simPulse 1.2s ease-in-out infinite}
+.sim-notes{font-size:12.5px!important;color:var(--tx3)!important}
+.sim-react{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sim-chair{border-left:2px solid var(--gold);padding:2px 0 2px 16px;font-family:var(--fd)}
+.sim-chair>span{display:block;font:500 12px/1.3 var(--fm);color:var(--gold2)}
+.sim-chair p{margin:8px 0;font-size:16.5px;line-height:1.65;color:var(--tx)}
+.sim-chair.big p{font-size:17.5px;line-height:1.7;max-width:68ch}
+.sim-myturn{border:1px solid var(--gold);border-radius:20px;padding:16px 18px 18px;background:linear-gradient(180deg,rgba(235,192,0,.10),var(--n1) 160px);margin-top:16px;scroll-margin:90px 0 140px}
+.sim-myturn .sim-kick{color:var(--gold2)}
+.sim-myturn>h3{margin:2px 0 10px;font-size:22px}
+.sim-seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--n0);border:1px solid var(--ln);border-radius:99px;padding:3px;margin:2px 0 14px}
+.sim-seg .sim-btn{border:0;padding:6px 14px;font-size:13px;color:var(--tx2);background:none}
+.sim-seg .sim-btn.on{background:var(--n3);color:var(--tx);box-shadow:inset 0 0 0 1px var(--gold)}
 .sim-opts{display:grid;gap:12px}
-.sim-opt{border:1px solid var(--sl);border-radius:14px;padding:12px 14px;background:#fff;display:flex;flex-direction:column}
-.sim-opt h3{margin:0;font-size:15px}
-.sim-opt .sim-mute{margin:3px 0 6px;font-size:12.5px}
-.sim-opt-t{font-size:13.5px;line-height:1.55;color:var(--si);flex:1;border-left:2px solid var(--sl);padding-left:10px;margin-bottom:10px}
+.sim-opt{border:1px solid var(--ln);border-radius:16px;padding:14px 16px;background:var(--n2);display:flex;flex-direction:column}
+.sim .sim-opt h3{margin:0;font-size:18px}
+.sim-opt .sim-mute{margin:3px 0 8px;font-size:12.5px}
+.sim-opt-t{font-size:14px;line-height:1.6;color:var(--tx2);flex:1;border-left:2px solid var(--ln);padding-left:12px;margin-bottom:12px}
 .sim-opt-t p{margin:0 0 6px}
 .sim-opt .sim-btn{align-self:flex-start}
-.sim-lbl{display:block;font-size:13px;font-weight:600;color:var(--sm);margin:8px 0 6px}
-.sim textarea,.sim select{font:inherit;font-size:15px;border:1.5px solid var(--sl);border-radius:10px;padding:9px 11px;background:#fff;color:var(--si)}
+.sim-lbl{display:block;font-size:13px;font-weight:600;color:var(--tx2);margin:8px 0 6px}
+.sim textarea,.sim select,.sim input[type=search],.sim input[type=text]{font:inherit;font-size:15px;border:1px solid var(--ln);border-radius:12px;padding:10px 12px;background:var(--n0);color:var(--tx)}
 .sim select{width:auto;max-width:100%;padding:7px 10px}
-.sim input[type=search]{width:auto}
-.sim textarea{width:100%;resize:vertical;line-height:1.55}
-.sim textarea:focus,.sim select:focus,.sim input:focus{border-color:var(--sb);outline:0}
-.sim-analysis{background:var(--ss);border-radius:12px;padding:10px 12px;font-size:13.5px;margin:10px 0;display:grid;gap:5px}
-.sim-bad{color:var(--sr)}
+.sim input[type=search]{width:auto;border-radius:99px;padding:10px 18px}
+.sim textarea{width:100%;resize:vertical;line-height:1.6}
+.sim textarea:focus,.sim select:focus,.sim input:focus{border-color:var(--gold);outline:0}
+.sim ::placeholder{color:var(--tx3)}
+.sim-analysis{background:var(--n0);border:1px solid var(--ln2);border-radius:14px;padding:12px 14px;font-size:13.5px;margin:10px 0;display:grid;gap:7px;color:var(--tx2)}
+.sim-analysis b{color:var(--tx);margin-right:6px}
+.sim-q{display:inline-block;width:90px;height:5px;border-radius:99px;background:var(--n3);vertical-align:middle;margin-right:6px;overflow:hidden}
+.sim-q i{display:block;height:100%;background:var(--gold)}
+.sim-bad{color:var(--contre)}
 
 /* Espace diplomatique */
 .sim-diptop{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
 .sim-diptop p{margin:0}
-.sim-inbox{margin:10px 0 14px}
-.sim-offer{border:1.5px solid var(--so);background:#fffcf0;border-radius:12px;padding:10px 12px;margin:8px 0}
+.sim-inbox{margin:12px 0 16px}
+.sim-offer{border:1px solid rgba(235,192,0,.5);background:var(--gold-s);border-radius:14px;padding:12px 14px;margin:8px 0}
 .sim-offer p{font-size:14px}
-.sim-dipgrid{display:grid;gap:14px;margin-top:10px}
+.sim-dipgrid{display:grid;gap:14px;margin-top:12px}
 .sim-dels{display:flex;flex-direction:column;gap:3px}
-.sim-delrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;text-align:left;padding:7px 9px;border:1.5px solid transparent;border-radius:10px;background:none;cursor:pointer;font:inherit;color:inherit}
-.sim-delrow:hover{background:var(--ss)}
-.sim-delrow.on{background:var(--sbs);border-color:var(--sb)}
-.sim-rel{font-size:12px;color:var(--su);display:inline-flex;align-items:center;gap:5px;margin-left:auto}
-.sim-rel::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-.sim-rel.r5{color:var(--sv)}.sim-rel.r4{color:#4f9a6e}.sim-rel.r3{color:var(--su)}.sim-rel.r2{color:#b8661c}.sim-rel.r1{color:var(--sr)}
-.sim-vchip{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--ss);color:var(--su);min-width:30px;text-align:center}
-.sim-vchip.v-yes{background:var(--svs);color:var(--sv)}.sim-vchip.v-no{background:var(--srs);color:var(--sr)}.sim-vchip.v-abs{background:var(--sos);color:var(--sgd)}
-.sim-detail{border:1px solid var(--sl);border-radius:14px;padding:14px;scroll-margin-top:90px;min-width:0}
+.sim-delrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;text-align:left;padding:8px 10px;border:1px solid transparent;border-radius:12px;background:none;cursor:pointer;font:inherit;color:inherit}
+.sim-delrow:hover{background:var(--n2)}
+.sim-delrow.on{background:var(--n3);border-color:var(--gold)}
+.sim-rel{margin-left:auto;display:inline-flex;align-items:center}
+.sim-relm{display:inline-flex;gap:2px;vertical-align:middle}
+.sim-relm i{width:7px;height:12px;border-radius:2px;background:var(--n3)}
+.sim-relm.r1 i.on{background:var(--contre)}.sim-relm.r2 i.on{background:#f0a35e}.sim-relm.r3 i.on{background:#8a92b8}.sim-relm.r4 i.on{background:#93d9cd}.sim-relm.r5 i.on{background:var(--pour)}
+.sim-vchip{font:600 11.5px/1.4 var(--ft);padding:2px 9px;border-radius:99px;background:var(--n3);color:var(--tx2);min-width:30px;text-align:center}
+.sim-vchip.v-yes{background:var(--pour-s);color:var(--pour)}.sim-vchip.v-no{background:var(--contre-s);color:var(--contre)}.sim-vchip.v-abs{background:var(--abst-s);color:var(--abst)}
+.sim-detail{border:1px solid var(--ln);background:var(--n2);border-radius:18px;padding:16px;scroll-margin:90px 0 140px;min-width:0}
 .sim-dhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.sim-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:12px 0}
-.sim-kv dt{font-size:12px;color:var(--su)}
-.sim-kv dd{margin:1px 0 0;font-size:13.5px}
-.sim-pet{font-size:13.5px;background:var(--ss);border-radius:10px;padding:8px 11px}
-.sim-talk{display:flex;flex-direction:column;gap:8px;margin:12px 0;scroll-margin-top:90px}
-.sim-msg{max-width:92%;border-radius:12px;padding:8px 11px}
-.sim-msg span{display:block;font-size:11.5px;color:var(--su)}
-.sim-msg p{margin:2px 0 0;font-size:13.5px}
-.sim-msg.me{align-self:flex-end;background:var(--sbs)}
-.sim-msg.them{align-self:flex-start;background:var(--ss)}
-.sim-acts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
-.sim-panel{background:var(--ss);border-radius:14px;padding:12px 14px;margin-top:10px}
+.sim-kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:14px 0}
+.kv-k{display:block;font:500 11.5px var(--fm);color:var(--tx3)}
+.kv-v{font-size:13.5px;color:var(--tx)}
+.kv-w{grid-column:1/-1}
+.sim-pet{font-size:13.5px;background:var(--n0);border-radius:12px;padding:10px 12px;color:var(--tx2)}
+.sim-talk{display:flex;flex-direction:column;gap:8px;margin:14px 0;scroll-margin:90px 0 140px}
+.sim-msg{max-width:92%;border-radius:14px;padding:9px 12px}
+.sim-msg span{display:block;font:500 11px var(--fm);color:var(--tx3)}
+.sim-msg p{margin:3px 0 0;font-size:13.5px}
+.sim-msg.me{align-self:flex-end;background:rgba(235,192,0,.12);border:1px solid rgba(235,192,0,.28)}
+.sim-msg.them{align-self:flex-start;background:var(--n0);border:1px solid var(--ln2)}
+.sim-acts{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
+.sim-panel{background:var(--n0);border:1px solid var(--ln2);border-radius:16px;padding:14px;margin-top:10px}
 .sim-args,.sim-offers{display:grid;gap:6px;margin-bottom:10px}
-.sim-arg{text-align:left;border:1.5px solid var(--sl);background:#fff;border-radius:10px;padding:8px 11px;cursor:pointer;font:inherit;color:inherit}
-.sim-arg b{display:block;font-size:13.5px;color:var(--sm)}
-.sim-arg span{font-size:12.5px;color:var(--su)}
-.sim-arg.on{border-color:var(--sb);background:var(--sbs)}
-.sim-arg:hover{border-color:var(--sb)}
+.sim-arg{text-align:left;border:1px solid var(--ln);background:var(--n1);border-radius:12px;padding:9px 12px;cursor:pointer;font:inherit;color:inherit}
+.sim-arg b{display:block;font-size:13.5px;color:var(--tx)}
+.sim-arg span{font-size:12.5px;color:var(--tx2)}
+.sim-arg.on{border-color:var(--gold);background:var(--gold-s)}
+.sim-arg:hover{border-color:var(--tx3)}
 .sim-panel select{margin-bottom:10px;max-width:100%}
 .sim-groups{display:grid;gap:10px}
-.sim-group{border:1px solid var(--sl);border-radius:12px;padding:10px 12px}
-.sim-group b{font-size:14px;color:var(--sm)}
-.sim-deal{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--sbs);color:var(--sb)}
-.sim-deal.broken{background:var(--srs);color:var(--sr)}.sim-deal.honored{background:var(--svs);color:var(--sv)}
-
-/* Salle de rédaction : le projet de texte comme un document officiel */
-.sim-doc{position:relative;background:#fff;border:1px solid var(--sl);box-shadow:0 10px 28px rgba(2,2,89,.07);max-width:780px;margin:16px auto;padding:30px 22px 26px;font-family:var(--sfd);font-size:16px;line-height:1.62;color:#1d1d2b}
-.sim-doc-h{text-align:center;margin-bottom:16px;font-family:var(--sfd)}
-.sim-doc-org{font-variant:small-caps;letter-spacing:.06em;font-size:14px;color:var(--sm)}
-.sim-doc-b{font-weight:700;margin-top:2px}
-.sim-doc-t{font-style:italic;margin-top:10px}
-.sim-doc-a{font-size:13.5px;color:var(--su);margin-top:2px}
-.sim .sim-doc-title{font-family:var(--sfd);font-size:17.5px;font-weight:700;text-align:center;margin:12px 0 16px;color:#1d1d2b}
-.sim-doc-head{margin:0 0 6px}
-.sim-pre{text-indent:2.2em;margin:4px 0!important}
-.sim-ops{padding-left:2.4em;margin:10px 0 0}
-.sim-op{margin:12px 0;padding-left:4px}
-.sim-op::marker{font-weight:700}
-.sim-op>p:first-child{margin:0}
-.sim-op.bad>p:first-child{color:#8d8da0;text-decoration:line-through;text-decoration-color:var(--sr)}
-.sim-warn{font:13px/1.45 var(--f-texte,system-ui);color:var(--sr);background:var(--srs);border-radius:8px;padding:6px 10px;margin:6px 0!important}
-.sim-warn.soft{color:var(--sgd);background:var(--sos)}
-.sim-by{font:12px var(--f-texte,system-ui);color:var(--su);margin:3px 0 0!important}
-.sim-op-t{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:7px;font-family:var(--f-texte,system-ui)}
-.sim-op-t select{font-size:13px;padding:3px 8px;border-radius:8px}
-.sim-op-r{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:5px;font:12px var(--f-texte,system-ui);color:var(--su)}
-.sim-op-r .r-sup{color:var(--sv)}.sim-op-r .r-mod{color:var(--sgd)}.sim-op-r .r-opp{color:var(--sr)}
-.sim-verify{border:1px solid var(--sl);border-radius:14px;padding:4px 14px 8px;margin:12px 0}
-.sim-verify ul{list-style:none;padding:0;margin:6px 0}
-.sim-verify li{display:flex;gap:9px;align-items:flex-start;font-size:14px;margin:6px 0}
-.sim-verify li.ok .sim-dot{background:var(--sv);border-color:var(--sv)}
-.sim-verify li.no .sim-dot{background:var(--sr);border-color:var(--sr)}
-.sim-doc.adopted{border-color:var(--sv)}.sim-doc.rejected{border-color:var(--sr)}
-.sim-stamp{position:absolute;top:16px;right:14px;transform:rotate(-7deg);border:3px solid currentColor;border-radius:6px;padding:5px 10px 3px;font:700 15px/1 var(--sft);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
-.sim-doc.adopted .sim-stamp{color:var(--sv)}.sim-doc.rejected .sim-stamp{color:var(--sr)}
-.sim-tools{max-width:780px;margin:0 auto}
-.sim-tool{border-top:1px solid var(--sl);padding:12px 0}
-.sim-tool>h3{margin-top:0}
-.sim-bank{list-style:none;padding:0;margin:0 0 10px;max-height:440px;overflow:auto}
-.sim-bank li{border-bottom:1px solid var(--sl);padding:9px 2px}
-.sim-bank li p{margin:0 0 4px;font-size:13.5px}
-.sim-free{display:grid;gap:8px}
-.sim-amend{border:1px solid var(--sl);border-radius:12px;padding:10px 12px;margin:8px 0}
-.sim-amend p{font-size:14px;margin:6px 0}
-.sim-done summary{cursor:pointer;font-size:13.5px;color:var(--su);margin-top:6px}
-.sim-confirm{border:2px solid var(--so);background:#fffcf0;border-radius:14px;padding:12px 14px;margin:14px 0}
-
-/* Salle de vote : le tableau électronique de la salle */
-.sim-votebtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.sim-votebtns .sim-btn{min-width:140px;padding:12px 20px;font-size:15.5px;background:#fff}
-.sim-votebtns .v-yes{border-color:var(--sv);color:var(--sv)}.sim-votebtns .v-yes:hover{background:var(--svs)}
-.sim-votebtns .v-no{border-color:var(--sr);color:var(--sr)}.sim-votebtns .v-no:hover{background:var(--srs)}
-.sim-votebtns .v-abs{border-color:#c9a400;color:var(--sgd)}.sim-votebtns .v-abs:hover{background:var(--sos)}
-.sim-board{background:radial-gradient(120% 90% at 50% 0%,#0a0a7a 0%,var(--sm) 60%);color:#fff;border-radius:18px;padding:18px 18px 14px;margin:14px 0;scroll-margin-top:90px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.sim-board-h{display:grid;gap:10px;border-bottom:1px solid rgba(255,255,255,.16);padding-bottom:12px}
-.sim-board-t{font-size:12.5px;color:rgba(255,255,255,.72)}
-.sim-tallies{display:flex;gap:26px;flex-wrap:wrap}
-.sim-tallies div{display:flex;align-items:baseline;gap:7px}
-.sim-tallies b{font:700 46px/1 var(--sft);font-variant-numeric:tabular-nums}
-.sim-tallies span{font-size:13px;color:rgba(255,255,255,.75)}
-.sim-tallies .t-yes b{color:#3ddc84}.sim-tallies .t-no b{color:#ff6b78}.sim-tallies .t-abs b{color:var(--so)}
-.sim-board-rule{font-size:12.5px;color:rgba(255,255,255,.75)}
-.sim-lights{list-style:none;padding:0;margin:14px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:7px 16px}
-.sim-lights li{display:flex;align-items:center;gap:9px;font-size:13px;min-width:0;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.sim-lights i{flex:none;width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
-.sim-lights span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sim-lights sup{font-size:9px;color:rgba(255,255,255,.6);margin-left:2px}
-.sim-lights em{margin-left:auto;font-style:normal;font-size:11.5px;color:rgba(255,255,255,.7);white-space:nowrap}
-.sim-lights .v-yes i{background:#3ddc84;border-color:#3ddc84;box-shadow:0 0 10px rgba(61,220,132,.6)}
-.sim-lights .v-no i{background:#ff5a69;border-color:#ff5a69;box-shadow:0 0 10px rgba(255,90,105,.6)}
-.sim-lights .v-abs i{background:var(--so);border-color:var(--so);box-shadow:0 0 10px rgba(235,192,0,.55)}
-.sim-lights li.me span{color:var(--so);font-weight:600}
-.sim-result{text-align:center;font:700 26px/1 var(--sft);letter-spacing:.16em;text-transform:uppercase;padding:14px 0 6px;border-top:1px solid rgba(255,255,255,.16);margin-top:8px}
-.sim-result.ok{color:#3ddc84}.sim-result.ko{color:#ff6b78}
-.sim-board.anim .sim-lights i{animation:simLight .35s ease-out both;animation-delay:calc(var(--i) * 120ms + 300ms)}
-.sim-board.anim .sim-lights em{animation:simFade .3s ease-out both;animation-delay:calc(var(--i) * 120ms + 380ms)}
-.sim-board.anim .sim-tallies,.sim-board.anim .sim-result{animation:simFade .5s ease-out both;animation-delay:calc(var(--n) * 120ms + 500ms)}
-.sim-announce{font-style:italic;max-width:70ch}
-.sim-expl{display:grid;gap:8px}
-.sim-expl .sim-sp p{margin-top:6px;font-size:14px}
-@keyframes simLight{from{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.28);box-shadow:none;transform:scale(.7)}}
-@keyframes simFade{from{opacity:0;transform:translateY(4px)}}
-@keyframes simPulse{50%{opacity:.45}}
-
-/* Bilan */
-.sim-debrief{margin-top:16px}
-.sim-verdict{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-radius:18px;padding:18px 20px;border:2px solid var(--sl);background:#fff}
-.sim-verdict.ok{border-color:var(--sv);background:var(--svs)}
-.sim-verdict.mid{border-color:var(--so);background:#fffcf0}
-.sim-verdict.ko{border-color:var(--sr);background:var(--srs)}
-.sim-verdict-k{font:700 24px/1.15 var(--sft);color:var(--sm)}
-.sim-verdict p{margin:6px 0 0;max-width:60ch}
-.sim-verdict-v{font-size:13.5px;color:var(--su)}
-.sim-overall{text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1}
-.sim-overall b{font:700 54px/1 var(--sft);color:var(--sm)}
-.sim-overall span{font-size:12.5px;color:var(--su);margin-top:4px}
-.sim-scores{display:grid;gap:10px}
-.sim-score{border:1px solid var(--sl);border-radius:14px;padding:12px 14px}
-.sim-score-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:600;color:var(--sm)}
-.sim-score-h b{font:700 22px var(--sft)}
-.sim-score p{margin:4px 0 0;font-size:12.5px;color:var(--su)}
-.sim-relrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0;max-width:340px}
-.sim-up{color:var(--sv);font-weight:700}.sim-down{color:var(--sr);font-weight:700}
-
-/* Chronologie */
-.sim-log{list-style:none;padding:0;margin:0 0 8px}
-.sim-log li{display:grid;grid-template-columns:46px 1fr;column-gap:10px;padding:7px 0;border-bottom:1px dashed var(--sl)}
-.sim-log time{font-size:12.5px;color:var(--su);font-variant-numeric:tabular-nums;grid-row:span 2;padding-top:1px}
-.sim-logcat{font-size:11.5px;font-weight:600;color:var(--su)}
-.sim-log p{margin:0;font-size:14px}
-.sim-log .c-bilateral .sim-logcat{color:var(--sb)}.sim-log .c-coalition .sim-logcat{color:var(--sv)}.sim-log .c-ai .sim-logcat{color:var(--sgd)}.sim-log .c-amend .sim-logcat{color:#7a3fb5}.sim-log .c-vote .sim-logcat{color:var(--sr)}
-
-/* Infographies : salles et personnages */
-.sim-hero{display:grid;gap:8px;align-items:center}
-.sim-hero-art{border-radius:20px;overflow:hidden;max-width:520px}
-.sim-roombox{margin:6px 0 14px}
-.sim-roombox figcaption .sim-legend{justify-content:center}
-.sim-room{width:100%;height:auto;display:block;max-width:760px;margin:0 auto}
-.sim-floor{fill:#f4f4fb;stroke:var(--sl)}
-.sim-table{fill:none;stroke:#fff}
-.sim-room .sim-table{filter:drop-shadow(0 2px 3px rgba(2,2,89,.14))}
-.sim-table-edge{fill:none;stroke:#d3d6ea;stroke-width:1.4}
-.sim-desk{fill:#fff;stroke:#d3d6ea;stroke-width:1.4}
-.sim-desk.rostrum{fill:var(--sos);stroke:var(--so)}
-.sim-room-note{font:600 10.5px var(--sft);fill:var(--su);text-anchor:middle;letter-spacing:.06em}
-.sim-seat{cursor:pointer;outline:none}
-.sim-av-ring{fill:none;stroke:transparent;stroke-width:2.4}
-.sim-seat:hover .sim-av-ring,.sim-seat:focus-visible .sim-av-ring{stroke:var(--sb);stroke-dasharray:3 3}
-.sim-av-ring.on{stroke:var(--so);stroke-width:3;stroke-dasharray:none}
-.sim-av-ring.on.speak{stroke:var(--sb);stroke-width:3.2;animation:simRing 1.6s ease-in-out infinite}
-.sim-seat.me .sim-av-ring.on.speak{stroke:var(--so)}
-.sim-seat-l{font:700 9.5px var(--sft);fill:var(--sm);letter-spacing:.04em;text-transform:uppercase}
-.sim-seat:hover .sim-seat-l,.sim-seat:focus-visible .sim-seat-l{fill:var(--sb);text-decoration:underline}
-.sim-seat.me .sim-seat-l{fill:#7a5f00}
-.sim-seat-l.chair{fill:var(--sm);font-size:10.5px}
-.sim-plate{fill:#fff;stroke:var(--sm);stroke-width:.8}
-.sim-seat.me .sim-plate{fill:var(--sos);stroke:#c9a400}
-.sim-light{stroke:#fff;stroke-width:1.6}
-.sim-seat.v-yes .sim-plate{fill:var(--svs);stroke:var(--sv)}.sim-seat.v-no .sim-plate{fill:var(--srs);stroke:var(--sr)}.sim-seat.v-abs .sim-plate{fill:var(--sos);stroke:#c9a400}
-.sim-room.mini{max-width:100%;margin:4px 0}
-.sim-sit-room p{margin:4px 0 0}
-.sim-light.v-yes{fill:#11804a}.sim-light.v-no{fill:#c12a3a}.sim-light.v-abs{fill:#d4ac0d}
-.sim-co{fill:var(--so);stroke:#fff;stroke-width:1.2}
-.sim-bubble path{fill:#fff;stroke:var(--sm);stroke-width:1.3}
-.sim-bubble circle{fill:var(--sm)}
-.sim-gavel rect{fill:#8a6d00}
-.sim-legend .lg-me{width:11px;height:11px;border-radius:50%;border:2.5px solid var(--so);background:var(--sm)}
-.sim-legend .lg-speak{width:11px;height:11px;border-radius:50%;border:2.5px solid var(--sb);background:#fff}
-.sim-legend .lg-co{width:8px;height:8px;border-radius:50%;background:var(--so)}
-.sim-legend .lg-v{width:10px;height:10px;border-radius:50%}
-.sim-legend .lg-v.yes{background:#11804a}.sim-legend .lg-v.no{background:#c12a3a}.sim-legend .lg-v.abs{background:#d4ac0d}
-.sim-legend .lg-sq{width:11px;height:11px;border-radius:3px}
-.sim-legend .lg-sq.round{border-radius:50%}
-@keyframes simRing{50%{stroke-opacity:.3}}
-
-/* Carte du monde */
-.sim-mapbox{margin:6px 0 4px}
-.sim-mapmodes{margin-bottom:8px}
-.sim-map{width:100%;height:auto;display:block;background:linear-gradient(180deg,#fbfbff,#f3f4fb);border-radius:14px}
-.sim-land{fill:#e2e4f0;stroke:#fff;stroke-width:.5}
-.sim-mc{stroke:#fff;stroke-width:.7;outline:none}
-.sim-mc[data-a]{cursor:pointer}
-.sim-mc[data-a]:hover,.sim-mc[data-a]:focus-visible{stroke:var(--sm);stroke-width:1.8}
-.sim-mc.me{stroke:var(--sm);stroke-width:1.3}
-.sim-mc.dot{stroke:#fff;stroke-width:1.6}
-.sim-pin-ring{fill:none;stroke:var(--sm);stroke-width:2;opacity:.75}
-.sim-pin-dot{fill:var(--sm)}
+.sim-group{border:1px solid var(--ln);background:var(--n2);border-radius:14px;padding:12px 14px}
+.sim-group b{font:600 16px var(--fd)}
+.sim-deal{display:inline-block;font:500 11px/1.4 var(--fm);padding:1px 8px;border-radius:6px;background:var(--n3);color:var(--tx2)}
+.sim-deal.broken{background:var(--contre-s);color:var(--contre)}.sim-deal.honored{background:var(--pour-s);color:var(--pour)}
 
 /* Carte des positions */
 .sim-pmwrap{margin:6px 0 12px}
 .sim-pmsel{gap:6px 10px}
 .sim-pmsel .sim-lbl{margin:0}
-.sim-pmap{width:100%;height:auto;max-width:640px;display:block;margin:8px auto 0}
-.sim-pm-box{fill:#fbfbfe;stroke:var(--sl)}
-.sim-pm-axis{stroke:#cfd2e6;stroke-dasharray:4 4}
-.sim-pm-t{font:500 11px var(--f-texte,system-ui);fill:var(--su)}
+.sim-pmap{width:100%;height:auto;max-width:660px;display:block;margin:10px auto 0}
+.sim-pm-box{fill:#0e1534;stroke:var(--ln)}
+.sim-pm-axis{stroke:#36417a;stroke-dasharray:4 4}
+.sim-pm-t{font:500 11px var(--ft);fill:var(--tx3)}
 .sim-pm-t.sm{font-size:10.5px}
-.sim-pm-dot{stroke:#fff;stroke-width:1.6;cursor:pointer;outline:none}
-.sim-pm-dot:hover,.sim-pm-dot:focus-visible{stroke:var(--sm);stroke-width:2.2}
-.sim-pm-l{font:600 9.5px var(--f-texte,system-ui);fill:var(--si)}
-.sim-pm-l.b{font-weight:700;fill:var(--sm);font-size:10.5px}
-.sim-pm-me circle{fill:var(--sm);stroke:var(--so);stroke-width:3}
-.sim-pm-txt rect{fill:var(--so);stroke:var(--sm);stroke-width:1.5}
+.sim-pm-dot{stroke:#0b1024;stroke-width:1.6;cursor:pointer;outline:none}
+.sim-pm-dot:hover,.sim-pm-dot:focus-visible{stroke:#fff;stroke-width:2}
+.sim-pm-l{font:600 9.5px var(--ft);fill:var(--tx2)}
+.sim-pm-l.b{font-weight:700;fill:var(--tx);font-size:10.5px}
+.sim-pm-me circle{fill:var(--n0);stroke:var(--gold);stroke-width:3}
+.sim-pm-txt rect{fill:var(--tx);stroke:#0b1024;stroke-width:1.5}
+.sim-legend .lg-me{background:var(--n0)}
+
+/* Carte du monde en points */
+.sim-mapbox{margin:8px 0 4px}
+.sim-mapmodes{margin-bottom:10px}
+.sim-dmap{width:100%;height:auto;display:block;border-radius:16px;background:radial-gradient(80% 90% at 50% 40%,#111a40,#0a0f26)}
+.dm-dot{fill:#2b3566}
+.dm-dot.on{fill:#5966a8}
+.dm-c{cursor:default;outline:none}
+.dm-c[data-a]{cursor:pointer}
+.dm-c circle:not(.dm-halo){stroke:#0b1024;stroke-width:1.4}
+.dm-halo{opacity:.22}
+.dm-c[data-a]:hover circle:not(.dm-halo),.dm-c[data-a]:focus-visible circle:not(.dm-halo){stroke:#fff;stroke-width:2}
+.dm-c.me circle:not(.dm-halo){stroke:#fff;stroke-width:2.2}
+.dm-c.me .dm-halo{opacity:.35}
+.dm-me-l{font:700 11px var(--ft);fill:var(--gold2);letter-spacing:.04em;text-transform:uppercase;paint-order:stroke;stroke:#0b1024;stroke-width:3px}
+
+/* Salle de rédaction : le projet de texte comme un document officiel, sur papier */
+.sim-doc{position:relative;background:#fbfbf7;border-radius:6px;box-shadow:0 30px 60px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.06);max-width:800px;margin:18px auto;padding:32px 24px 28px;font-family:var(--sfd,Georgia,"Times New Roman",serif);font-size:16px;line-height:1.62;color:#1d1d2b;color-scheme:light}
+.sim-doc-h{text-align:center;margin-bottom:16px}
+.sim-doc-org{font-variant:small-caps;letter-spacing:.06em;font-size:14px;color:#020259}
+.sim-doc-b{font-weight:700;margin-top:2px}
+.sim-doc-t{font-style:italic;margin-top:10px}
+.sim-doc-a{font-size:13.5px;color:#5c5e80;margin-top:2px}
+.sim .sim-doc-title{font-family:inherit;font-size:18px;font-weight:700;text-align:center;margin:12px 0 16px;color:#1d1d2b}
+.sim-doc-head{margin:0 0 6px}
+.sim-pre{text-indent:2.2em;margin:4px 0!important}
+.sim-ops{padding-left:2.4em;margin:10px 0 0}
+.sim-op{margin:14px 0;padding-left:4px}
+.sim-op::marker{font-weight:700}
+.sim-op>p:first-child{margin:0}
+.sim-op.bad>p:first-child{color:#8d8da0;text-decoration:line-through;text-decoration-color:#c12a3a}
+.sim-warn{font:13px/1.45 var(--ft);color:#ffb3bf;background:var(--contre-s);border-radius:10px;padding:7px 11px;margin:6px 0!important}
+.sim-warn.soft{color:#ffd98a;background:rgba(240,184,76,.13)}
+.sim-doc .sim-warn{color:#a3162a;background:#fde4e8}
+.sim-doc .sim-warn.soft{color:#7a5200;background:#fff3cf}
+.sim-by{font:12px var(--ft);color:#5c5e80;margin:3px 0 0!important}
+.sim-op-t{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:8px;font-family:var(--ft)}
+.sim-doc .sim-op-t select{font-size:13px;padding:3px 8px;border-radius:8px;background:#fff;color:#1d1d2b;border:1px solid #cfd2e6}
+.sim-doc .sim-btn.ghost{border-color:#cfd2e6;color:#020259;background:#fff}
+.sim-doc .sim-btn.ghost:hover{border-color:#020259}
+.sim-doc .sim-btn.danger{color:#b3192d}
+.sim-op-r{display:grid;gap:5px;margin-top:8px;font:12px var(--ft);color:#5c5e80}
+.sim-op-r .rb{display:flex;height:7px;border-radius:99px;overflow:hidden;background:#eceef6;max-width:380px}
+.sim-op-r .rb i{display:block;height:100%}
+.sim-op-r .rb .r-sup{background:#2a9d8c}.sim-op-r .rb .r-mod{background:#e3a63a}.sim-op-r .rb .r-neu{background:#a7abcf}.sim-op-r .rb .r-unk{background:#dfe1ee}.sim-op-r .rb .r-opp{background:#d9455d}
+.sim-op-r .rt{display:flex;flex-wrap:wrap;gap:3px 12px}
+.sim-op-r .rt .r-sup{color:#1d7a6d}.sim-op-r .rt .r-mod{color:#9a6a00}.sim-op-r .rt .r-opp{color:#b3192d}
+.sim-doc.adopted{box-shadow:0 30px 60px -30px rgba(0,0,0,.9),0 0 0 2px var(--pour)}.sim-doc.rejected{box-shadow:0 30px 60px -30px rgba(0,0,0,.9),0 0 0 2px var(--contre)}
+.sim-stamp{position:absolute;top:16px;right:14px;transform:rotate(-7deg);border:3px solid currentColor;border-radius:6px;padding:5px 10px 3px;font:700 15px/1 var(--fm);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.sim-doc.adopted .sim-stamp{color:#1d7a6d}.sim-doc.rejected .sim-stamp{color:#b3192d}
+.sim-tools{max-width:800px;margin:0 auto;scroll-margin:90px 0 140px}
+.sim-tool{border-top:1px solid var(--ln);padding:14px 0}
+.sim-tool>h3{margin-top:0}
+.sim-bank{list-style:none;padding:0;margin:0 0 10px;max-height:460px;overflow:auto}
+.sim-bank li{border-bottom:1px solid var(--ln2);padding:10px 2px}
+.sim-bank li p{margin:0 0 4px;font-size:13.5px}
+.sim-free{display:grid;gap:8px}
+.sim-amend{border:1px solid var(--ln);background:var(--n2);border-radius:14px;padding:12px 14px;margin:8px 0}
+.sim-amend p{font-size:14px;margin:6px 0}
+.sim-done summary{cursor:pointer;font-size:13.5px;color:var(--tx3);margin-top:6px}
+.sim-confirm{border:1px solid var(--gold);background:var(--gold-s);border-radius:16px;padding:14px 16px;margin:14px 0}
+
+/* Salle de vote : le tableau électronique de la salle */
+.sim-votebtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;scroll-margin:90px 0 140px}
+.sim-votebtns .sim-btn{min-width:150px;padding:13px 22px;font-size:16px;background:var(--n2)}
+.sim-votebtns .v-yes{border-color:var(--pour);color:var(--pour)}.sim-votebtns .v-yes:hover{background:var(--pour-s)}
+.sim-votebtns .v-no{border-color:var(--contre);color:var(--contre)}.sim-votebtns .v-no:hover{background:var(--contre-s)}
+.sim-votebtns .v-abs{border-color:var(--abst);color:var(--abst)}.sim-votebtns .v-abs:hover{background:var(--abst-s)}
+.sim-board{background:radial-gradient(120% 90% at 50% 0%,#141d4a 0%,#070b1d 65%);color:#fff;border-radius:20px;padding:20px 20px 16px;margin:14px 0;scroll-margin:90px 0 140px;border:1px solid var(--ln)}
+.sim-board-h{display:grid;gap:10px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:14px}
+.sim-board-t{font:500 12px var(--fm);color:var(--tx3)}
+.sim-tallies{display:flex;gap:28px;flex-wrap:wrap}
+.sim-tallies div{display:flex;align-items:baseline;gap:8px}
+.sim-tallies b{font:700 54px/1 var(--fd);font-variant-numeric:tabular-nums lining-nums}
+.sim-tallies span{font:500 12.5px var(--fm);color:var(--tx2)}
+.sim-tallies .t-yes b{color:var(--pour)}.sim-tallies .t-no b{color:var(--contre)}.sim-tallies .t-abs b{color:var(--abst)}
+.sim-board-rule{font-size:12.5px;color:var(--tx2)}
+.sim-lights{list-style:none;padding:0;margin:16px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:7px 18px}
+.sim-lights li{display:flex;align-items:center;gap:9px;font-size:13px;min-width:0;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.sim-lights i{flex:none;width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25)}
+.sim-lights span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sim-lights sup{font:500 9px var(--fm);color:var(--tx3);margin-left:3px}
+.sim-lights em{margin-left:auto;font:500 11px var(--fm);font-style:normal;color:var(--tx2);white-space:nowrap}
+.sim-lights .v-yes i{background:var(--pour);border-color:var(--pour);box-shadow:0 0 10px rgba(76,192,175,.7)}
+.sim-lights .v-no i{background:var(--contre);border-color:var(--contre);box-shadow:0 0 10px rgba(242,120,141,.7)}
+.sim-lights .v-abs i{background:var(--abst);border-color:var(--abst);box-shadow:0 0 10px rgba(167,171,207,.5)}
+.sim-lights li.me span{color:var(--gold2);font-weight:600}
+.sim-result{text-align:center;font:700 30px/1 var(--fd);letter-spacing:.06em;padding:16px 0 6px;border-top:1px solid rgba(255,255,255,.12);margin-top:8px}
+.sim-result.ok{color:var(--pour)}.sim-result.ko{color:var(--contre)}
+.sim-board.anim .sim-lights i{animation:simLight .35s ease-out both;animation-delay:calc(var(--i) * 120ms + 300ms)}
+.sim-board.anim .sim-lights em{animation:simFade .3s ease-out both;animation-delay:calc(var(--i) * 120ms + 380ms)}
+.sim-board.anim .sim-tallies,.sim-board.anim .sim-result{animation:simFade .5s ease-out both;animation-delay:calc(var(--n) * 120ms + 500ms)}
+.sim-announce{font:italic 500 17px/1.55 var(--fd);max-width:70ch;color:var(--tx2)}
+.sim-expl{display:grid;gap:8px}
+.sim-expl .sim-sp p{margin-top:6px;font-size:14px}
+.sim-verify{border:1px solid var(--ln);background:var(--n2);border-radius:16px;padding:6px 16px 10px;margin:14px 0}
+.sim-verify ul{list-style:none;padding:0;margin:6px 0}
+.sim-verify li{display:flex;gap:9px;align-items:flex-start;font-size:14px;margin:7px 0}
+.sim-verify li.ok .sim-dot{background:var(--pour);border-color:var(--pour)}
+.sim-verify li.no .sim-dot{background:var(--contre);border-color:var(--contre)}
+@keyframes simLight{from{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25);box-shadow:none;transform:scale(.7)}}
+@keyframes simFade{from{opacity:0;transform:translateY(4px)}}
+@keyframes simPulse{50%{opacity:.45}}
 
 /* Schéma de la règle de vote */
-.sim-rd{border:1px solid var(--sl);border-radius:14px;padding:12px 14px 10px;margin:10px 0;background:#fff}
+.sim-rd{border:1px solid var(--ln);background:var(--n2);border-radius:16px;padding:14px 16px 12px;margin:12px 0}
 .sim-rd-h{display:flex;flex-direction:column;gap:1px}
-.sim-rd-h b{color:var(--sm);font-size:14.5px}
-.sim-rd-h span{font-size:12.5px;color:var(--su)}
-.sim-rd-row{display:grid;grid-template-columns:repeat(15,1fr);gap:3px;margin:12px 0 0}
-.sim-rd-c{height:22px;border-radius:4px;background:#e1e3ee}
-.sim-rd-c.v-yes{background:#11804a}.sim-rd-c.v-no{background:#c12a3a}.sim-rd-c.v-abs{background:#d4ac0d}
-.sim-rd-ticks{position:relative;height:20px;margin-bottom:4px}
-.sim-rd-ticks span{position:absolute;top:0;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--sm);white-space:nowrap;padding-top:6px}
-.sim-rd-ticks span::before{content:"";position:absolute;left:50%;top:-1px;width:2px;height:7px;background:var(--sm);margin-left:-1px}
+.sim-rd-h b{font:600 17px var(--fd)}
+.sim-rd-h span{font-size:12.5px;color:var(--tx3)}
+.sim-rd-row{display:grid;grid-template-columns:repeat(15,1fr);gap:4px;margin:14px 0 0}
+.sim-rd-c{height:20px;border-radius:5px;background:var(--n3)}
+.sim-rd-c.v-yes{background:var(--pour)}.sim-rd-c.v-no{background:var(--contre)}.sim-rd-c.v-abs{background:var(--abst)}
+.sim-rd-ticks{position:relative;height:22px;margin-bottom:4px}
+.sim-rd-ticks span{position:absolute;top:0;transform:translateX(-50%);font:500 11px var(--fm);color:var(--tx);white-space:nowrap;padding-top:7px}
+.sim-rd-ticks span::before{content:"";position:absolute;left:50%;top:-1px;width:2px;height:7px;background:var(--tx);margin-left:-1px}
 .sim-rd-p5s{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
-.sim-rd-p5{font:700 10.5px/1.3 var(--sft);text-transform:uppercase;letter-spacing:.05em;padding:3px 7px 2px;border-radius:4px;background:#e1e3ee;color:var(--sm)}
-.sim-rd-p5.v-yes{background:var(--svs);color:var(--sv)}.sim-rd-p5.v-no{background:var(--srs);color:var(--sr)}.sim-rd-p5.v-abs{background:var(--sos);color:var(--sgd)}
-.sim-rd-bar{position:relative;height:22px;border-radius:6px;background:#e1e3ee;display:flex;margin:14px 0 8px}
+.sim-rd-p5{font:700 10.5px/1.3 var(--ft);text-transform:uppercase;letter-spacing:.05em;padding:3px 7px 2px;border-radius:4px;background:var(--n3);color:var(--tx2)}
+.sim-rd-p5.v-yes{background:var(--pour-s);color:var(--pour)}.sim-rd-p5.v-no{background:var(--contre-s);color:var(--contre)}.sim-rd-p5.v-abs{background:var(--abst-s);color:var(--abst)}
+.sim-rd-bar{position:relative;height:20px;border-radius:6px;background:var(--n3);display:flex;margin:16px 0 8px}
 .sim-rd-bar i{display:block;height:100%}
-.sim-rd-bar i.yes{background:#11804a;border-radius:6px 0 0 6px}.sim-rd-bar i.no{background:#c12a3a}
-.sim-rd-th{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1.5px;background:var(--sm);border-radius:2px}
-.sim-rd-legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--su)}
-.sim-rd-legend .yes{color:var(--sv);font-weight:600}.sim-rd-legend .no{color:var(--sr);font-weight:600}
+.sim-rd-bar i.yes{background:var(--pour);border-radius:6px 0 0 6px}.sim-rd-bar i.no{background:var(--contre)}
+.sim-rd-th{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1.5px;background:var(--tx);border-radius:2px}
+.sim-rd-legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--tx3)}
+.sim-rd-legend .yes{color:var(--pour);font-weight:600}.sim-rd-legend .no{color:var(--contre);font-weight:600}
+
+/* Bilan */
+.sim-debrief{margin-top:16px}
+.sim-verdict{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-radius:22px;padding:22px 24px;border:1px solid var(--ln);background:var(--n1)}
+.sim-verdict.ok{border-color:rgba(76,192,175,.55);background:linear-gradient(135deg,rgba(76,192,175,.16),var(--n1) 60%)}
+.sim-verdict.mid{border-color:rgba(235,192,0,.5);background:linear-gradient(135deg,rgba(235,192,0,.12),var(--n1) 60%)}
+.sim-verdict.ko{border-color:rgba(242,120,141,.55);background:linear-gradient(135deg,rgba(242,120,141,.15),var(--n1) 60%)}
+.sim-verdict-k{font:700 clamp(30px,4vw,44px)/1.05 var(--fd);margin:4px 0}
+.sim-verdict p{margin:8px 0 0;max-width:62ch;color:var(--tx2)}
+.sim-verdict-v{font:500 12.5px var(--fm);color:var(--tx3)!important}
+.sim-overall{text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1}
+.sim-overall b{font:700 92px/0.9 var(--fd);letter-spacing:-.03em}
+.sim-overall span{font:500 12.5px var(--fm);color:var(--tx3);margin-top:8px}
+.sim-grain{display:grid;gap:10px 28px;align-items:center;margin-top:8px}
+.gr-fig{max-width:420px;margin:0 auto;width:100%}
+.sim-flower{width:100%;height:auto;display:block}
+.fl-ring{fill:none;stroke:var(--ln2);stroke-width:1}
+.fl-p{fill:var(--gold);stroke:#0b1024;stroke-width:1.5}
+.fl-c{fill:var(--n0);stroke:var(--gold);stroke-width:2}
+.fl-o{font:700 22px var(--fd);fill:var(--tx)}
+.fl-l{font:500 14px var(--ft);fill:var(--tx2)}
+.fl-v{font:500 14px var(--fm);fill:var(--gold2)}
+.sim-scorelist{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:12px}
+.sl-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;font-weight:600}
+.sl-h b{font:700 22px/1 var(--fd)}
+.sl-bar{display:block;height:5px;border-radius:99px;background:var(--n3);overflow:hidden;margin:6px 0 4px}
+.sl-bar i{display:block;height:100%;background:var(--gold)}
+.sim-scorelist p{margin:0;font-size:12.5px;color:var(--tx3)}
+.sim-trace{margin:10px 0 4px;background:var(--n1);border:1px solid var(--ln);border-radius:18px;padding:16px 16px 12px}
+.sim-trace svg{width:100%;height:auto;display:block}
+.tr-a.v-yes{fill:var(--pour)}.tr-a.v-abs{fill:var(--abst)}.tr-a.v-unk{fill:#1e2753}.tr-a.v-no{fill:var(--contre)}
+.tr-ph{stroke:rgba(255,255,255,.35);stroke-dasharray:3 4}
+.tr-th{stroke:#fff;stroke-width:1.5;stroke-dasharray:6 4}
+.tr-t{font:500 11px var(--fm);fill:var(--tx2)}
+.tr-t.b{fill:#fff;paint-order:stroke;stroke:#0b1024;stroke-width:4px;stroke-linejoin:round}
+.sim .sim-trace .vd-legend{margin-top:10px}
+.sim-relrow{display:grid;grid-template-columns:minmax(0,auto) 1fr 44px;align-items:center;gap:12px;padding:6px 0;max-width:420px}
+.rr-bar{height:6px;border-radius:99px;background:var(--n3);overflow:hidden}
+.rr-bar i{display:block;height:100%}
+.rr-bar.up i{background:var(--pour)}.rr-bar.down i{background:var(--contre)}
+.sim-up{color:var(--pour);font:600 14px var(--fm);text-align:right}.sim-down{color:var(--contre);font:600 14px var(--fm);text-align:right}
+
+/* Chronologie */
+.sim-logph h3{display:flex;align-items:center;gap:10px}
+.sim-logph .s7-n{width:26px;height:26px;font-size:11.5px}
+.sim-log{list-style:none;padding:0 0 0 12px;margin:0 0 8px 12px;border-left:1px solid var(--ln)}
+.sim-log li{display:grid;grid-template-columns:52px 1fr;column-gap:10px;padding:8px 0 8px 10px;position:relative}
+.sim-log li::before{content:"";position:absolute;left:-17px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--n0);border:1.5px solid var(--tx3)}
+.sim-log time{font:500 12.5px var(--fm);color:var(--gold2);grid-row:span 2;padding-top:1px}
+.sim-logcat{font:500 11px var(--fm);color:var(--tx3)}
+.sim-log p{margin:0;font-size:14px;color:var(--tx)}
+.sim-log .c-bilateral::before{border-color:#9fb2ff}.sim-log .c-coalition::before{border-color:var(--pour)}.sim-log .c-ai::before{border-color:var(--warn)}.sim-log .c-amend::before{border-color:#c6a6ff}.sim-log .c-vote::before{border-color:var(--contre);background:var(--contre)}
+.sim-log .c-bilateral .sim-logcat{color:#9fb2ff}.sim-log .c-coalition .sim-logcat{color:var(--pour)}.sim-log .c-ai .sim-logcat{color:var(--warn)}.sim-log .c-amend .sim-logcat{color:#c6a6ff}.sim-log .c-vote .sim-logcat{color:var(--contre)}
 
 @media (min-width:640px){
   .sim-bodies{grid-template-columns:1fr 1fr}
   .sim-cols{grid-template-columns:1fr 1fr}
-  .sim-orients,.sim-args,.sim-scores{grid-template-columns:1fr 1fr}
-  .sim-phases{grid-template-columns:1fr 1fr;column-gap:28px}
-  .sim-doc{padding:40px 52px 34px}
-  .sim-log li{grid-template-columns:52px 110px 1fr}
+  .sim-stats{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .sim-orients,.sim-args{grid-template-columns:1fr 1fr}
+  .sim-phases{grid-template-columns:1fr 1fr}
+  .sim-hist{grid-template-columns:1fr 1fr}
+  .sim-how .how-grid{grid-template-columns:repeat(3,1fr);gap:24px}
+  .sim-doc{padding:44px 56px 36px}
+  .sim-log li{grid-template-columns:56px 110px 1fr}
   .sim-log time{grid-row:auto}
 }
-@media (min-width:860px){
-  .sim-hero{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:28px}
-}
 @media (min-width:900px){
+  .sim-hero{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:44px}
   .sim-opts{grid-template-columns:1fr 1fr}
   .sim-dipgrid{grid-template-columns:300px minmax(0,1fr);align-items:start}
   .sim-groups{grid-template-columns:1fr 1fr}
   .sim-bodies{grid-template-columns:repeat(3,1fr)}
-  .sim-scores{grid-template-columns:repeat(3,1fr)}
+  .sim-grain{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .sim-phases{grid-template-columns:repeat(4,1fr)}
+  .sim-phases li{grid-template-columns:1fr;row-gap:6px}
+  .s7-n{grid-row:auto}
+  .sim-hist{grid-template-columns:repeat(3,1fr)}
 }
-@media (min-width:1000px){
-  .sim-layout{grid-template-columns:minmax(0,1fr) 290px;align-items:start}
-  .sim-aside{display:block;position:sticky;top:84px;margin-top:16px;border:1px solid var(--sl);border-radius:16px;padding:14px 16px;max-height:calc(100vh - 100px);overflow:auto}
+@media (min-width:1040px){
+  .sim-layout{grid-template-columns:minmax(0,1fr) 330px;align-items:start;gap:24px}
+  .sim-aside{display:block;position:sticky;top:84px;margin-top:16px;border:1px solid var(--ln);background:var(--n1);border-radius:20px;padding:16px 18px;max-height:calc(100vh - 100px);overflow:auto;scrollbar-width:thin}
   .sim-inline-sit{display:none}
 }
+@media (max-width:859px){
+  .sim-now{bottom:calc(84px + env(safe-area-inset-bottom));border-radius:16px;padding:9px 9px 9px 14px;gap:6px 10px}
+  .sim-now p{font-size:13px;min-width:0;flex-basis:calc(100% - 80px)}
+  .sim-now .sim-btn{flex:1 1 auto}
+  .now-k{display:none}
+  /* pendant la saisie, le clavier occupe le bas de l'écran : la barre s'efface */
+  .sim:has(textarea:focus,input:focus) .sim-now{display:none}
+  html body:has(.sim-now) .toast{bottom:calc(168px + env(safe-area-inset-bottom))}
+}
 @media (max-width:639px){
-  .sim-roombox{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-left:-6px;margin-right:-6px}
-  .sim-room:not(.mini):not(.sim-hero-room){min-width:660px}
+  .sim{padding-top:22px}
+  .sim-tabs{padding-right:30px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+  .fl-l,.fl-v{font-size:17px}
+  .fl-o{font-size:28px}
+  .dm-me-l{font-size:30px;stroke-width:6px}
+  .sim-stage{padding:0 14px}
+  .sim-card,.sim-inline-sit{padding:16px 14px 18px;border-radius:18px}
+  .sim-roombox{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sim-room:not(.mini){min-width:660px}
+  .cam-sub{margin:-46px 8px 0}
+  .cam-sub p{font-size:14px;padding:8px 10px}
+  .cam-where{display:none}
   .sim-seg{display:flex;width:100%;border-radius:14px}
   .sim-seg .sim-btn{flex:1;border-radius:10px;padding:7px 8px}
   .sim-rail li:not(.on) .l{display:none}
-  .sim-rail li{flex:none}
-  .sim-rail li.on{flex:1}
-  .sim-issue{font-size:18px}
-  .sim-me{align-items:flex-start}
-  .sim-tallies b{font-size:38px}
-  .sim-phasebar .sim-btn{width:100%}
+  .sim-rail li.on .l{position:absolute;top:34px;left:50%;transform:translateX(-50%)}
+  .sim-rail li:first-child.on .l{left:0;transform:none}
+  .sim-rail li:last-child.on .l{left:auto;right:0;transform:none}
+  .sim-rail{margin-bottom:34px}
+  .sim .m-title{font-size:25px}
+  .m-clock{margin-left:0}
+  .sim-tallies b{font-size:42px}
+  .sim-overall b{font-size:72px}
+  .ln-row{grid-template-columns:minmax(0,1fr) minmax(90px,1.6fr) minmax(0,1fr);gap:8px}
+  .ln-end{font-size:11px}
+  .sim-sp.k-reply,.sim-sp.k-support,.sim-sp.k-contest,.sim-sp.k-question{margin-left:10px}
 }
 @media (prefers-reduced-motion:reduce){
   .sim *{animation:none!important;transition:none!important}
@@ -4098,8 +4368,9 @@ const hashCode = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.
 const f1 = n => Math.round(n * 10) / 10;
 
 /* ---------- Personnages ---------- */
-const SUITS = ["#24286b", "#33407e", "#3b3170", "#1f4569", "#323a57", "#4a3c6a", "#2c5a6e"];
-const HEADS = ["#dcdff0", "#d2d6ec", "#e4e6f3"];
+/* teintes moyennes : les silhouettes restent lisibles sur le fond sombre de la salle */
+const SUITS = ["#5865b8", "#6a5cae", "#4a6fa8", "#5d6596", "#7462a8", "#4f7f99", "#6b6fa0"];
+const HEADS = ["#eef0fa", "#e4e7f6", "#f3f4fb"];
 function avatar(x, y, s, o = {}) {
   const h = hashCode(o.seed || "x"), suit = o.suit || SUITS[h % SUITS.length], head = HEADS[(h >> 3) % HEADS.length], hair = o.hair != null ? o.hair : (h >> 6) % 4;
   const hairShape = [
@@ -4193,22 +4464,24 @@ function roomSVG(S, opts = {}) {
       ${avatar(p.ax, p.ay, sc, { seed: code, ring: me || code === speaking, speak: code === speaking, cls: me ? "me" : "" })}${plate}${light}${co}${code === speaking ? bubble(p.ax + (p.anchor === "end" ? 28 : p.anchor === "start" ? -28 : 26) * sc, p.ay - 34 * sc) : ""}</g>`;
   }).join("");
   const C = L.chair;
-  const chair = `<g class="sim-chairfig${chairSpeaks ? " speaking" : ""}"><title>${H(chairTitle(S))}</title>${avatar(C.x, C.y, mini ? 1.6 : 1.25, { seed: "chair-" + S.id, suit: "#020259", ring: chairSpeaks, speak: chairSpeaks, hair: 1 })}${gavel(C.x + 24, C.y + 6)}${mini ? "" : `<text x="${f1(C.lx)}" y="${f1(C.ly)}" class="sim-seat-l chair" text-anchor="${C.anchor || "middle"}">Présidence</text>`}${chairSpeaks ? bubble(C.x + (C.bub || 1) * 34, C.y - 30) : ""}</g>`;
+  const chair = `<g class="sim-chairfig${chairSpeaks ? " speaking" : ""}"><title>${H(chairTitle(S))}</title>${avatar(C.x, C.y, mini ? 1.6 : 1.25, { seed: "chair-" + S.id, suit: "#8d95d8", ring: chairSpeaks, speak: chairSpeaks, hair: 1 })}${gavel(C.x + 24, C.y + 6)}${mini ? "" : `<text x="${f1(C.lx)}" y="${f1(C.ly)}" class="sim-seat-l chair" text-anchor="${C.anchor || "middle"}">Présidence</text>`}${chairSpeaks ? bubble(C.x + (C.bub || 1) * 34, C.y - 30) : ""}</g>`;
+  const gid = uid("simfloor");
   return `<svg class="sim-room k-${kind}${mini ? " mini" : ""}" viewBox="0 0 ${L.W} ${L.H}" role="group" aria-label="${H("Salle " + b.de + " : " + members.length + " délégations")}">
-    <rect x="6" y="6" width="${L.W - 12}" height="${L.H - 12}" rx="26" class="sim-floor"/>${L.decor}${chair}${seats}</svg>`;
+    <defs><radialGradient id="${gid}" cx="50%" cy="${kind === "hemicycle" ? "78%" : "45%"}" r="70%"><stop offset="0" class="fl-a"/><stop offset="1" class="fl-b"/></radialGradient></defs>
+    <rect x="6" y="6" width="${L.W - 12}" height="${L.H - 12}" rx="26" class="sim-floor" fill="url(#${gid})"/>${L.decor}${chair}${seats}</svg>`;
 }
 function roomLegend(S) {
   const parts = [`<span><i class="lg-me"></i>votre délégation</span>`];
   if (S.phase === 3) parts.push(`<span><i class="lg-speak"></i>à la parole</span>`);
   if (S.draft && S.draft.cosponsors.length) parts.push(`<span><i class="lg-co"></i>coauteur</span>`);
   if (S.vote) parts.push(`<span><i class="lg-v yes"></i>pour</span><span><i class="lg-v no"></i>contre</span><span><i class="lg-v abs"></i>abstention</span>`);
-  return `<p class="sim-legend">${parts.join("")}<span>Touchez ou cliquez un siège pour en savoir plus.</span></p>`;
+  return `<p class="sim-legend sim-camlegend">${parts.join("")}<span>Touchez ou cliquez un siège pour en savoir plus.</span></p>`;
 }
 
 /* ---------- Carte du monde ---------- */
-const GROUP_COLORS = { AFR: "#2f9e8f", APG: "#d9822b", EEG: "#7c5cc4", GRULAC: "#c2457a", WEOG: "#3b6fd4", I: "#3b6fd4", II: "#7c5cc4", III: "#c2457a", IV: "#d9822b", Va: "#2f9e8f", Vb: "#8f8a2e" };
-const VOTE_COLORS = { yes: "#11804a", no: "#c12a3a", abs: "#d4ac0d", unk: "#b4b7cc" };
-const REL_COLORS = { r5: "#11804a", r4: "#5ca37c", r3: "#9aa0bd", r2: "#e08a3c", r1: "#c12a3a" };
+const GROUP_COLORS = { AFR: "#4cc0af", APG: "#f0a35e", EEG: "#a48cf0", GRULAC: "#f27fb0", WEOG: "#6f9bff", I: "#6f9bff", II: "#a48cf0", III: "#f27fb0", IV: "#f0a35e", Va: "#4cc0af", Vb: "#c9c26a" };
+const VOTE_COLORS = { yes: "#4cc0af", no: "#f2788d", abs: "#a7abcf", unk: "#4a5383" };
+const REL_COLORS = { r5: "#4cc0af", r4: "#93d9cd", r3: "#7d85ad", r2: "#f0a35e", r1: "#f2788d" };
 function mapColors(S, mode) {
   const key = bodyOf(S).org === "UNESCO" ? "unesco" : "un", out = {};
   const proj = mode === "vote" && !S.vote ? projection(S).votes : null;
@@ -4220,17 +4493,7 @@ function mapColors(S, mode) {
   }
   return out;
 }
-function worldMap(S, mode = "group", opts = {}) {
-  const members = new Set(opts.members || S.scen.members), col = opts.colors || mapColors(S, mode);
-  const click = opts.click !== false;
-  const shapes = Object.entries(MAP.c).map(([code, d]) => members.has(code) && col[code]
-    ? `<path d="${d}" class="sim-mc${code === (opts.player || S.player) ? " me" : ""}" fill="${col[code]}"${click ? ` data-a="mapsel" data-x="${code}" tabindex="0" role="button"` : ""} aria-label="${H(cnm(code))}"><title>${H(cnm(code))}</title></path>`
-    : `<path d="${d}" class="sim-land"/>`).join("");
-  const dots = Object.entries(MAP.dot).filter(([code]) => members.has(code)).map(([code, [x, y]]) => `<circle cx="${x}" cy="${y}" r="6" class="sim-mc dot${code === (opts.player || S.player) ? " me" : ""}" fill="${col[code]}"${click ? ` data-a="mapsel" data-x="${code}" tabindex="0" role="button"` : ""} aria-label="${H(cnm(code))}"><title>${H(cnm(code))}</title></circle>`).join("");
-  const me = opts.player || S.player, mc = MAP.ctr[me];
-  const pin = mc ? `<g class="sim-pin" transform="translate(${mc[0]},${mc[1]})"><circle r="11" class="sim-pin-ring"/><circle r="3.4" class="sim-pin-dot"/></g>` : "";
-  return `<svg class="sim-map" viewBox="0 0 ${MAP.w} ${MAP.h}" role="group" aria-label="Carte des délégations présentes"><path d="${MAP.bg}" class="sim-land"/>${shapes}${dots}${pin}</svg>`;
-}
+function worldMap(S, mode = "group", opts = {}) { return dotMap(S, mode, opts); }
 function mapLegend(S, mode) {
   if (mode === "vote") return `<p class="sim-legend"><span><i class="lg-sq" style="background:#ebc000"></i>votre délégation</span>${Object.entries({ yes: "pour", no: "contre", abs: "abstention", unk: "position inconnue" }).map(([k, l]) => `<span><i class="lg-sq" style="background:${VOTE_COLORS[k]}"></i>${l}</span>`).join("")}</p>`;
   if (mode === "rel") return `<p class="sim-legend"><span><i class="lg-sq" style="background:#ebc000"></i>votre délégation</span>${[["r5", "excellente"], ["r4", "bonne"], ["r3", "neutre"], ["r2", "tendue"], ["r1", "difficile"]].map(([k, l]) => `<span><i class="lg-sq" style="background:${REL_COLORS[k]}"></i>${l}</span>`).join("")}</p>`;
@@ -4310,12 +4573,216 @@ function ruleDiagram(S) {
     <div class="sim-rd-legend">${counts ? `<span class="yes">${yes} pour</span><span class="no">${no} contre</span><span>${counts.abs} abstention${counts.abs > 1 ? "s" : ""}${counts.unk ? ` · ${counts.unk} inconnue${counts.unk > 1 ? "s" : ""}` : ""}</span>` : `<span class="sim-mute">Le seuil se calcule sur les seules voix pour et contre.</span>`}</div></div>`;
 }
 
-/* ---------- Illustration de l'accueil ---------- */
-function heroScene() {
-  const L = roomLayout("hemicycle", 14);
-  const seats = L.seats.map((p, i) => `<g class="sim-seat${i === 9 ? " me" : ""}">${avatar(p.ax, p.ay, 1.25, { seed: "hero" + i, ring: i === 9 || i === 4, speak: i === 4, cls: i === 9 ? "me" : "" })}<rect x="${f1(p.lx - 21)}" y="${f1(p.ly - 5)}" width="42" height="11" rx="1.5" class="sim-plate"/>${i === 4 ? bubble(p.ax + 30, p.ay - 38) : ""}</g>`).join("");
-  const C = L.chair;
-  return `<svg class="sim-room sim-hero-room" viewBox="40 56 720 418" aria-hidden="true"><rect x="46" y="62" width="708" height="406" rx="26" class="sim-floor"/>${L.decor}${avatar(C.x, C.y, 1.3, { seed: "hero-chair", suit: "#020259", hair: 1 })}${gavel(C.x + 26, C.y + 6)}${seats}</svg>`;
+/* =====================================================================
+   INFOGRAPHIES (version 1.1)
+   Points de vote face au seuil, curseurs « vers où penche… », fiches
+   chiffrées avec leur source, scène de séance filmée avec sous-titres,
+   carte du monde en points, fleur des scores, composition de la salle
+   au fil de la séance. Tout est calculé à partir de l'état de la partie.
+   ===================================================================== */
+let SVG_UID = 0;
+const uid = p => `${p}${++SVG_UID}`;
+const pctOf = v => (clamp(v, -1, 1) + 1) * 50;
+const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
+
+/* ---------- Votes : connus, estimés ou inconnus ---------- */
+function voteState(S) {
+  if (S.vote) return { votes: Object.assign({}, S.vote.votes), final: true, rule: S.vote.t.rule };
+  const p = projection(S), votes = {};
+  for (const c of S.scen.members) votes[c] = c === S.player || S.dels[c].known.pos ? p.votes[c] : "unk";
+  return { votes, final: false, rule: p.t.rule };
+}
+const VORDER = { yes: 0, abs: 1, unk: 2, no: 3 };
+const VWORD = { yes: "pour", no: "contre", abs: "abstention", unk: "position inconnue" };
+function voteDots(S, o = {}) {
+  const vs = voteState(S), rule = vs.rule, n = S.scen.members.length, unsc = rule.type === "unsc";
+  const list = S.scen.members.slice().sort((a, b) => VORDER[vs.votes[a]] - VORDER[vs.votes[b]] || (a === S.player ? -1 : b === S.player ? 1 : cnm(a).localeCompare(cnm(b), "fr")));
+  const c = { yes: 0, no: 0, abs: 0, unk: 0 };
+  for (const k of list) c[vs.votes[k]]++;
+  const big = n > 24;
+  const dots = list.map(code => `<i class="vd v-${vs.votes[code]}${code === S.player ? " me" : ""}${S.bodyId === "UNSC" && P5.includes(code) ? " p5" : ""}" title="${H(cnm(code))} : ${H(VWORD[vs.votes[code]])}"></i>`).join("");
+  const th = unsc ? `<span class="vd-th" style="left:calc(${(9 / n) * 100}% - 1px)"><span>9 voix</span></span>` : "";
+  let say;
+  const vetoes = S.bodyId === "UNSC" ? P5.filter(p => vs.votes[p] === "no") : [];
+  if (unsc) say = `<b>${c.yes} pour</b> sur ${n}. Il en faut 9, sans vote contre d'un membre permanent.${vetoes.length ? ` ${H(vetoes.map(cnm).join(" et "))} ${vetoes.length > 1 ? "voteraient" : "voterait"} contre : ce serait un veto.` : ""}`;
+  else if (rule.type === "23") say = `<b>${c.yes} pour, ${c.no} contre.</b> Il faut au moins deux fois plus de voix pour que de voix contre ; les abstentions ne comptent pas.`;
+  else say = `<b>${c.yes} pour, ${c.no} contre.</b> Il faut plus de voix pour que de voix contre ; les abstentions ne comptent pas.`;
+  if (!vs.final && c.unk) say += ` ${plural(c.unk, "position reste inconnue", "positions restent inconnues")}.`;
+  let status = "";
+  if (!vs.final && o.status !== false) {
+    const e = estimate(S);
+    status = `<p class="vd-status ${e.status}">${e.status === "ok" ? "En l'état, le texte serait adopté." : e.status === "ko" ? "En l'état, le texte serait rejeté." : "Issue incertaine : tout dépend des positions inconnues."}</p>`;
+  }
+  const legend = o.legend === false ? "" : `<p class="vd-legend"><span><i class="vd v-yes"></i>pour</span><span><i class="vd v-abs"></i>abstention</span><span><i class="vd v-unk"></i>inconnue</span><span><i class="vd v-no"></i>contre</span><span><i class="vd me"></i>vous</span>${S.bodyId === "UNSC" ? `<span><i class="vd p5"></i>membre permanent</span>` : ""}</p>`;
+  return `<div class="sim-vd${big ? " big" : ""}"><div class="vd-row" style="--n:${n}">${dots}${th}</div><p class="vd-say">${say}</p>${status}${legend}</div>`;
+}
+
+/* ---------- Curseurs : vers quel côté penche une position ---------- */
+function leanWord(v, a) {
+  const x = clamp(v, -1, 1), side = x > 0 ? AXES[a].pos : AXES[a].neg;
+  return Math.abs(x) < 0.15 ? "à l'équilibre" : Math.abs(x) < 0.5 ? `un peu vers « ${side} »` : `nettement vers « ${side} »`;
+}
+/* marks : [{ v, k: "cap" | "del" | "txt" | "oth", t: libellé }] ; red : { thr, dir } */
+function leanRow(a, marks, o = {}) {
+  const A = AXES[a];
+  const m = marks.filter(x => x && x.v != null).map(x => `<span class="ln-m ${x.k}" style="left:${pctOf(x.v).toFixed(1)}%" title="${H(x.t || "")}"></span>`).join("");
+  const red = o.red ? `<span class="ln-red ${o.red.dir}" style="left:${pctOf(o.red.thr).toFixed(1)}%" title="Ligne rouge"></span>` : "";
+  return `<div class="sim-ln"><div class="ln-h"><span>${H(A.name)}</span>${o.tag ? `<em>${H(o.tag)}</em>` : ""}</div>
+    <div class="ln-row"><span class="ln-end">${H(A.neg)}</span><div class="ln-track">${red}${m}</div><span class="ln-end r">${H(A.pos)}</span></div>
+    ${o.say ? `<p class="ln-say">${o.say}</p>` : ""}</div>`;
+}
+
+/* ---------- Fiches chiffrées ---------- */
+function statCards(facts, src) {
+  return `<div class="sim-stats">${facts.map(f => `<div class="sim-stat"><span class="st-k">${H(f.label)}</span><b>${H(fmtFact(f))}</b><span class="st-src">${H(src)}</span></div>`).join("")}</div>`;
+}
+
+/* ---------- Carte du monde en points ---------- */
+const MAPMODE_LABEL = { group: "Groupes régionaux", vote: "Vote", rel: "Relations" };
+function dotMap(S, mode = "group", opts = {}) {
+  const members = opts.members || S.scen.members, me = opts.player || S.player, col = mapColors(S, mode);
+  const click = opts.click !== false, id = uid("simdots"), idm = uid("simdotm");
+  const memberShapes = members.map(c => MAP.c[c] ? `<path d="${MAP.c[c]}"/>` : "").join("");
+  const others = Object.keys(MAP.c).filter(c => !members.includes(c)).map(c => `<path d="${MAP.c[c]}"/>`).join("");
+  const dots = sortFr(members).filter(c => MAP.ctr[c]).sort((a, b) => (a === me) - (b === me)).map(c => {
+    const [x, y] = MAP.ctr[c], r = c === me ? 9 : 4.5 + (COUNTRIES[c].infl || 2) * 0.9;
+    return `<g class="dm-c${c === me ? " me" : ""}"${click ? ` data-a="mapsel" data-x="${c}" tabindex="0" role="button"` : ""} aria-label="${H(cnm(c))}"><title>${H(cnm(c))}</title><circle cx="${x}" cy="${y}" r="${f1(r + 5)}" class="dm-halo" style="fill:${col[c]}"/><circle cx="${x}" cy="${y}" r="${f1(r)}" style="fill:${col[c]}"/></g>`;
+  }).join("");
+  const mc = MAP.ctr[me];
+  const label = mc ? `<text x="${f1(mc[0])}" y="${f1(mc[1] - 15)}" class="dm-me-l" text-anchor="middle">${H(cnm(me))}</text>` : "";
+  return `<svg class="sim-dmap" viewBox="0 0 ${MAP.w} ${MAP.h}" role="group" aria-label="Carte des délégations présentes">
+    <defs><pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.15" class="dm-dot"/></pattern>
+    <pattern id="${idm}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.45" class="dm-dot on"/></pattern></defs>
+    <path d="${MAP.bg}" fill="url(#${id})"/><g fill="url(#${id})">${others}</g><g fill="url(#${idm})">${memberShapes}</g>${dots}${label}</svg>`;
+}
+
+/* ---------- Scène de séance filmée, avec sous-titres ---------- */
+const firstSentence = (txt, max = 190) => {
+  const t = String(txt || "").replace(/\s+/g, " ").trim(), m = t.match(/^(.{40,}?[.!?…])\s/);
+  const s = m ? m[1] : t;
+  return s.length > max ? s.slice(0, s.lastIndexOf(" ", max - 1)) + "…" : s;
+};
+function camState(S) {
+  const sp = [...S.speeches].reverse().find(x => !x.pending && (x.code || x.chair));
+  if (S.vote) return { who: chairTitle(S), role: "Résultat du vote", line: S.vote.announce, chair: true };
+  if (S.phase <= 2 || !sp) { const op = chairOpening(S); return { who: chairTitle(S), role: "Ouverture de la séance", line: op[0], chair: true }; }
+  if (S.phase === 4) return { who: chairTitle(S), role: "Suspension de séance", line: "La séance est suspendue pour des consultations informelles. Les délégations se retrouvent dans les couloirs.", chair: true };
+  if (S.phase === 5) return { who: chairTitle(S), role: "Examen du projet", line: "La présidence invite les délégations à examiner le projet de texte paragraphe par paragraphe.", chair: true };
+  if (S.phase === 6) return { who: chairTitle(S), role: "Mise aux voix", line: chairLine(S, "vote"), chair: true };
+  if (sp.chair) return { who: chairTitle(S), role: "Présidence", line: sp.paras[0], chair: true };
+  return { who: cnm(sp.code), role: `${KIND_LABEL[sp.kind] || "Intervention"}${sp.t ? " · " + sp.t : ""}`, line: sp.paras[0], me: sp.mine, code: sp.code };
+}
+function camera(S, o = {}) {
+  const b = bodyOf(S), st = camState(S), live = S.phase < 7 && !S.vote;
+  return `<figure class="sim-cam${o.compact ? " compact" : ""}">
+    <div class="cam-top"><span class="cam-tag${live ? " rec" : ""}">${live ? "En direct" : "Rediffusion"}</span><span class="cam-tag dim">Caméra 1</span><span class="cam-where">${H(b.room || "Salle " + b.de)}</span><time class="cam-clock">${H(clockStr(S))}</time></div>
+    <div class="cam-view sim-roombox">${roomSVG(S)}</div>
+    <figcaption class="cam-sub"><span class="cam-name${st.me ? " me" : ""}">${H(st.who)}</span><span class="cam-role">${H(st.role)}</span><p>« ${H(firstSentence(st.line))} »</p></figcaption>
+  </figure>`;
+}
+
+/* ---------- Fleur des scores du bilan ---------- */
+const SCORE_SHORT = { "Qualité des interventions": "Interventions", "Capacité de négociation": "Négociation", "Construction de coalitions": "Coalitions", "Cohérence avec la position nationale": "Cohérence", "Capacité à obtenir des compromis": "Compromis", "Influence sur le résultat final": "Influence" };
+function scoreFlower(R) {
+  const sc = R.scores, n = sc.length, cx = 200, cy = 190, rMax = 122, rMin = 30;
+  const petals = sc.map((s, i) => {
+    const ang = -90 + i * 360 / n, L = rMin + (rMax - rMin) * clamp(s.v, 0, 100) / 100, w = Math.max(15, L * 0.27);
+    return `<ellipse cx="0" cy="${f1(-L / 2)}" rx="${f1(w)}" ry="${f1(L / 2)}" transform="translate(${cx},${cy}) rotate(${f1(ang + 90)})" class="fl-p" style="opacity:${(0.45 + 0.55 * s.v / 100).toFixed(2)}"><title>${H(s.k)} : ${s.v} sur 100</title></ellipse>`;
+  }).join("");
+  const rings = [0.25, 0.5, 0.75, 1].map(f => `<circle cx="${cx}" cy="${cy}" r="${f1(rMin + (rMax - rMin) * f)}" class="fl-ring"/>`).join("");
+  const labels = sc.map((s, i) => {
+    const a = rad(-90 + i * 360 / n), r = rMax + 30, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a), an = Math.abs(Math.cos(a)) < 0.3 ? "middle" : Math.cos(a) > 0 ? "start" : "end";
+    return `<text x="${f1(x)}" y="${f1(y - 2)}" text-anchor="${an}" class="fl-l">${H(SCORE_SHORT[s.k] || s.k.split(" ")[0])}</text><text x="${f1(x)}" y="${f1(y + 15)}" text-anchor="${an}" class="fl-v">${s.v}</text>`;
+  }).join("");
+  return `<svg class="sim-flower" viewBox="-70 0 540 390" role="img" aria-label="Vos six scores : ${H(sc.map(s => (SCORE_SHORT[s.k] || s.k) + " " + s.v).join(", "))}">${rings}${petals}<circle cx="${cx}" cy="${cy}" r="27" class="fl-c"/><text x="${cx}" y="${cy + 8}" text-anchor="middle" class="fl-o">${R.overall}</text>${labels}</svg>`;
+}
+
+/* ---------- Composition de la salle au fil de la séance ---------- */
+function recordTrace() {
+  const S = G;
+  if (!S || S.phase < 3 || S.phase > 6 || S.vote) return;
+  const e = estimate(S).counts, tr = S.trace || (S.trace = []), last = tr[tr.length - 1];
+  const pt = { t: clockStr(S), ph: S.phase, y: e.yes, a: e.abs, u: e.unk, n: e.no };
+  if (!last || last.ph !== pt.ph || last.y !== pt.y || last.a !== pt.a || last.u !== pt.u || last.n !== pt.n) tr.push(pt);
+  if (tr.length > 160) tr.splice(1, 1);
+}
+function roomTrace(S) {
+  const tr = (S.trace || []).slice();
+  if (S.vote) tr.push({ t: "vote", ph: 6, y: S.vote.t.yes, a: S.vote.t.abs, u: 0, n: S.vote.t.no, fin: true });
+  if (tr.length < 3) return "";
+  // le graphique est dessiné à la largeur de l'écran : ses légendes gardent leur taille
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+  const N = S.scen.members.length, W = Math.round(clamp(Math.min(vw, 1244) - 92, 330, 1110)), Hh = vw < 640 ? 250 : 280, pl = 28, pr = 10, pt = 14, pb = 46, k = tr.length;
+  const X = i => pl + i * (W - pl - pr) / (k - 1), Y = v => pt + (Hh - pt - pb) * (1 - v / N);
+  const bands = [["y", "v-yes"], ["a", "v-abs"], ["u", "v-unk"], ["n", "v-no"]];
+  let acc = tr.map(() => 0), areas = "";
+  for (const [key, cls] of bands) {
+    const lo = acc, hi = tr.map((p, i) => lo[i] + p[key]);
+    let top = "", bot = "";
+    for (let i = 0; i < k; i++) {
+      const x0 = X(i), x1 = i < k - 1 ? X(i + 1) : X(i);
+      top += `${i ? "L" : "M"}${f1(x0)},${f1(Y(hi[i]))} L${f1(x1)},${f1(Y(hi[i]))} `;
+    }
+    for (let i = k - 1; i >= 0; i--) { const x0 = X(i), x1 = i < k - 1 ? X(i + 1) : X(i); bot += `L${f1(x1)},${f1(Y(lo[i]))} L${f1(x0)},${f1(Y(lo[i]))} `; }
+    areas += `<path d="${top}${bot}Z" class="tr-a ${cls}"/>`;
+    acc = hi;
+  }
+  // étiquettes de phase : deux rangées au plus, sans chevauchement
+  const labels = [{ i: 0, txt: PHASES[tr[0].ph - 1] + " · " + tr[0].t }];
+  for (let i = 1; i < k; i++) if (tr[i].ph !== tr[i - 1].ph) labels.push({ i, txt: tr[i].fin ? "Vote" : PHASES[tr[i].ph - 1] });
+  const rowEnd = [-1e9, -1e9], cw = 6.7;
+  const phaseMarks = labels.map((l, n) => {
+    const x = X(l.i), w = l.txt.length * cw;
+    let lx = n === 0 ? pl : x + 4, anchor = "start";
+    if (lx + w > W - 2) { lx = x - 4; anchor = "end"; }
+    const left = anchor === "start" ? lx : lx - w, right = anchor === "start" ? lx + w : lx;
+    const row = left > rowEnd[0] + 8 ? 0 : left > rowEnd[1] + 8 ? 1 : -1;
+    const line = n === 0 ? "" : `<line x1="${f1(x)}" y1="${pt}" x2="${f1(x)}" y2="${Hh - pb + 6 + (row === 1 ? 14 : 0)}" class="tr-ph"/>`;
+    if (row < 0) return line;
+    rowEnd[row] = right;
+    return line + `<text x="${f1(lx)}" y="${Hh - pb + 17 + row * 15}" text-anchor="${anchor}" class="tr-t">${H(l.txt)}</text>`;
+  }).join("");
+  const thr = S.vote ? S.vote.t.rule : needRule(S);
+  const th = thr.type === "unsc" ? `<line x1="${pl}" y1="${f1(Y(9))}" x2="${W - pr}" y2="${f1(Y(9))}" class="tr-th"/><text x="${W - pr - 2}" y="${f1(Y(9) - 5)}" text-anchor="end" class="tr-t b">seuil : 9 voix pour</text>` : "";
+  const yAxis = [0, Math.round(N / 2), N].map(v => `<text x="${pl - 6}" y="${f1(Y(v) + 4)}" text-anchor="end" class="tr-t">${v}</text>`).join("");
+  return `<figure class="sim-trace"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Composition de la salle au fil de la séance">${areas}${phaseMarks}${th}${yAxis}</svg>
+    <figcaption class="vd-legend"><span><i class="vd v-yes"></i>pour</span><span><i class="vd v-abs"></i>abstention</span><span><i class="vd v-unk"></i>position inconnue</span><span><i class="vd v-no"></i>contre</span></figcaption></figure>`;
+}
+
+/* ---------- 1 voix sur 193 : l'illustration de l'accueil ---------- */
+function heroDots() {
+  const n = 193, cols = 22, gap = 15, r = 4.2, council = new Set([12, 30, 47, 58, 71, 85, 96, 104, 119, 133, 141, 156, 167, 178, 186]), me = 104;
+  const dots = Array.from({ length: n }, (_, i) => { const x = 10 + (i % cols) * gap, y = 10 + Math.floor(i / cols) * gap; return `<circle cx="${x}" cy="${y}" r="${i === me ? r + 1.6 : r}" class="hd${council.has(i) ? " c" : ""}${i === me ? " me" : ""}"/>`; }).join("");
+  const rows = Math.ceil(n / cols);
+  return `<svg class="sim-herodots" viewBox="0 0 ${20 + (cols - 1) * gap} ${20 + (rows - 1) * gap}" aria-hidden="true">${dots}</svg>`;
+}
+
+/* ---------- Petites illustrations des organes ---------- */
+function seatGlyph(b) {
+  const n = b.sim.p5only ? 5 : b.realSize;
+  if (n > 60) return `<div class="sim-seatn"><b>${n}</b><span>États membres</span></div>`;
+  const p5 = b.id === "UNSC" || b.id === "TRUST";
+  return `<div class="sim-seatd" style="--c:${n <= 15 ? n : Math.ceil(n / 2)}" aria-label="${n} membres">${Array.from({ length: n }, (_, i) => `<i${p5 && i < 5 ? ' class="p5"' : ""}></i>`).join("")}</div>`;
+}
+function ruleGlyph(b) {
+  const t = b.vote.rule === "unsc" ? 9 / 15 : b.vote.rule === "twothirds" ? 2 / 3 : 0.5;
+  return `<div class="sim-ruleg"><i style="width:${(t * 100).toFixed(1)}%"></i><span style="left:${(t * 100).toFixed(1)}%"></span></div>`;
+}
+
+/* ---------- Une pause : ce qui se passe, ce qui compte ---------- */
+const PHASE_HELP = [
+  ["La présidence ouvre la séance, rappelle la question et la règle de vote.", "Tout ce qui suit part de là : notez le sujet et ce que l'organe peut décider."],
+  ["Votre capitale vous envoie ses instructions : ses priorités, ses lignes rouges, ses partenaires probables.", "Choisissez une ligne de négociation compatible avec ces instructions."],
+  ["Chaque délégation prend la parole à son tour. Vous découvrez leurs positions et vous exposez la vôtre.", "Une intervention claire et argumentée rapproche les délégations proches de vous."],
+  ["Les couloirs s'ouvrent : vous disposez de 120 minutes pour sonder, convaincre, passer des accords et réunir des groupes.", "Chaque démarche consomme du temps. Visez les délégations qui feront basculer le vote."],
+  ["Le texte est examiné paragraphe par paragraphe. Les délégations déposent des amendements : vous les acceptez, les rejetez ou proposez un compromis.", "Un texte trop ambitieux perd des voix ; un texte trop faible ne sert plus vos objectifs."],
+  ["Le texte est mis aux voix selon la règle exacte de l'organe. Le simulateur compte les voix, jamais l'IA.", "Votre propre vote doit rester cohérent avec les instructions de votre capitale."],
+  ["La séance est levée. Voici ce que vous avez obtenu, et pourquoi.", "Un texte rejeté n'est pas toujours un échec : ce qui compte, ce sont vos objectifs."]
+];
+function phaseHelp(S) {
+  const i = S.phase - 1, [what, why] = PHASE_HELP[i], seen = (S.seen || {})[S.phase];
+  if (seen) return `<div class="sim-pause min"><span class="ps-k">Étape ${S.phase} sur 7</span><b>${H(PHASES[i])}</b><button type="button" class="sim-btn link" data-a="pause" data-x="0">Revoir l'explication</button></div>`;
+  return `<section class="sim-pause"><span class="ps-k">Étape ${S.phase} sur 7</span><h2>${H(PHASES[i])}</h2><p>${H(what)}</p><p class="ps-why"><b>Ce qui compte</b> ${H(why)}</p>${S.phase < 7 ? `<button type="button" class="sim-btn ghost sm" data-a="pause" data-x="1">J'ai compris</button>` : ""}</section>`;
 }
 
 /* =====================================================================
@@ -4324,7 +4791,16 @@ function heroScene() {
    est une fonction qui renvoie { lang, user, profile, sb, toast }.
    ===================================================================== */
 let booted = false;
+/* Polices de la scène : Newsreader (titres et grands chiffres) et IBM Plex Mono (horloge, repères) */
+function injectFonts() {
+  if (document.getElementById("sim-fonts")) return;
+  const l = document.createElement("link");
+  l.id = "sim-fonts"; l.rel = "stylesheet";
+  l.href = "https://fonts.bunny.net/css?family=newsreader:500,500i,600,600i,700|ibm-plex-mono:400,500,600&display=swap";
+  document.head.appendChild(l);
+}
 function injectCSS() {
+  injectFonts();
   if (document.getElementById("sim-css")) return;
   const st = document.createElement("style");
   st.id = "sim-css"; st.textContent = SIM_CSS;
@@ -4355,7 +4831,7 @@ function checkAI() {
   AI.check(ctx()).then(() => { if (AI.status + AI.reason !== before) rerender(); }).catch(() => { /* mode démonstration */ });
 }
 window.SIM = {
-  version: "1.0.0",
+  version: "1.1.0",
   view(context) {
     if (context) CTX = context;
     injectCSS(); boot();
