@@ -412,7 +412,7 @@ body:has(.bureau-wrap) footer a,body:has(.bureau-wrap) footer .f-link-btn{color:
 .stats{border-top:0;padding-top:0;gap:10px}
 .stat{padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .stat b{font-variant-numeric:tabular-nums}
-.reveal{filter:blur(4px);transition:opacity .7s var(--fx),transform .5s var(--fx),filter .7s var(--fx),box-shadow .28s var(--ease),border-color .28s var(--ease)}
+.reveal{filter:blur(4px);transition:opacity .7s var(--fx),transform .5s var(--fx),filter .7s var(--fx),box-shadow .28s var(--fx),border-color .28s var(--fx)}
 .reveal.show{filter:none}
 .reveal .bar-p span{transform-origin:0 50%;transform:scaleX(0);transition:transform 1.1s .3s var(--fx)}
 .reveal.show .bar-p span{transform:none}
@@ -565,6 +565,8 @@ body:has(.bureau-wrap) footer a,body:has(.bureau-wrap) footer .f-link-btn{color:
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
+
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://biklynzilvhgyzrknbhp.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_qbTr9jyjy7pXDiz81KDjEg_jHqKR9br";
@@ -941,7 +943,7 @@ const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
   
 /* ===== TEXTES FR / EN ===== */
 const I18N={
-fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",app_s:"Ajoutez SOMUN à votre écran d'accueil : le site s'ouvre alors en plein écran, comme une application, avec son icône.",app_ios1:"Dans <b>Safari</b>, touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut). Sur iOS 26, touchez d'abord le bouton <b>…</b>, puis <b>Partager</b>.",app_ios2:"Faites défiler et choisissez <b>Sur l'écran d'accueil</b>.",app_ios3:"Touchez <b>Ajouter</b>. L'icône SOMUN apparaît sur votre écran d'accueil.",app_and1:"Dans <b>Chrome</b>, touchez le menu <b>⋮</b> en haut à droite.",app_and2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirmez.",app_btn:"Installer l'application",app_note:"Dans l'application, connectez-vous une première fois : sur iPhone, elle ne partage pas la session de Safari.",app_done:"Application installée",jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Activités",conferences:"Conférences",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
+fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",app_s:"Ajoutez SOMUN à votre écran d'accueil : le site s'ouvre alors en plein écran, comme une application, avec son icône.",app_ios1:"Dans <b>Safari</b>, touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut). Sur iOS 26, touchez d'abord le bouton <b>…</b>, puis <b>Partager</b>.",app_ios2:"Faites défiler et choisissez <b>Sur l'écran d'accueil</b>.",app_ios3:"Touchez <b>Ajouter</b>. L'icône SOMUN apparaît sur votre écran d'accueil.",app_and1:"Dans <b>Chrome</b>, touchez le menu <b>⋮</b> en haut à droite.",app_and2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirmez.",app_btn:"Installer l'application",app_note:"Dans l'application, connectez-vous une première fois : sur iPhone, elle ne partage pas la session de Safari.",app_done:"Application installée",jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
  hero_out:"Débattre, négocier, changer le monde.",hero_sub_out:"Trainings, conférences, voyages et visites : toute la vie de l'association au même endroit.",hero_sub_in:"Voici ce qui t'attend à SOMUN.",
  hello:"Bonjour",see_acts:"Voir les activités",st_events:"événements",st_poles:"pôles",st_regs:"inscriptions",st_my_regs:"mes inscriptions",
  next:"Prochains événements",see_all:"Tout voir →",news:"Actualités",search:"Rechercher un événement, un voyage ou un lieu",all:"Tous",mine:"Mes inscriptions",trips_confs:"🌍 Voyages & Conférences",
@@ -1009,7 +1011,7 @@ fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",
  e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_file_big:"Fichier trop volumineux (max. 5 Mo).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
  e_cancel_past:"Cet événement est déjà passé.",
  setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
-en:{app_install:"Install the app",app_t:"Install the SOMUN app",app_s:"Add SOMUN to your home screen: the site then opens full screen, like an app, with its own icon.",app_ios1:"In <b>Safari</b>, tap the <b>Share</b> button (the square with an arrow pointing up). On iOS 26, tap the <b>…</b> button first, then <b>Share</b>.",app_ios2:"Scroll down and choose <b>Add to Home Screen</b>.",app_ios3:"Tap <b>Add</b>. The SOMUN icon appears on your home screen.",app_and1:"In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.",app_and2:"Choose <b>Install app</b> or <b>Add to Home screen</b>, then confirm.",app_btn:"Install the app",app_note:"Sign in once inside the app: on iPhone, it does not share your Safari session.",app_done:"App installed",jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Activities",conferences:"Conferences",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
+en:{app_install:"Install the app",app_t:"Install the SOMUN app",app_s:"Add SOMUN to your home screen: the site then opens full screen, like an app, with its own icon.",app_ios1:"In <b>Safari</b>, tap the <b>Share</b> button (the square with an arrow pointing up). On iOS 26, tap the <b>…</b> button first, then <b>Share</b>.",app_ios2:"Scroll down and choose <b>Add to Home Screen</b>.",app_ios3:"Tap <b>Add</b>. The SOMUN icon appears on your home screen.",app_and1:"In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.",app_and2:"Choose <b>Install app</b> or <b>Add to Home screen</b>, then confirm.",app_btn:"Install the app",app_note:"Sign in once inside the app: on iPhone, it does not share your Safari session.",app_done:"App installed",jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
  hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
  hello:"Hello",see_acts:"See activities",st_events:"events",st_poles:"teams",st_regs:"registrations",st_my_regs:"my registrations",
  next:"Upcoming events",see_all:"See all →",news:"News",search:"Search an event, trip or venue",all:"All",mine:"My registrations",trips_confs:"🌍 Trips & Conferences",
@@ -1385,12 +1387,11 @@ async function refreshAll(){
 }
 
 /* ===== NAVIGATION & ANIMATION COULISSANTE BIDIRECTIONNELLE ===== */
-const ROUTES=["accueil","activites","conferences","ressources","jeu","quiz","diplomatie","adherer","pole","bureau","partenaires","admin","account","login","actus","reset","mentions"];
+const ROUTES=["accueil","activites","ressources","jeu","quiz","diplomatie","adherer","pole","bureau","partenaires","admin","account","login","actus","reset","mentions"];
 const ROUTE_RANK={
   accueil:0,
   actus:0.5,
   activites:1,
-  conferences:1.2,
   event:1.5,
   ressources:2,
   jeu:2.5,
@@ -1554,7 +1555,7 @@ function render(keep,instantThumb){
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
-  const nav=[["accueil","home"],["activites","activities"],["conferences","conferences"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
+  const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
   tabsBuild("dnav",nav.map(([k,l])=>[k,t(l)]),cur,{pill:"nav-pill",ink:true,hover:true,label:lang==="fr"?"Menu principal":"Main menu"});
   const main=[["accueil","home","home"],["activites","cal","activities"],["adherer","ticket","join"],["pole","users","poles"]];
@@ -1562,7 +1563,7 @@ function render(keep,instantThumb){
   tabsBuild("tabbar",main.map(([k,i,l])=>[k,t(l),TABICON[i]]).concat([["more",t("more"),TABICON.menu,"openMore()"]]),inMore?"more":cur,{pill:"tab-pill",label:"Menu"});
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
-  const V={event:vEvent,accueil:vAccueil,activites:vActivites,conferences:vConferences,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset,mentions:vMentions};
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset,mentions:vMentions};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
   let ghost=null;
@@ -1763,35 +1764,6 @@ function listHTML(){
   return l.length?l.map(e=>evCard(e).replace("reveal","reveal show")).join(""):`<div class="empty">${t("no_res")}</div>`;
 }
 const list=()=>{$("#list").innerHTML=listHTML()};
-function vConferences(){
-  if(D.loading)return loadingBox();
-  const needle=q.trim().toLowerCase(),today=todayStr();
-  const sorted=[...D.events].filter(e=>e.type==="Conférence").sort((a,b)=>{
-    const pa=isoDay(a.date)<today,pb=isoDay(b.date)<today;
-    if(pa!==pb)return pa?1:-1;
-    return pa?isoDay(b.date).localeCompare(isoDay(a.date)):isoDay(a.date).localeCompare(isoDay(b.date));
-  });
-  const l=sorted.filter(e=>{
-    if(!needle)return true;
-    return `${T(e.title)} ${e.title} ${T(e.lieu)} ${e.lieu}`.toLowerCase().includes(needle);
-  });
-  return `<div class="page-head"><h1 style="margin:6px 0 8px">${t("conferences")}</h1>${isStaff()?`<button class="btn sm" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}</div>
-  <input class="search" id="q" placeholder="🔍  ${esc(t("search"))}" value="${esc(q)}" oninput="q=this.value;$(\"#conf-list\").innerHTML=confListHTML()" style="margin:8px 0">
-  <div class="grid" id="conf-list">${l.length?l.map(e=>evCard(e).replace("reveal","reveal show")).join(""):`<div class="empty">${t("no_res")}</div>`}</div>`;
-}
-function confListHTML(){
-  const needle=q.trim().toLowerCase(),today=todayStr();
-  const sorted=[...D.events].filter(e=>e.type==="Conférence").sort((a,b)=>{
-    const pa=isoDay(a.date)<today,pb=isoDay(b.date)<today;
-    if(pa!==pb)return pa?1:-1;
-    return pa?isoDay(b.date).localeCompare(isoDay(a.date)):isoDay(a.date).localeCompare(isoDay(b.date));
-  });
-  const l=sorted.filter(e=>{
-    if(!needle)return true;
-    return `${T(e.title)} ${e.title} ${T(e.lieu)} ${e.lieu}`.toLowerCase().includes(needle);
-  });
-  return l.length?l.map(e=>evCard(e).replace("reveal","reveal show")).join(""):`<div class="empty">${t("no_res")}</div>`;
-}
 const vActus=()=>D.loading?loadingBox():`<h1>${t("news")}</h1>${D.news.length?`<div class="grid" style="margin-top:12px">${D.news.map(newsCard).join("")}</div>`:`<div class="card empty" style="margin-top:12px">${t("no_news")}</div>`}`;
 
 /* --- Ressources & ROP (public) --- */
@@ -3236,4 +3208,286 @@ async function submitAuth(ev){
       authInfo=t("reset_sent");render();return;
     }
     if(authMode==="signup"){
-      const {data,error}=
+      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo,data:{prenom:f.get("prenom").trim(),nom:f.get("nom").trim()}}});
+      if(error)return toast(authErr(error));
+      if(!data.session){authMode="login";authInfo=t("check_mail");render();return}
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(error)return toast(authErr(error));
+    }
+    authInfo="";toast(t("t_welcome"));go("accueil",true);
+  });
+}
+const vReset=()=>`<h1>${t("reset_t")}</h1><div class="card" style="max-width:440px;margin:14px auto 0"><form onsubmit="savePwd(event)">
+ <label>${t("pwd_new")}</label><input name="password" type="password" required minlength="${MIN_PWD}" autocomplete="new-password">
+ <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form></div>`;
+async function savePwd(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {error}=await sb.auth.updateUser({password:new FormData(ev.target).get("password")});
+    if(error)return toast(authErr(error));
+    toast(t("pwd_updated"));go("accueil",true);
+  });
+}
+async function logout(){
+  await sb.auth.signOut({scope:"local"});
+  S={user:null,profile:null};D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.tasks=[];
+  toast(t("t_bye"));go("accueil",true);
+}
+
+/* ===== JEU : QUIZ DES ROP ===== */
+const QZ_LEVELS=[[0,"🌱","Observateur","Observer"],[100,"🎙️","Délégué","Delegate"],[300,"📜","Sponsor","Sponsor"],[550,"⚖️","Rapporteur","Rapporteur"],[800,"🏛️","Chair","Chairperson"],[1000,"🌐","Secrétaire général","Secretary-General"]];
+let qz=null,lbBusy=false;
+const qzPoints=()=>Object.values(D.quiz).filter(x=>x.mastered).length*10;
+const qzMastered=()=>Object.values(D.quiz).filter(x=>x.mastered).length;
+function qzLevel(pts){let l=QZ_LEVELS[0],next=null;for(let i=0;i<QZ_LEVELS.length;i++){if(pts>=QZ_LEVELS[i][0]){l=QZ_LEVELS[i];next=QZ_LEVELS[i+1]||null}}return{ico:l[1],name:lang==="fr"?l[2]:l[3],min:l[0],next:next?{pts:next[0],name:lang==="fr"?next[2]:next[3]}:null}}
+function qzShuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function qzRing(pct,size=122,sw=10){const r=(size-sw)/2,c=2*Math.PI*r,off=c*(1-pct/100);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="${sw}"/><circle class="qz-ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--or)" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" style="--c:${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/></svg>`}
+function qzStart(mode,ch){
+  let pool=mode==="ch"?QUIZ.filter(q=>q.ch===ch):mode==="weak"?QUIZ.filter(q=>!(D.quiz[q.id]&&D.quiz[q.id].mastered)):QUIZ;
+  if(!pool.length){toast(t("qz_all_mastered"));return}
+  pool=qzShuffle(pool);if(mode==="mix")pool=pool.slice(0,20);
+  qz={mode,ch:ch||null,qs:pool.map(q=>{const [qt,...opts]=q[lang],pairs=opts.map((txt,k)=>({txt,ok:k===0}));return{q,qt,opts:qzShuffle(pairs)}}),i:0,picked:null,streak:0,best:0,right:0,gain:0,wrong:[],beforePts:qzPoints(),end:false};
+  render(false,true);
+}
+async function qzPick(idx){
+  if(!qz||qz.picked!==null)return;
+  const cur=qz.qs[qz.i],ok=cur.opts[idx].ok;
+  qz.picked=idx;
+  if(ok){qz.streak++;qz.best=Math.max(qz.best,qz.streak);qz.right++}else{qz.streak=0;qz.wrong.push(cur)}
+  const prev=D.quiz[cur.q.id]||{attempts:0,correct:0,mastered:false};
+  const next={attempts:prev.attempts+1,correct:prev.correct+(ok?1:0),mastered:prev.mastered||ok};
+  if(ok&&!prev.mastered)qz.gain+=10;
+  D.quiz[cur.q.id]=next;
+  if(!S.user)ls.set("somun_qz",D.quiz);
+  else{const {error}=await sb.from("quiz_progress").upsert({user_id:S.user.id,q_id:cur.q.id,attempts:next.attempts,correct:next.correct,mastered:next.mastered},{onConflict:"user_id,q_id"});if(error&&!qz.saveErr){qz.saveErr=true;toast(t("qz_save_err"))}}
+  render(true);
+}
+function qzNext(){
+  if(!qz)return;
+  if(qz.i+1<qz.qs.length){qz.i++;qz.picked=null;render(true)}
+  else{qz.end=true;D.lb=null;render(true);if(qz.right/qz.qs.length>=.7)qzConfetti()}
+}
+function qzConfetti(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const box=document.createElement("div");box.className="confetti";
+  const cols=["#EBC000","#00008E","#3ddc84","#ff6b78","#ffffff"];
+  for(let i=0;i<42;i++){const s=document.createElement("i");s.style.left=(Math.random()*100)+"%";s.style.background=cols[i%cols.length];s.style.animationDelay=(Math.random()*.45)+"s";s.style.setProperty("--dx",((Math.random()-.5)*220)+"px");s.style.setProperty("--rot",(Math.random()*720-360)+"deg");box.appendChild(s)}
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3200);
+}
+async function loadLeaderboard(force=false){
+  if((lbBusy&&!force)||!configured)return;lbBusy=true;
+  const {data,error}=await sb.rpc("quiz_leaderboard");
+  lbBusy=false;
+  if(error){console.warn(error);D.lb=[];return}
+  D.lb=data||[];
+  if(route==="quiz"&&!qz)softRender();
+}
+async function qzReset(){
+  if(!confirm(t("qz_reset_ask")))return;
+  D.quiz={};ls.set("somun_qz",{});
+  if(S.user){const {error}=await sb.from("quiz_progress").delete().eq("user_id",S.user.id);if(error)return toast(errMsg(error))}
+  D.lb=null;toast(t("qz_reset_done"));render(true);
+}
+function vJeu(){
+  if(qz)return qz.end?vQuizEnd():vQuizPlay();
+  const total=QUIZ.length,m=qzMastered(),pts=qzPoints(),lv=qzLevel(pts),pct=total?Math.round(m/total*100):0;
+  const att=Object.values(D.quiz).reduce((a,x)=>a+x.attempts,0),cor=Object.values(D.quiz).reduce((a,x)=>a+x.correct,0),acc=att?Math.round(cor/att*100):0;
+  const weak=total-m;
+  const lvPct=lv.next?Math.min(100,Math.round((pts-lv.min)/(lv.next.pts-lv.min)*100)):100;
+  if(D.lb===null&&configured)loadLeaderboard();
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <div><h1 style="margin-bottom:2px">${t("game_t")}</h1><p class="mute" style="margin:0">${t("game_s")}</p></div>
+    <button class="btn ghost sm" onclick="go('ressources')">📘 ${t("qz_open_rop")}</button>
+  </div>
+  <div class="qz-hero">
+    <div class="qz-ringbox">${qzRing(pct)}<div class="qz-ringtxt"><b>${m}</b><span>/ ${total}</span></div></div>
+    <div class="qz-herotxt">
+      <div class="qz-lv"><span class="qz-lvico">${lv.ico}</span><span>${esc(lv.name)}</span></div>
+      <div class="qz-pts"><b>${pts}</b> ${t("qz_points")}</div>
+      <div class="qz-lvbar"><span style="width:${lvPct}%"></span></div>
+      <div class="qz-lvtxt">${lv.next?t("qz_next_level",{n:lv.next.pts-pts,l:lv.next.name}):t("qz_max")}</div>
+      ${att?`<div class="qz-mini"><span>${pct}% ${t("qz_mastered")}</span><span>${acc}% ${t("qz_accuracy")}</span></div>`:""}
+    </div>
+  </div>
+  ${S.user?"":`<div class="card qz-guest"><span>${t("qz_guest")}</span><button class="btn sm" onclick="go('login')">${t("login")}</button></div>`}
+  <div class="qz-modes">
+    <button class="qz-mode" onclick="qzStart('mix')"><span class="qz-mode-ico">⚡</span><b>${t("qz_mix")}</b><small>${t("qz_mix_d")}</small></button>
+    <button class="qz-mode" onclick="qzStart('weak')" ${weak?"":"disabled"}><span class="qz-mode-ico">🎯</span><b>${t("qz_weak")}</b><small>${t("qz_weak_d",{n:weak})}</small></button>
+    <button class="qz-mode" onclick="qzStart('all')"><span class="qz-mode-ico">🏆</span><b>${t("qz_all")}</b><small>${t("qz_all_d")}</small></button>
+  </div>
+  <h2>${t("qz_chapters")}</h2>
+  <div class="grid">${QUIZ_CH.map(c=>{
+    const qs=QUIZ.filter(q=>q.ch===c.id),done=qs.filter(q=>D.quiz[q.id]&&D.quiz[q.id].mastered).length,cp=qs.length?Math.round(done/qs.length*100):0;
+    return `<div class="card qz-ch reveal"><div class="qz-ch-top"><span class="qz-ch-ico">${c.ico}</span><span class="tag">${esc(c.rop)}</span></div>
+      <h3>${esc(c[lang])}</h3>
+      <div class="bar-p" style="margin:10px 0 6px"><span style="width:${cp}%"></span></div>
+      <div class="qz-ch-meta"><span>${done}/${qs.length} ${t("qz_mastered")}</span><span>${done*10} pts</span></div>
+      <button class="btn sm ${done===qs.length?"ghost":""}" style="margin-top:12px;width:100%" onclick="qzStart('ch',${c.id})">${done===qs.length?t("qz_replay"):t("qz_play")}</button></div>`;
+  }).join("")}</div>
+  <h2>🏆 ${t("qz_lb")} <button onclick="loadLeaderboard(true)">↻</button></h2>
+  <div class="card qz-board">${D.lb===null?`<div class="mute" style="padding:12px">${t("loading")}</div>`:!D.lb.length?`<div class="empty">${t("qz_lb_empty")}</div>`:D.lb.map((r,idx)=>{
+    const me=S.user&&r.user_id===S.user.id,ptsR=Number(r.points)||0,lvR=qzLevel(ptsR),medal=idx===0?"🥇":idx===1?"🥈":idx===2?"🥉":(idx+1);
+    const fullName=protectProperNames(`${r.prenom||""} ${r.nom||""}`.trim()||"Délégué");
+    const init=(fullName[0]||"?").toUpperCase();
+    return `<div class="qz-row ${me?"me":""}">
+      <span class="qz-rank">${medal}</span>
+      <span class="qz-avatar-sm">${esc(init)}</span>
+      <span class="qz-name">${esc(fullName)}${me?` <em>(${t("qz_you")})</em>`:""}${r.role==="bureau"?` <span class="tag" style="font-size:9px;padding:2px 7px">${t("role_bureau")}</span>`:""}</span>
+      <span class="tag gray">${lvR.ico} ${esc(lvR.name)}</span>
+      <span class="qz-score">${ptsR} pts</span>
+    </div>`;
+  }).join("")}</div>
+  ${m?`<div style="text-align:center;margin-top:18px"><button class="btn ghost sm" onclick="qzReset()">${t("qz_reset")}</button></div>`:""}`;
+}
+function vQuizPlay(){
+  const cur=qz.qs[qz.i],ch=QUIZ_CH.find(c=>c.id===cur.q.ch),pct=Math.round((qz.i+(qz.picked!==null?1:0))/qz.qs.length*100);
+  const letters=["A","B","C","D"],good=cur.opts.find(o=>o.ok);
+  return `<div class="qz-top">
+    <button class="chip" onclick="qz=null;render(false,true)">← ${t("qz_quit")}</button>
+    <div class="qz-top-r">
+      <button class="chip sm" onclick="go('ressources')">📘 ROP</button>
+      ${qz.streak>=2?`<span class="qz-streak">🔥 ${qz.streak}</span>`:""}
+      <span class="qz-run">+${qz.gain} pts</span>
+    </div>
+  </div>
+  <div class="bar-p qz-prog"><span style="width:${pct}%"></span></div>
+  <div class="qz-card qz-in">
+    <div class="qz-meta"><span class="tag">${ch.ico} ${esc(ch[lang])}</span><span class="mute">${t("qz_q",{i:qz.i+1,n:qz.qs.length})}</span></div>
+    <h2 class="qz-q">${esc(cur.qt)}</h2>
+    <div class="qz-opts">${cur.opts.map((o,k)=>{
+      let cls="qz-opt";
+      if(qz.picked!==null){if(o.ok)cls+=" good";else if(k===qz.picked)cls+=" bad";else cls+=" dim"}
+      return `<button class="${cls}" ${qz.picked!==null?"disabled":""} onclick="qzPick(${k})"><b>${letters[k]}</b><span>${esc(o.txt)}</span></button>`;
+    }).join("")}</div>
+    ${qz.picked!==null?`<div class="qz-fb ${cur.opts[qz.picked].ok?"ok":"ko"}">
+      <div class="qz-fb-t">${cur.opts[qz.picked].ok?t("qz_good"):t("qz_bad")}</div>
+      ${cur.opts[qz.picked].ok?"":`<div class="qz-fb-a">${esc(good.txt)}</div>`}
+      <div class="qz-fb-r">${t("qz_rule")} ${esc(cur.q.ref)}</div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="qzNext()">${qz.i+1<qz.qs.length?t("qz_next"):t("qz_finish")}</button>`:""}
+  </div>`;
+}
+function vQuizEnd(){
+  const n=qz.qs.length,pct=Math.round(qz.right/n*100),pts=qzPoints(),lv=qzLevel(pts),before=qzLevel(qz.beforePts);
+  const up=lv.name!==before.name;
+  const msg=pct===100?t("qz_m100"):pct>=80?t("qz_m80"):pct>=50?t("qz_m50"):t("qz_m0");
+  return `<div class="qz-card qz-end qz-in">
+    <div class="qz-endring">${qzRing(pct,150,12)}<div class="qz-ringtxt"><b>${qz.right}/${n}</b><span>${pct}%</span></div></div>
+    <h1 style="margin:14px 0 4px">${t("qz_end_t")}</h1>
+    <p class="mute" style="margin:0 0 16px">${msg}</p>
+    <div class="qz-stats">
+      <div class="qz-stat gold"><b>+${qz.gain}</b><span>${t("qz_gain")}</span></div>
+      <div class="qz-stat"><b>${pts}</b><span>${t("qz_total")}</span></div>
+      <div class="qz-stat"><b>🔥 ${qz.best}</b><span>${t("qz_streak")}</span></div>
+    </div>
+    ${up?`<div class="qz-up">${lv.ico} ${t("qz_levelup",{l:lv.name})}</div>`:""}
+    ${qz.gain===0&&qz.right>0?`<p class="mute" style="font-size:13px;margin:10px 0 0">${t("qz_gain0")}</p>`:""}
+    ${qz.wrong.length?`<details class="qz-wrong"><summary>${t("qz_review",{n:qz.wrong.length})}</summary>${qz.wrong.map(w=>`<div class="qz-wq"><b>${esc(w.qt)}</b><div>✓ ${esc(w.opts.find(o=>o.ok).txt)}</div><small>${t("qz_rule")} ${esc(w.q.ref)}</small></div>`).join("")}</details>`:""}
+    <div class="qz-actions">
+      <button class="btn" onclick="qzStart('${qz.mode}',${qz.ch||"null"})">${t("qz_again")}</button>
+      <button class="btn ghost" onclick="qz=null;render(false,true)">${t("qz_back")}</button>
+    </div>
+  </div>`;
+}
+
+/* ===== DÉMARRAGE ===== */
+async function init(){
+  readHash();render();
+  if(!configured){D.loading=false;render();return}
+  D.quiz=ls.get("somun_qz",{});
+  sb.auth.onAuthStateChange((ev,session)=>{
+    S.user=session?session.user:null;
+    if(ev==="PASSWORD_RECOVERY")route="reset";
+    if(ev==="SIGNED_IN")setTimeout(async()=>{
+      await syncCurrentUserMembership();
+      await loadPrivate(false);
+      if(route==="login")route="accueil";
+      syncHash(true);softRender();
+    },0);
+  });
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    S.user=session?session.user:null;
+    await Promise.all([loadPublic(),loadPrivate(true)]);
+    if(route==="pole"&&poleSel)await loadTasks();
+    if(route==="event")await loadRegistrants();
+    if(location.hash.includes("type=signup")||location.hash.includes("type=email")){toast(t("t_mail_confirmed"));syncHash(true)}
+    else if(!location.hash&&route!=="accueil")syncHash(true);
+  }catch(e){console.error(e);D.err=t("err_load")}
+  D.loading=false;render();
+}
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden&&configured&&Date.now()-lastSync>30000)refreshAll();
+});
+
+/* ===== AFFICHAGE DYNAMIQUE ===== */
+const TABICON={
+  home:'<svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a2 2 0 0 0 0 3V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.5a2 2 0 0 0 0-3Z"/><path d="M15 7v10" stroke-dasharray="2 2"/></svg>',
+  users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.5"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M16.5 14.3c2.4.4 4.5 2.1 4.5 5.2"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>'
+};
+function stagger(){
+  document.querySelectorAll(".grid .reveal, .board-grid .reveal").forEach((el,i)=>{
+    el.style.transitionDelay=Math.min(i,7)*65+"ms";
+  });
+}
+function animateStats(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  document.querySelectorAll(".stat b").forEach(el=>{
+    const to=parseInt(el.textContent,10);
+    if(!Number.isFinite(to)||to<=0)return;
+    const t0=performance.now(),dur=750;
+    const step=now=>{
+      const p=Math.min(1,(now-t0)/dur);
+      el.textContent=Math.round(to*(1-Math.pow(1-p,3)));
+      if(p<1)requestAnimationFrame(step);
+    };
+    el.textContent="0";requestAnimationFrame(step);
+  });
+}
+const GLOW=".ev,.news,.about .card,.board-card,.partners a.card,.pole-pick button";
+document.addEventListener("pointermove",e=>{
+  const c=e.target.closest&&e.target.closest(GLOW);
+  if(!c)return;
+  const r=c.getBoundingClientRect();
+  c.style.setProperty("--gx",(e.clientX-r.left)+"px");
+  c.style.setProperty("--gy",(e.clientY-r.top)+"px");
+},{passive:true});
+let scrollRaf=0;
+window.addEventListener("scroll",()=>{
+  if(scrollRaf)return;
+  scrollRaf=requestAnimationFrame(()=>{
+    scrollRaf=0;
+    const h=document.documentElement,max=h.scrollHeight-h.clientHeight;
+    const sp=$("#sp");if(sp)sp.style.transform="scaleX("+(max>0?Math.min(1,scrollY/max):0)+")";
+    const hv=document.querySelector(".hero-visual");
+    if(hv)hv.style.setProperty("--py",Math.min(60,scrollY*.14)+"px");
+  });
+},{passive:true});
+
+const reduceMotionGlobe=()=>Boolean(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+function setHeroTilt(hero,nx,ny){
+  if(reduceMotionGlobe())return;
+  hero.style.setProperty("--mx",nx.toFixed(3));
+  hero.style.setProperty("--my",ny.toFixed(3));
+}
+document.addEventListener("pointermove",e=>{
+  if(e.pointerType==="touch")return;
+  const hero=e.target.closest&&e.target.closest(".hero");
+  if(!hero)return;
+  const r=hero.getBoundingClientRect();
+  setHeroTilt(hero,((e.clientX-r.left)/r.width-.5)*2,((e.clientY-r.top)/r.height-.5)*2);
+},{passive:true});
+document.addEventListener("pointerout",e=>{
+  const hero=e.target.closest&&e.target.closest(".hero");
+  if(hero&&(!e.relatedTarget||!hero.contains(e.relatedTarget)))setHeroTilt(hero,0,0);
+},{passive:true});
+
+init();
+</script>
+</body>
+</html>
