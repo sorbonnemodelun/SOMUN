@@ -549,6 +549,440 @@ body:has(.bureau-wrap) footer a,body:has(.bureau-wrap) footer .f-link-btn{color:
 @media(min-width:760px){.jeux{grid-template-columns:1fr 1fr}}
 @media(hover:hover){.jeux-card:hover{transform:translateY(-4px);border-color:rgba(235,192,0,.7);box-shadow:0 22px 40px -20px rgba(2,2,89,.35)}}
 </style>
+<style id="v3">
+/* ===== Nouvelle mise en page : accueil, agenda, fiche événement, mes inscriptions =====
+   Mêmes couleurs, mêmes polices. Répartition : fonds clairs et tuiles blanches, un seul grand bloc
+   marine par écran, le bleu pour les boutons et l'élément actif, l'or pour « toi » et les paiements,
+   une teinte douce par type d'activité. */
+body.pg3{background:#ECEEF7}
+.v3{--tile-r:26px;--gold-tint:#FFF7D6}
+@media(min-width:720px){.v3{--tile-r:32px}}
+.agi{flex:none;display:block}
+.tile{background:#fff;border-radius:var(--tile-r);box-shadow:0 1px 2px rgba(2,2,89,.04)}
+.agh{display:block;margin:0;font-family:var(--f-titre);font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--marine)}
+.agh::before{display:none}
+.v3 .btn{min-height:44px}
+.v3 .btn.sm{min-height:40px;padding:6px 16px}
+.v3 .btn.xs{min-height:32px;padding:4px 12px}
+.btn.ghost-dark{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.3)}
+.btn.ghost-dark:hover{background:rgba(255,255,255,.16);border-color:#fff;box-shadow:none}
+.ag-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:99px;background:var(--soft);color:var(--bleu);font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap;transition:background .2s var(--ease)}
+.ag-link:hover{background:var(--bleu-soft)}
+.ag-none{margin:0;padding:22px 24px;color:var(--mute)}
+.ag-nores{padding:34px 24px;text-align:center;color:var(--mute)}
+
+/* Étiquettes de type, prix, lieu */
+.ag-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 11px 4px 9px;border-radius:99px;background:var(--tb,var(--soft));color:var(--ink);font-size:12.5px;font-weight:600;line-height:1.35;white-space:nowrap}
+.ag-chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tc,#9095B8);flex:none}
+.ag-tags{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);line-height:1.4}
+.ag-lock{display:inline-flex;align-items:center;gap:4px}
+.ag-meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;font-size:13.5px;color:var(--mute);line-height:1.45}
+.ag-meta>span{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.ag-done{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--marine);white-space:nowrap}
+.ag-done>i{width:28px;height:28px;border-radius:50%;background:var(--or);color:var(--marine);display:inline-grid;place-items:center;flex:none}
+.ag-wait{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px;color:#6b5600}
+.ag-muted{font-weight:600;font-size:14px;color:var(--mute)}
+
+/* Jauge de places */
+.ag-gauge{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ag-gauge>b{display:block;width:140px;max-width:100%;height:6px;border-radius:99px;background:#E3E6F3;overflow:hidden}
+.ag-gauge>b>i{display:block;height:100%;border-radius:99px;background:var(--marine)}
+.ag-gauge.full>b>i{background:#9095B8}
+.ag-gauge>span{font-size:12.5px;color:var(--mute);font-weight:500;white-space:nowrap}
+
+/* Lignes d'agenda (accueil et vue liste) */
+.ag-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ag-row{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px 14px;align-items:center;padding:14px;border-radius:22px;background:var(--soft)}
+.ag-row.mine{background:var(--gold-tint)}
+.ag-row.past{opacity:.62}
+.ag-when{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.ag-when small{font-size:12px;line-height:1;color:var(--mute);white-space:nowrap}
+.ag-day{font:800 40px/.9 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--marine);letter-spacing:-.02em;white-space:nowrap}
+.ag-day.rng{font-size:24px}
+.ag-main{min-width:0;display:flex;flex-direction:column;gap:6px}
+.ag-title{margin:0;font:700 18px/1.2 var(--f-titre);color:var(--marine)}
+.ag-title a{color:inherit;text-decoration:none}
+.ag-title a:hover{color:var(--bleu);text-decoration:underline;text-decoration-color:var(--or);text-decoration-thickness:2px;text-underline-offset:3px}
+.ag-side{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ag-side .ag-gauge{order:-1}
+.ag-staff{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;padding-top:8px;border-top:1px solid rgba(2,2,89,.08)}
+@media(min-width:720px){
+  .ag-row{grid-template-columns:108px minmax(0,1fr) 184px;padding:18px 22px;border-radius:24px;gap:12px 22px}
+  .ag-day{font-size:56px}.ag-day.rng{font-size:32px}
+  .ag-title{font-size:21px}
+  .ag-side{grid-column:auto;flex-direction:column;align-items:flex-end;justify-content:center}
+  .ag-side .ag-gauge{order:0;align-items:flex-end}
+  .ag-staff{grid-column:2/-1}
+}
+
+/* Tuile « À l'ordre du jour » et groupes de la vue liste */
+.ag-tile{padding:22px 8px 8px}
+.ag-tile-h{display:flex;justify-content:space-between;align-items:center;gap:10px 12px;flex-wrap:wrap;padding:0 12px 16px}
+.ag-tile-h .agh{font-size:clamp(28px,4vw,40px)}
+.ag-tile-h>div{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ag-cnt{font-size:14px;color:var(--mute)}
+@media(min-width:720px){.ag-tile{padding:30px 12px 12px}.ag-tile-h{padding:0 22px 18px}}
+
+/* ----- Accueil : bento ----- */
+.bn{display:grid;gap:14px}
+.bn-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.bn-hello{padding:26px 22px 24px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;flex:1}
+.bn-kick{margin:0;font-size:13.5px;font-weight:600;color:var(--mute)}
+.bn-h1{margin:14px 0 0;font:800 clamp(50px,13vw,104px)/.9 var(--f-titre);letter-spacing:-.03em;color:var(--marine);overflow-wrap:anywhere}
+.bn-h1.mid{font-size:clamp(42px,9vw,80px)}
+.bn-h1.long{font-size:clamp(36px,6.2vw,62px);line-height:.98}
+.bn-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:16px 24px;flex-wrap:wrap}
+.bn-sum{margin:0;font-size:16.5px;line-height:1.5;color:var(--ink);max-width:22em}
+.bn-cta{display:flex;gap:10px;flex-wrap:wrap}
+.bn-gold{background:var(--or);border-radius:var(--tile-r);padding:22px;display:flex;align-items:center;gap:16px 22px;flex-wrap:wrap;color:var(--ink)}
+.bn-gold :focus-visible{outline-color:var(--marine)}
+.bn-gold-ico{width:52px;height:52px;border-radius:50%;background:var(--marine);color:var(--or);display:grid;place-items:center;flex:none}
+.bn-gold-txt{flex:1 1 220px;min-width:0}
+.bn-gold-t{margin:0;font:800 22px/1.12 var(--f-titre);letter-spacing:-.02em}
+.bn-gold-txt p:not(.bn-gold-t){margin:6px 0 0;font-size:14.5px;line-height:1.5}
+.bn-next{position:relative;overflow:hidden;isolation:isolate;background:var(--marine);color:#fff;border-radius:var(--tile-r);padding:26px 22px;min-width:0}
+.bn-next .hero-globe{left:auto;top:auto;right:-170px;bottom:-200px;width:500px;opacity:.15;transform:translate(calc(var(--mx,0) * -18px),calc(var(--my,0) * -12px))}
+.bn-next>:not(.hero-globe){position:relative;z-index:1}
+.bn-next-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bn-next-lbl{font:600 14.5px/1.3 var(--f-texte);letter-spacing:0;color:rgba(255,255,255,.74)}
+.bn-date{display:flex;align-items:flex-end;gap:16px;margin-top:18px}
+.bn-num{font:800 clamp(124px,32vw,210px)/.74 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--or);letter-spacing:-.04em;white-space:nowrap}
+.bn-num.rng{font-size:clamp(80px,19vw,132px)}
+.bn-dl{display:flex;flex-direction:column;gap:2px;padding-bottom:4px;min-width:0}
+.bn-wd{font:800 clamp(24px,4vw,32px)/1 var(--f-titre);letter-spacing:-.03em}
+.bn-my{font-size:14.5px;color:rgba(255,255,255,.74)}
+.bn-time{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font:800 clamp(22px,3.4vw,30px)/1 var(--f-titre);font-variant-numeric:tabular-nums}
+.bn-title{margin:26px 0 0;font:800 clamp(26px,4vw,36px)/1.02 var(--f-titre);letter-spacing:-.03em;color:#fff}
+.bn-title a{color:#fff;text-decoration:none}
+.bn-title a:hover{text-decoration:underline;text-decoration-color:var(--or);text-decoration-thickness:3px;text-underline-offset:5px}
+.bn-place{margin:10px 0 0;display:flex;gap:7px;align-items:center;color:rgba(255,255,255,.74);font-size:14.5px}
+.bn-seats{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);display:flex;align-items:center;gap:16px 20px;flex-wrap:wrap}
+.bn-seats-t{flex:1 1 150px;min-width:0}
+.bn-seats-t b{display:block;font-size:16px}
+.bn-seats-t p{margin:4px 0 0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.74)}
+.bn-acts{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+.bn-empty{margin:18px 0 0;font-size:16px;color:rgba(255,255,255,.82);max-width:24em}
+.bn-row2{margin-top:14px;display:grid;gap:14px;align-items:start}
+.bn-aside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.bn-page .about{margin-top:6px}
+@media(min-width:720px){
+  .bn-hello{padding:36px 36px 32px;min-height:300px}
+  .bn-gold{padding:24px 28px}
+  .bn-next{padding:30px 32px 32px}
+}
+@media(min-width:1000px){
+  .bn{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+  .bn-row2{grid-template-columns:minmax(0,1fr) 330px}
+}
+
+/* Frise de la saison */
+.sv{margin-top:14px;padding:26px 22px 26px}
+.sv-head{display:flex;justify-content:space-between;align-items:flex-end;gap:8px 24px;flex-wrap:wrap}
+.sv-head .agh{font-size:clamp(28px,4vw,40px)}
+.sv-head p{margin:0;color:var(--mute);font-size:14.5px;max-width:34em}
+.sv-scroll{margin-top:22px;overflow-x:auto;padding-bottom:34px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.sv-grid{min-width:760px;display:grid;grid-template-columns:112px minmax(0,1fr);column-gap:10px}
+.sv-lanes{display:flex;flex-direction:column;padding-top:30px;position:sticky;left:0;z-index:2;background:#fff;box-shadow:10px 0 10px -10px rgba(2,2,89,.18)}
+.sv-lane{height:34px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap}
+.sv-lane::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--tc);flex:none}
+.sv-months{display:grid;height:30px;align-items:center}
+.sv-months span{font-size:12.5px;font-weight:600;color:var(--mute);padding-left:6px;white-space:nowrap}
+.sv-months span.cur{color:var(--marine)}
+.sv-plot{position:relative}
+.sv-past{position:absolute;left:0;top:0;bottom:0;background:rgba(2,2,89,.035);border-radius:8px 0 0 8px}
+.sv-sep{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.sv-hl{position:absolute;left:0;right:0;height:1px;background:#ECECF9}
+.sv-now{position:absolute;top:-8px;bottom:-8px;width:2px;margin-left:-1px;background:var(--marine)}
+.sv-pill{position:absolute;transform:translateX(-50%);font-size:12px;font-weight:600;color:var(--marine);white-space:nowrap;background:var(--or);padding:2px 8px;border-radius:99px}
+.sv-pill.l{transform:none}.sv-pill.r{transform:translateX(-100%)}
+.sv-tick{position:absolute;margin-left:-7px;height:14px;min-width:14px;border-radius:7px;background:var(--tc);transition:transform .15s var(--ease)}
+.sv-tick:hover{transform:scale(1.2)}
+.sv-tick.mine{box-shadow:0 0 0 2px #fff,0 0 0 4.5px var(--or)}
+.sv-tick.past{opacity:.4}
+@media(max-width:719px){.sv-grid{grid-template-columns:96px minmax(0,1fr);min-width:700px}.sv-lane{font-size:12px}}
+@media(min-width:720px){.sv{padding:32px 36px 30px}.sv-lanes{box-shadow:none}}
+
+/* Mini-calendrier */
+.mm{padding:22px 18px 18px}
+.mm-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mm-head .agh{font-size:24px}
+.mm-nav{display:flex;gap:4px}
+.ag-arrow{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--bleu);display:inline-grid;place-items:center;cursor:pointer;flex:none;transition:border-color .2s var(--ease),background .2s var(--ease)}
+.ag-arrow:hover{border-color:var(--bleu);background:var(--bleu-soft)}
+.mm-grid{margin-top:12px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:2px}
+.mm-wd{text-align:center;font-size:11.5px;font-weight:600;color:var(--mute);padding-bottom:4px}
+.mm-d{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:2px 0;cursor:pointer;font:inherit;color:var(--ink);border-radius:12px}
+.mm-d b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;transition:background .15s var(--ease)}
+.mm-d i{width:6px;height:6px;border-radius:50%;background:var(--tc,transparent)}
+.mm-d.oth b,.mm-d.gone b{color:#9A9DBB}
+.mm-d.has b{font-weight:700}
+.mm-d.gone i{opacity:.4}
+.mm-d.today b{box-shadow:inset 0 0 0 2px var(--marine);color:var(--marine);font-weight:700}
+.mm-d.mine b{background:var(--or);color:var(--marine);font-weight:700}
+.mm-d:hover b{background:var(--bleu-soft)}
+.mm-d.mine:hover b{background:#ffd51e}
+.mm-leg,.ag-legend{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--mute)}
+.mm-leg{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.mm-leg span,.ag-legend span{display:inline-flex;align-items:center;gap:6px}
+.mm-leg i{width:14px;height:14px;border-radius:50%;background:var(--or)}
+.mm-leg i.t,.ag-legend i.t{width:14px;height:14px;border-radius:50%;background:none;box-shadow:inset 0 0 0 2px var(--marine)}
+
+/* Actualités (accueil) */
+.bn-news{padding:24px 22px 8px}
+.bn-news .agh{font-size:28px;margin-bottom:6px}
+.bn-news ul{list-style:none;margin:0;padding:0}
+.bn-news li{padding:14px 0;border-top:1px solid var(--line)}
+.bn-news a.t{font:800 19px/1.15 var(--f-titre);letter-spacing:-.02em;color:var(--ink);text-decoration:none}
+.bn-news a.t:hover{color:var(--bleu)}
+.bn-news li p{margin:6px 0 0;color:var(--mute);font-size:14px;line-height:1.55}
+.bn-news-more{padding:4px 0 14px}
+
+/* ----- Agenda ----- */
+.ag-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap}
+.ag-h1{margin:0;font:800 clamp(50px,10vw,84px)/.9 var(--f-titre);color:var(--marine);letter-spacing:-.025em}
+.ag-sub{margin:8px 0 0;color:var(--mute);font-size:15px}
+.ag-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1 1 300px;justify-content:flex-start}
+.ag-search{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:99px;background:#fff;border:1.5px solid var(--line);color:var(--mute);margin:0;font-weight:400;font-size:14px;flex:1 1 100%;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.ag-search:focus-within{border-color:var(--bleu);box-shadow:0 0 0 4px var(--bleu-soft)}
+.ag-search input,.ag-search input:focus{-webkit-appearance:none;appearance:none;border:0;outline:0;background:transparent;padding:0;min-height:40px;font-size:14.5px;color:var(--ink);width:100%;box-shadow:none;border-radius:0}
+.ag-seg{display:inline-flex;padding:4px;border-radius:99px;background:#fff;border:1px solid var(--line);flex:none}
+.ag-seg button{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 15px;border-radius:99px;border:0;background:transparent;color:var(--marine);font-weight:500;font-size:13.5px;cursor:pointer;transition:background .2s var(--ease),color .2s var(--ease)}
+.ag-seg button[aria-pressed=true]{background:var(--bleu);color:#fff;font-weight:600}
+.ag-filters{margin:18px -2px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.ag-filters::-webkit-scrollbar{display:none}
+.ag-f{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 15px;border-radius:99px;background:#fff;color:var(--ink);border:1.5px solid var(--line);font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;flex:none;transition:border-color .2s var(--ease),background .2s var(--ease),color .2s var(--ease)}
+.ag-f:hover{border-color:var(--bleu)}
+.ag-f i{width:10px;height:10px;border-radius:3px;background:var(--tc);flex:none}
+.ag-f i+i{margin-left:-4px}
+.ag-f i.me{border-radius:50%;background:var(--or)}
+.ag-f[aria-pressed=true]{background:var(--bleu);border-color:var(--bleu);color:#fff;font-weight:600}
+@media(min-width:720px){.ag-filters{flex-wrap:wrap;overflow:visible}.ag-tools{justify-content:flex-end}.ag-search{flex:1 1 240px;max-width:320px}}
+
+.ag-strip{margin-top:16px;display:flex;gap:4px;overflow-x:auto;padding:4px;background:#fff;border-radius:20px;scrollbar-width:none}
+.ag-strip::-webkit-scrollbar{display:none}
+.ag-strip button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:68px;min-height:52px;padding:4px 10px;border-radius:14px;border:0;background:transparent;color:var(--marine);cursor:pointer;flex:1 0 auto;transition:background .2s var(--ease)}
+.ag-strip button:hover{background:var(--soft)}
+.ag-strip b{font:700 15px/1.1 var(--f-titre)}
+.ag-strip span{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--mute);white-space:nowrap}
+.ag-strip span i{width:7px;height:7px;border-radius:50%;background:var(--or)}
+.ag-strip button.nil{color:#9A9DBB}
+.ag-strip button[aria-current=true]{background:var(--bleu);color:#fff}
+.ag-strip button[aria-current=true] span{color:rgba(255,255,255,.85)}
+
+.ag-mnav{margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap}
+.ag-mnav>div{display:flex;align-items:center;gap:8px;min-width:0}
+.ag-mh{font-size:clamp(26px,5vw,44px);letter-spacing:-.03em;min-width:0}
+.ag-mnav p{margin:0;font-size:14px;color:var(--mute)}
+.ag-mnav .btn{margin-left:auto}
+
+.ag-cal{margin-top:12px;display:flex;flex-direction:column;gap:18px}
+.ag-gridw{min-width:0}
+.ag-grid{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
+.ag-grid th{font-size:12px;font-weight:600;color:var(--mute);text-align:center;padding:0 0 4px}
+.ag-grid th .lg{display:none}
+.ag-grid td{position:relative;vertical-align:top;height:56px;padding:0;border-radius:12px;background:#fff;border:1px solid #fff}
+.ag-grid td.oth{background:transparent;border:1px dashed #D5D9EE}
+.ag-grid td.sel{border:2px solid var(--bleu);box-shadow:0 12px 26px -16px rgba(2,2,89,.35)}
+.ag-dn{position:absolute;inset:0;width:100%;border:0;background:transparent;border-radius:10px;cursor:pointer;padding:6px 0 0;display:flex;justify-content:center;align-items:flex-start;gap:3px;font:700 14px/1 var(--f-titre);color:var(--marine);font-variant-numeric:tabular-nums}
+.ag-dn small{font:500 10.5px/1.3 var(--f-texte);color:var(--mute);display:none}
+.ag-grid td.oth .ag-dn{color:#9A9DBB}
+.ag-dn>span{display:inline-grid;place-items:center;width:26px;height:26px;margin-top:-4px;border-radius:50%}
+.ag-grid td.today .ag-dn>span{box-shadow:inset 0 0 0 2px var(--marine)}
+.ag-bars{position:absolute;left:2px;right:2px;bottom:9px;display:flex;justify-content:center;flex-wrap:wrap;gap:3px;pointer-events:none}
+.ag-bar{display:block;width:8px;height:8px;border-radius:50%;background:var(--tc);overflow:hidden;font-size:0;text-decoration:none}
+.ag-bar>i,.ag-bar>span{display:none}
+.ag-bar.mine{box-shadow:0 0 0 2px var(--or)}
+.ag-bar.pend{outline:2px dashed var(--or);outline-offset:1px}
+.ag-bar.past,.ag-grid td.oth .ag-bar{opacity:.55}
+.ag-more{display:none}
+.ag-legend{margin-top:10px;padding:0 4px}
+.ag-legend i{width:18px;height:11px;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 2px var(--or)}
+.ag-legend i.p{background:#fff;box-shadow:none;outline:2px dashed var(--or);outline-offset:-2px}
+@media(min-width:720px){
+  .ag-grid{border-spacing:6px}
+  .ag-grid th{text-align:left;padding:0 10px 4px;font-size:12.5px}
+  .ag-grid th .lg{display:inline}.ag-grid th .st{display:none}
+  .ag-grid td{height:112px;padding:6px;border-radius:14px}
+  .ag-dn{padding:9px 10px;justify-content:flex-start;border-radius:13px;font-size:15px}
+  .ag-dn small{display:inline}
+  .ag-dn>span{width:auto;min-width:28px;height:28px;padding:0 5px;margin:-6px 0 0 -6px;border-radius:9px}
+  .ag-grid td.sel .ag-dn>span{background:var(--bleu-soft)}
+  .ag-grid td.today .ag-dn>span{width:28px;padding:0;border-radius:50%}
+  .ag-bars{position:relative;left:auto;right:auto;bottom:auto;z-index:1;display:block;margin-top:26px}
+  .ag-bar{display:flex;align-items:flex-start;gap:5px;width:auto;height:auto;margin-top:5px;padding:5px 7px;border-radius:10px;background:var(--tb);color:var(--ink);font-size:12px;font-weight:600;line-height:1.25;pointer-events:auto}
+  .ag-bar>i{display:block;width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--tc);flex:none}
+  .ag-bar>span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+  .ag-bar>span b{display:block;font-weight:700}
+  .ag-bar:hover{filter:brightness(.96)}
+  .ag-bar.mine{box-shadow:inset 0 0 0 2px var(--or)}
+  .ag-bar.pend{outline-offset:-2px}
+  .ag-bar.cr{margin-right:-10px;border-top-right-radius:0;border-bottom-right-radius:0;position:relative;z-index:1}
+  .ag-bar.cl{margin-left:-10px;padding-left:15px;border-top-left-radius:0;border-bottom-left-radius:0}
+  .ag-more{display:block;margin-top:5px;font-size:11.5px;font-weight:600;color:var(--mute);pointer-events:none}
+}
+
+.ag-panel{min-width:0;background:#fff;border-radius:28px;padding:22px 20px}
+@media(min-width:720px){.ag-panel{padding:22px 24px 24px}}
+@media(min-width:720px) and (max-width:1099px){.ag-pev{display:flex;gap:28px;align-items:flex-start}.ag-pev-i{flex:1 1 auto;min-width:0}.ag-pev-a{flex:0 0 300px}.ag-pev-a>.ag-seats:first-child{margin-top:4px}}
+@media(min-width:1100px){.ag-cal{flex-direction:row;align-items:flex-start;gap:24px}.ag-gridw{flex:1 1 auto}.ag-panel{flex:0 0 330px;padding:22px 22px 24px}}
+.ag-ph{font-size:clamp(26px,4vw,34px);letter-spacing:-.03em}
+.ag-pc{margin:4px 0 0;font-size:14px;color:var(--mute)}
+.ag-pev{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.ag-pev h3{margin:10px 0 0;font:700 24px/1.15 var(--f-titre);color:var(--marine)}
+.ag-pev h3 a{color:inherit;text-decoration:none}
+.ag-pev h3 a:hover{color:var(--bleu)}
+.ag-pev .ag-meta{margin-top:8px;flex-direction:column;align-items:flex-start;gap:4px;font-size:14px}
+.ag-desc{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink)}
+.ag-seats{margin-top:16px;display:flex;align-items:center;gap:14px}
+.ag-seats p{margin:0;font-size:14px;color:var(--mute);line-height:1.45}
+.ag-seats p b{display:block;font:800 48px/.9 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--marine)}
+.ag-hemi{display:block;flex:none;max-width:100%;height:auto}
+.ag-pact{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+.ag-pact .btn{width:100%}
+.ag-pact .ag-done,.ag-pact .ag-muted,.ag-pact .ag-wait{justify-content:center;min-height:44px;display:flex;align-items:center}
+.ag-fiche{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;font-weight:600;font-size:14px;text-decoration:none;color:var(--bleu)}
+.ag-fiche:hover{text-decoration:underline}
+.ag-lgroup{margin-top:16px}
+.ag-pastg>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 16px}
+.ag-pastg>summary::-webkit-details-marker{display:none}
+.ag-pastg>summary .agh{font-size:clamp(24px,3.4vw,30px);color:var(--mute)}
+.ag-pastg>summary .ag-cnt::after{content:"";display:inline-block;width:8px;height:8px;margin-left:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-3px) rotate(45deg);transition:transform .2s var(--ease)}
+.ag-pastg[open]>summary .ag-cnt::after{transform:translateY(1px) rotate(-135deg)}
+@media(min-width:720px){.ag-pastg>summary{padding:0 22px 18px}}
+
+/* ----- Fiche événement ----- */
+.ev3-back{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 12px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-weight:600;font-size:14px;text-decoration:none;color:var(--bleu);transition:border-color .2s var(--ease)}
+.ev3-back:hover{border-color:var(--bleu)}
+.ev3-head{margin-top:18px;display:flex;flex-wrap:wrap;gap:22px 48px;align-items:flex-end;padding-bottom:26px;border-bottom:1px solid #D9DCEC}
+.ev3-date{display:flex;align-items:flex-end;gap:12px;flex:0 0 auto}
+.ev3-d{display:flex;flex-direction:column;gap:8px}
+.ev3-d small{font-size:14px;color:var(--mute);font-weight:500}
+.ev3-n{font:800 clamp(96px,24vw,156px)/.78 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--marine);letter-spacing:-.03em}
+.ev3-to{font:700 30px/1 var(--f-titre);color:#9A9DBB;padding-bottom:24px}
+.ev3-my{display:flex;flex-direction:column;gap:2px;padding-bottom:2px;margin-left:4px}
+.ev3-my b{font:700 22px/1.1 var(--f-titre);color:var(--marine)}
+.ev3-my>span{font-size:15px;color:var(--mute)}
+.ev3-my em{font-style:normal;display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:700 20px/1 var(--f-titre);color:var(--marine)}
+.ev3-id{flex:1 1 380px;min-width:0}
+.ev3-h1{margin:12px 0 0;font:800 clamp(36px,6.4vw,72px)/.95 var(--f-titre);color:var(--marine);letter-spacing:-.025em;overflow-wrap:anywhere}
+.ev3-where{margin:10px 0 0;display:flex;align-items:center;gap:0 16px;flex-wrap:wrap;font-size:15px;color:var(--mute)}
+.ev3-where>span{display:inline-flex;align-items:center;gap:6px}
+.ev3-where a{display:inline-flex;align-items:center;gap:5px;min-height:44px;font-weight:600;text-decoration:none}
+.ev3-where a:hover{text-decoration:underline}
+.ev3-staff{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.ev3-cols{margin-top:28px;display:flex;flex-wrap:wrap;gap:28px 40px;align-items:flex-start}
+.ev3-main{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:30px}
+.ev3-h2{font-size:26px;line-height:1.15}
+.ev3-desc{margin:12px 0 0;font-size:16px;line-height:1.7;max-width:38em;white-space:pre-line}
+.ev3-img{width:100%;max-height:380px;object-fit:cover;border-radius:24px;display:block;background:#fff}
+.ev3-doc{margin-top:14px;display:flex;gap:14px;align-items:center;padding:16px 18px;border-radius:18px;background:#fff;max-width:40em;text-decoration:none;color:inherit}
+a.ev3-doc:hover{box-shadow:var(--shadow-md)}
+.ev3-doc-ico{width:44px;height:44px;border-radius:12px;background:var(--soft);color:var(--mute);display:grid;place-items:center;flex:none}
+.ev3-doc.open .ev3-doc-ico{background:var(--bleu-soft);color:var(--bleu)}
+.ev3-doc-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.ev3-doc-t b{font-weight:600;color:var(--marine)}
+.ev3-doc-t span{font-size:13.5px;color:var(--mute)}
+.ev3-facts{margin:12px 0 0;max-width:40em}
+.ev3-facts>div{display:flex;gap:6px 16px;flex-wrap:wrap;padding:12px 0;border-top:1px solid #D9DCEC}
+.ev3-facts>div:last-child{border-bottom:1px solid #D9DCEC}
+.ev3-facts dt{flex:0 0 110px;font-weight:600;color:var(--marine)}
+.ev3-facts dd{margin:0;flex:1 1 200px;color:var(--ink)}
+.ev3-note{margin:0;font-size:14px;line-height:1.6;color:var(--mute);max-width:40em}
+.ev3-panel{flex:1 1 330px;min-width:0;background:var(--marine);color:#fff;border-radius:var(--tile-r);padding:26px 22px 24px}
+@media(min-width:720px){.ev3-panel{max-width:440px;padding:30px 30px 26px}}
+.ev3-ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ev3-ph .agh{color:#fff;font-size:30px;letter-spacing:-.03em}
+.ev3-price{font:800 36px/1 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--or)}
+.ev3-seats{margin-top:20px;display:flex;align-items:center;gap:18px}
+.ev3-seats p{margin:0;min-width:84px;font-size:14px;line-height:1.45;color:rgba(255,255,255,.74)}
+.ev3-seats p b{display:block;font:800 60px/.85 var(--f-titre);font-variant-numeric:tabular-nums;color:#fff}
+.ev3-status{display:flex;align-items:center;gap:12px;margin-top:20px;padding:14px 16px;border-radius:18px;background:var(--or);color:var(--marine)}
+.ev3-status>i{width:32px;height:32px;border-radius:50%;background:var(--marine);color:var(--or);display:grid;place-items:center;flex:none}
+.ev3-status b{display:block;font-size:15px}
+.ev3-status small{display:block;font-size:13px;line-height:1.45}
+.ev3-steps{margin-top:22px;padding-top:22px;border-top:1px solid rgba(255,255,255,.14)}
+.ev3-line{margin:20px 0 0;font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.82)}
+.ev3-acts{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.ev3-acts .btn{width:100%}
+.ev3-panel :focus-visible{outline-color:#fff}
+.ev3-cancel{align-self:center;background:none;border:0;color:rgba(255,255,255,.82);text-decoration:underline;text-underline-offset:3px;font:600 14px var(--f-texte);min-height:44px;padding:0 8px;cursor:pointer}
+.ev3-cancel:hover{color:#fff}
+.ev3-fine{margin:14px 0 0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.66);text-align:center}
+.ev3-more{margin-top:48px}
+.ev3-tiles{margin-top:16px;display:flex;flex-wrap:wrap;gap:14px}
+.ev3-tile{flex:1 1 240px;min-width:0;display:flex;gap:16px;align-items:flex-start;padding:18px;border-radius:22px;background:#fff;text-decoration:none;color:var(--ink);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.ev3-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.ev3-tile .ag-when{flex:0 0 78px}
+.ev3-tile .ag-day{font-size:46px}.ev3-tile .ag-day.rng{font-size:26px}
+.ev3-tt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.ev3-tt b{font:700 17px/1.25 var(--f-titre);color:var(--marine)}
+.ev3-tt>span:last-child{font-size:13px;color:var(--mute)}
+
+/* Étapes d'inscription */
+.stp{list-style:none;margin:0;padding:0}
+.stp li{position:relative;display:flex;gap:14px;padding-bottom:18px}
+.stp li:last-child{padding-bottom:0}
+.stp li::after{content:"";position:absolute;left:16px;top:38px;bottom:-2px;width:2px;background:rgba(255,255,255,.18)}
+.stp li:last-child::after{display:none}
+.stp li.done::after{background:var(--or)}
+.stp .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;font:800 16px/1 var(--f-titre);border:1.5px solid rgba(255,255,255,.4);color:rgba(255,255,255,.85)}
+.stp li.done .dot{background:var(--or);border-color:var(--or);color:var(--ink)}
+.stp li.cur .dot{background:#fff;border-color:#fff;color:var(--marine)}
+.stp .tx{display:flex;flex-direction:column;gap:2px;padding-top:5px;min-width:0}
+.stp .tx b{font-size:15px;color:#fff}
+.stp li:not(.done):not(.cur) .tx b{color:rgba(255,255,255,.8)}
+.stp .tx span{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.66);overflow-wrap:anywhere}
+.stp.light li::after{background:#DCDFEF}
+.stp.light li.done::after{background:var(--or)}
+.stp.light .dot{border-color:#C9CDE6;color:var(--mute)}
+.stp.light li.done .dot{background:var(--or);border-color:var(--or);color:var(--ink)}
+.stp.light li.cur .dot{background:var(--bleu);border-color:var(--bleu);color:#fff}
+.stp.light .tx b,.stp.light li:not(.done):not(.cur) .tx b{color:var(--ink)}
+.stp.light li:not(.done):not(.cur) .tx b{color:var(--mute)}
+.stp.light .tx span{color:var(--mute)}
+
+/* Fenêtre d'inscription et de paiement */
+.pay-kick{margin:0;font-size:13px;font-weight:600;color:var(--mute)}
+.pay-h{margin-top:4px;font-size:30px;letter-spacing:-.03em}
+.pay-ev{margin:8px 0 0;font-size:14px;color:var(--mute)}
+.pay-hold{margin-top:14px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#FFF7D1;color:var(--marine);font-size:13.5px;line-height:1.45}
+.pay-hold>.agi{color:#6b5600}
+.pay-steps{margin-top:18px}
+.pay-acts{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.pay-acts .btn{width:100%;min-height:46px}
+
+/* ----- Mes inscriptions : badges ----- */
+#my-regs{scroll-margin-top:90px}
+.mr-head{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:-6px 0 14px}
+.mr-head p{margin:0;font-size:14px;color:var(--mute)}
+.mr-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))}
+.mr-b{position:relative;background:#fff;border-radius:22px;border:1px solid var(--line);overflow:hidden;box-shadow:0 14px 30px -22px rgba(2,2,89,.3)}
+.mr-b.pend{outline:2px dashed var(--or);outline-offset:3px}
+.mr-band{position:relative;height:58px;background:var(--tb);color:var(--ink);display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:0 16px 9px;font-size:11.5px}
+.mr-band::before{content:"";position:absolute;top:11px;left:50%;margin-left:-24px;width:48px;height:9px;border-radius:99px;background:var(--bg);box-shadow:inset 0 1px 2px rgba(0,0,0,.3)}
+.mr-band span:first-child{font-weight:600;letter-spacing:.3px}
+.mr-band span:last-child{font-weight:700}
+.mr-body{padding:14px 16px 16px}
+.mr-date{display:flex;align-items:flex-end;gap:12px}
+.mr-n{font:800 68px/.8 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--marine);letter-spacing:-.03em;white-space:nowrap}
+.mr-n.rng{font-size:50px}
+.mr-date>span:last-child{font-size:13px;line-height:1.35;color:var(--mute)}
+.mr-t{margin:12px 0 0;font:800 22px/1.1 var(--f-titre);letter-spacing:-.02em;color:var(--marine)}
+.mr-t a{color:inherit;text-decoration:none}
+.mr-t a:hover{color:var(--bleu)}
+.mr-place{margin:4px 0 0;display:flex;align-items:center;gap:5px;font-size:13px;color:var(--mute)}
+.mr-foot{margin-top:12px;padding-top:12px;border-top:1px dashed #DCDFEF;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mr-acts{display:flex;gap:6px}
+.mr-ibtn{width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--bleu);display:inline-grid;place-items:center;border:0;cursor:pointer;text-decoration:none;transition:background .2s var(--ease)}
+.mr-ibtn:hover{background:var(--bleu-soft)}
+.mr-past-h{margin:24px 0 8px;font-size:13.5px;font-weight:600;color:var(--mute)}
+.mr-past{display:grid;gap:8px}
+.mr-prow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:var(--soft);text-decoration:none;color:var(--mute)}
+.mr-prow:hover{background:var(--bleu-soft)}
+.mr-prow b{font:800 30px/1 var(--f-titre);font-variant-numeric:tabular-nums;color:#9A9DBB;min-width:46px}
+.mr-prow>span{display:flex;flex-direction:column;font-size:13px;min-width:0}
+.mr-prow em{font-style:normal;font-weight:600;color:var(--marine)}
+</style>
 </head>
 <body>
 <div id="sp"></div>
@@ -943,7 +1377,7 @@ const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
   
 /* ===== TEXTES FR / EN ===== */
 const I18N={
-fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",app_s:"Ajoutez SOMUN à votre écran d'accueil : le site s'ouvre alors en plein écran, comme une application, avec son icône.",app_ios1:"Dans <b>Safari</b>, touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut). Sur iOS 26, touchez d'abord le bouton <b>…</b>, puis <b>Partager</b>.",app_ios2:"Faites défiler et choisissez <b>Sur l'écran d'accueil</b>.",app_ios3:"Touchez <b>Ajouter</b>. L'icône SOMUN apparaît sur votre écran d'accueil.",app_and1:"Dans <b>Chrome</b>, touchez le menu <b>⋮</b> en haut à droite.",app_and2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirmez.",app_btn:"Installer l'application",app_note:"Dans l'application, connectez-vous une première fois : sur iPhone, elle ne partage pas la session de Safari.",app_done:"Application installée",jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Activités",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
+fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",app_s:"Ajoutez SOMUN à votre écran d'accueil : le site s'ouvre alors en plein écran, comme une application, avec son icône.",app_ios1:"Dans <b>Safari</b>, touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut). Sur iOS 26, touchez d'abord le bouton <b>…</b>, puis <b>Partager</b>.",app_ios2:"Faites défiler et choisissez <b>Sur l'écran d'accueil</b>.",app_ios3:"Touchez <b>Ajouter</b>. L'icône SOMUN apparaît sur votre écran d'accueil.",app_and1:"Dans <b>Chrome</b>, touchez le menu <b>⋮</b> en haut à droite.",app_and2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirmez.",app_btn:"Installer l'application",app_note:"Dans l'application, connectez-vous une première fois : sur iPhone, elle ne partage pas la session de Safari.",app_done:"Application installée",jeux_t:"Jeux",jeux_s:"Entraînez-vous à la négociation et aux règles de procédure de SOMUN.",back_games:"← Tous les jeux",diplo:"Simulation diplomatique",diplo_s:"Représentez un État à l'ONU ou à l'UNESCO : prenez la parole, négociez avec les autres délégations, rédigez une résolution et faites-la adopter.",diplo_m1:"10 organes de l'ONU et de l'UNESCO",diplo_m2:"Scénarios fictifs, toujours différents",diplo_go:"Lancer une simulation",diplo_new:"Nouvelle simulation",diplo_resume:"Reprendre la partie",diplo_saved:"Partie en cours, phase {p} sur 7",quiz_go:"Jouer au quiz",diplo_load:"Chargement de la simulation diplomatique…",diplo_err:"La simulation diplomatique n'a pas pu être chargée. Vérifiez votre connexion, puis rechargez la page.",home:"Accueil",activities:"Agenda",resources:"Ressources",join:"Adhérer",poles:"Pôles",partners:"Partenaires",bureau:"Bureau",admin:"Admin",more:"Plus",account:"Mon compte",login:"Connexion",logout:"Se déconnecter",
  hero_out:"Débattre, négocier, changer le monde.",hero_sub_out:"Trainings, conférences, voyages et visites : toute la vie de l'association au même endroit.",hero_sub_in:"Voici ce qui t'attend à SOMUN.",
  hello:"Bonjour",see_acts:"Voir les activités",st_events:"événements",st_poles:"pôles",st_regs:"inscriptions",st_my_regs:"mes inscriptions",
  next:"Prochains événements",see_all:"Tout voir →",news:"Actualités",search:"Rechercher un événement, un voyage ou un lieu",all:"Tous",mine:"Mes inscriptions",trips_confs:"🌍 Voyages & Conférences",
@@ -1010,8 +1444,23 @@ fr:{app_install:"Installer l'application",app_t:"Installer l'application SOMUN",
  err_load:"Impossible de charger les données pour le moment.",retry:"Réessayer",
  e_creds:"E-mail ou mot de passe incorrect.",e_unconfirmed:"Confirme d'abord ton adresse e-mail grâce au lien reçu.",e_exists:"Un compte existe déjà avec cet e-mail.",e_weak:"Mot de passe trop faible : choisis-en un plus long ou moins courant.",e_rate:"Trop de tentatives. Réessaie dans quelques minutes.",e_same:"Le nouveau mot de passe doit être différent de l'ancien.",e_email:"Adresse e-mail invalide.",e_url:"Lien invalide (ex. https://instagram.com/… ou linkedin.com/in/…).",e_file_big:"Fichier trop volumineux (max. 5 Mo).",e_net:"Connexion impossible. Vérifie ta connexion Internet.",e_session:"Ta session a expiré, reconnecte-toi.",e_generic:"Une erreur est survenue. Réessaie.",
  e_cancel_past:"Cet événement est déjà passé.",
- setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…"},
-en:{app_install:"Install the app",app_t:"Install the SOMUN app",app_s:"Add SOMUN to your home screen: the site then opens full screen, like an app, with its own icon.",app_ios1:"In <b>Safari</b>, tap the <b>Share</b> button (the square with an arrow pointing up). On iOS 26, tap the <b>…</b> button first, then <b>Share</b>.",app_ios2:"Scroll down and choose <b>Add to Home Screen</b>.",app_ios3:"Tap <b>Add</b>. The SOMUN icon appears on your home screen.",app_and1:"In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.",app_and2:"Choose <b>Install app</b> or <b>Add to Home screen</b>, then confirm.",app_btn:"Install the app",app_note:"Sign in once inside the app: on iPhone, it does not share your Safari session.",app_done:"App installed",jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Activities",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
+ setup_t:"Configuration requise",setup_txt:"Renseigne SUPABASE_URL et SUPABASE_ANON_KEY au début de index.html.",sdk_t:"Connexion au serveur impossible",sdk_txt:"La bibliothèque de connexion n'a pas pu être chargée. Vérifie ta connexion Internet ou désactive un bloqueur de scripts, puis recharge la page.",loading:"Chargement…",
+ ag_other:"Autres",ag_on_form:"Sur formulaire",ag_acc_all:"ouvert à tous",ag_acc_mem:"réservé aux adhérents",ag_acc_form:"inscription sur formulaire",ag_from:"dès {h}",ag_from_to:"du {a} au {b}",ag_days_1:"1 jour",ag_days_n:"{n} jours",
+ ag_seats_aria:"{t} places prises sur {n}",ag_seats_aria_you:", dont la tienne",ag_regd_1:"1 inscrit",ag_regd_n:"{n} inscrits",ag_regd_of:"{a} sur {c} places.",ag_gl_1:"1 libre sur {c}",ag_gl_n:"{n} libres sur {c}",ag_free_1:"1 place encore libre",ag_free_n:"{n} places encore libres",ag_leftof_1:"place libre sur {c}",ag_leftof_n:"places libres sur {c}",ag_tkof_1:"inscrit sur {c}",ag_tkof_n:"inscrits sur {c}",ag_seats:"{a}, {b}.",ag_gold_seat:"Ta place est en or.",
+ ag_confirmed:"Place confirmée",ag_pay_x:"Payer {p} €",ag_cnt_1:"1 événement",ag_cnt_n:"{n} événements",ag_you_in:"inscription à ton nom",ag_prev:"Mois précédent",ag_nextm:"Mois suivant",ag_yours:"Tes inscriptions",
+ ag_season:"Sorbonne Model United Nations, saison {s}",ag_see:"Voir l'agenda",ag_all:"Tout l'agenda",ag_up_1:"1 événement à venir dans ton agenda",ag_up_n:"{n} événements à venir dans ton agenda",ag_pay_1:"1 paiement en attente",ag_pay_n:"{n} paiements en attente",
+ ag_hold:"Ta place est gardée 2 jours après ta réservation. Règle {p} € sur HelloAsso pour la confirmer.",ag_more_pay_1:"Un autre paiement t'attend dans Mes inscriptions.",ag_more_pay_n:"{n} autres paiements t'attendent dans Mes inscriptions.",ag_pay_btn:"Payer sur HelloAsso",
+ ag_join_t:"Adhère pour la saison {s}",ag_join_txt:"Ton adhésion t'ouvre les événements réservés aux adhérents.",ag_visit_txt:"Crée ton compte pour t'inscrire aux trainings, conférences, voyages et soirées.",
+ ag_next_mine:"Ton prochain rendez-vous",ag_next:"Prochain rendez-vous",ag_held:"Ta place est réservée",ag_held_pend:"Ta place t'attend",ag_sg:"Study guide",ag_ics:"Ajouter à mon calendrier",ag_ics_all:"Tout ajouter au calendrier",ag_ics_none:"Aucune inscription à venir.",
+ ag_ribbon_t:"La saison en un coup d'œil",ag_ribbon_s:"Une ligne par type d'activité, un trait par événement.",ag_ribbon_me:"Les traits cerclés d'or sont tes inscriptions.",ag_today:"aujourd'hui, {d}",ag_odj:"À l'ordre du jour",ag_news_all:"Toutes les actualités",ag_aside:"Calendrier et actualités",
+ ag_sub:"Tous les événements de la saison {s}.",ag_search:"Un événement, un lieu…",ag_view:"Affichage",ag_filter:"Filtrer les événements",ag_month:"Mois",ag_list:"Liste",ag_months:"Mois de la saison",ag_trips:"Voyages et conférences",ag_past_t:"Événements passés",
+ ag_msum:"{c} ce mois-ci",ag_mmine_1:", dont 1 à ton nom",ag_mmine_n:", dont {n} à ton nom",ag_mnone:"Rien de prévu ce mois-ci.",ag_this_month:"Aujourd'hui",ag_more_n:"+ {n} autres",ag_dsum:"{c} ce jour-là",ag_dnone:"Rien de prévu ce jour-là.",ag_full_sheet:"Voir la fiche complète",
+ ag_map:"Voir le plan",ag_odj_ev:"Ordre du jour",ag_docs:"Documents de séance",ag_sg_go:"Ouvrir le document",ag_sg_locked:"Il s'ouvre dès que ta place est confirmée.",ag_sg_none:"Pas encore de study guide pour cet événement.",
+ ag_reg_t:"Inscription",ag_s1_t:"Tu réserves ta place",ag_s1_d:"Elle est gardée 2 jours, le temps de payer.",ag_s1_done:"Place réservée",ag_s1_dd:"Elle est gardée 2 jours après ta réservation.",ag_s2_t:"Tu règles {p} € sur HelloAsso",ag_s2_d:"Avec la même adresse e-mail que ton compte SOMUN.",ag_s2_dd:"Avec {m}, l'adresse de ton compte, pour que le paiement soit reconnu.",ag_s3_t:"Ta place est confirmée",ag_s3_d:"Automatiquement, dès que le paiement est reçu.",
+ ag_conf_sub:"Retrouve-la dans Mes inscriptions.",ag_pend_sub:"Ta place est gardée 2 jours après ta réservation.",ag_free_line:"Inscription gratuite, confirmée tout de suite.",ag_secure:"Paiement sécurisé par HelloAsso, versé directement à l'association.",ag_past_line:"Cet événement est terminé.",ag_full_line:"Toutes les places sont prises.",ag_mem_line:"Réservé aux adhérents à jour de cotisation.",ag_form_line:"L'inscription se fait sur un formulaire externe.",ag_form_btn:"Remplir le formulaire",ag_also:"Également au programme",
+ ag_step_k:"Étape {a} sur 3",ag_pay_h:"Plus qu'à payer",ag_book_h:"Réserver ma place",ag_reg_h:"Confirmer l'inscription",ag_hold_b:"Ta place t'attend 2 jours.",ag_hold_d:"Passé ce délai, elle peut être libérée.",ag_pay_ha:"Payer {p} € sur HelloAsso",ag_later:"Je paierai plus tard",
+ ag_facts:"Infos pratiques",ag_f_when:"Quand",ag_f_where:"Où",ag_f_access:"Accès",ag_mr_sum:"{u} à venir, {p}",ag_mr_past_1:"1 passée",ag_mr_past_n:"{n} passées",ag_badge_season:"Saison {s}",ag_past_regs:"Passées"},
+en:{app_install:"Install the app",app_t:"Install the SOMUN app",app_s:"Add SOMUN to your home screen: the site then opens full screen, like an app, with its own icon.",app_ios1:"In <b>Safari</b>, tap the <b>Share</b> button (the square with an arrow pointing up). On iOS 26, tap the <b>…</b> button first, then <b>Share</b>.",app_ios2:"Scroll down and choose <b>Add to Home Screen</b>.",app_ios3:"Tap <b>Add</b>. The SOMUN icon appears on your home screen.",app_and1:"In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.",app_and2:"Choose <b>Install app</b> or <b>Add to Home screen</b>, then confirm.",app_btn:"Install the app",app_note:"Sign in once inside the app: on iPhone, it does not share your Safari session.",app_done:"App installed",jeux_t:"Games",jeux_s:"Practise negotiation and SOMUN's Rules of Procedure.",back_games:"← All games",diplo:"Diplomatic simulation",diplo_s:"Represent a country at the UN or UNESCO: take the floor, negotiate with other delegations, draft a resolution and get it adopted.",diplo_m1:"10 UN and UNESCO bodies",diplo_m2:"In French",diplo_go:"Start a simulation",diplo_new:"New simulation",diplo_resume:"Resume the game",diplo_saved:"Game in progress, phase {p} of 7",quiz_go:"Play the quiz",diplo_load:"Loading the diplomatic simulation…",diplo_err:"The diplomatic simulation could not be loaded. Check your connection, then reload the page.",home:"Home",activities:"Calendar",resources:"Resources",join:"Join",poles:"Teams",partners:"Partners",bureau:"Board",admin:"Admin",more:"More",account:"My account",login:"Log in",logout:"Log out",
  hero_out:"Debate, negotiate, change the world.",hero_sub_out:"Trainings, conferences, trips and visits: everything about the association in one place.",hero_sub_in:"Here is what's coming up at SOMUN.",
  hello:"Hello",see_acts:"See activities",st_events:"events",st_poles:"teams",st_regs:"registrations",st_my_regs:"my registrations",
  next:"Upcoming events",see_all:"See all →",news:"News",search:"Search an event, trip or venue",all:"All",mine:"My registrations",trips_confs:"🌍 Trips & Conferences",
@@ -1078,7 +1527,22 @@ en:{app_install:"Install the app",app_t:"Install the SOMUN app",app_s:"Add SOMUN
  err_load:"Unable to load data right now.",retry:"Retry",
  e_creds:"Incorrect email or password.",e_unconfirmed:"Please confirm your email address using the link you received.",e_exists:"An account already exists with this email.",e_weak:"Password too weak: choose a longer or less common one.",e_rate:"Too many attempts. Try again in a few minutes.",e_same:"The new password must be different from the old one.",e_email:"Invalid email address.",e_url:"Invalid link (e.g. https://instagram.com/… or linkedin.com/in/…).",e_file_big:"File too large (max. 5 MB).",e_net:"Unable to connect. Check your internet connection.",e_session:"Your session has expired, please log in again.",e_generic:"Something went wrong. Please try again.",
  e_cancel_past:"This event has already taken place.",
- setup_t:"Setup required",setup_txt:"Fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of index.html.",sdk_t:"Unable to load client library",sdk_txt:"The database client script could not be loaded. Check your internet connection or script blocker and reload.",loading:"Loading…"}
+ setup_t:"Setup required",setup_txt:"Fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of index.html.",sdk_t:"Unable to load client library",sdk_txt:"The database client script could not be loaded. Check your internet connection or script blocker and reload.",loading:"Loading…",
+ ag_other:"Other",ag_on_form:"Via form",ag_acc_all:"open to all",ag_acc_mem:"members only",ag_acc_form:"registration via form",ag_from:"from {h}",ag_from_to:"from {a} to {b}",ag_days_1:"1 day",ag_days_n:"{n} days",
+ ag_seats_aria:"{t} of {n} spots taken",ag_seats_aria_you:", including yours",ag_regd_1:"1 registered",ag_regd_n:"{n} registered",ag_regd_of:"{a} out of {c} spots.",ag_gl_1:"1 of {c} left",ag_gl_n:"{n} of {c} left",ag_free_1:"1 spot still free",ag_free_n:"{n} spots still free",ag_leftof_1:"spot left out of {c}",ag_leftof_n:"spots left out of {c}",ag_tkof_1:"registered out of {c}",ag_tkof_n:"registered out of {c}",ag_seats:"{a}, {b}.",ag_gold_seat:"Yours is in gold.",
+ ag_confirmed:"Spot confirmed",ag_pay_x:"Pay €{p}",ag_cnt_1:"1 event",ag_cnt_n:"{n} events",ag_you_in:"you're registered",ag_prev:"Previous month",ag_nextm:"Next month",ag_yours:"Your registrations",
+ ag_season:"Sorbonne Model United Nations, {s} season",ag_see:"See the calendar",ag_all:"Full calendar",ag_up_1:"1 upcoming event in your calendar",ag_up_n:"{n} upcoming events in your calendar",ag_pay_1:"1 payment pending",ag_pay_n:"{n} payments pending",
+ ag_hold:"Your spot is held for 2 days after you book. Pay €{p} on HelloAsso to confirm it.",ag_more_pay_1:"Another payment is waiting in My registrations.",ag_more_pay_n:"{n} other payments are waiting in My registrations.",ag_pay_btn:"Pay on HelloAsso",
+ ag_join_t:"Join for the {s} season",ag_join_txt:"Membership opens up the members-only events.",ag_visit_txt:"Create your account to sign up for trainings, conferences, trips and parties.",
+ ag_next_mine:"Your next event",ag_next:"Next event",ag_held:"Your spot is reserved",ag_held_pend:"Your spot is waiting",ag_sg:"Study guide",ag_ics:"Add to my calendar",ag_ics_all:"Add all to my calendar",ag_ics_none:"No upcoming registrations.",
+ ag_ribbon_t:"The season at a glance",ag_ribbon_s:"One row per type of activity, one mark per event.",ag_ribbon_me:"Marks circled in gold are your registrations.",ag_today:"today, {d}",ag_odj:"On the agenda",ag_news_all:"All news",ag_aside:"Calendar and news",
+ ag_sub:"Every event of the {s} season.",ag_search:"An event, a venue…",ag_view:"View",ag_filter:"Filter events",ag_month:"Month",ag_list:"List",ag_months:"Months of the season",ag_trips:"Trips and conferences",ag_past_t:"Past events",
+ ag_msum:"{c} this month",ag_mmine_1:", 1 of them yours",ag_mmine_n:", {n} of them yours",ag_mnone:"Nothing planned this month.",ag_this_month:"Today",ag_more_n:"+ {n} more",ag_dsum:"{c} that day",ag_dnone:"Nothing planned that day.",ag_full_sheet:"See full details",
+ ag_map:"See the map",ag_odj_ev:"Agenda",ag_docs:"Session documents",ag_sg_go:"Open the document",ag_sg_locked:"It unlocks once your spot is confirmed.",ag_sg_none:"No study guide for this event yet.",
+ ag_reg_t:"Registration",ag_s1_t:"You reserve your spot",ag_s1_d:"It is held for 2 days while you pay.",ag_s1_done:"Spot reserved",ag_s1_dd:"It is held for 2 days after you book.",ag_s2_t:"You pay €{p} on HelloAsso",ag_s2_d:"Using the same email address as your SOMUN account.",ag_s2_dd:"Using {m}, your account address, so the payment is recognised.",ag_s3_t:"Your spot is confirmed",ag_s3_d:"Automatically, as soon as the payment is received.",
+ ag_conf_sub:"You'll find it in My registrations.",ag_pend_sub:"Your spot is held for 2 days after you book.",ag_free_line:"Free registration, confirmed right away.",ag_secure:"Secure payment through HelloAsso, paid directly to the association.",ag_past_line:"This event has ended.",ag_full_line:"All spots are taken.",ag_mem_line:"For paid-up members only.",ag_form_line:"Registration is done through an external form.",ag_form_btn:"Fill out the form",ag_also:"Also coming up",
+ ag_step_k:"Step {a} of 3",ag_pay_h:"Just the payment left",ag_book_h:"Reserve my spot",ag_reg_h:"Confirm registration",ag_hold_b:"Your spot waits for 2 days.",ag_hold_d:"After that, it may be released.",ag_pay_ha:"Pay €{p} on HelloAsso",ag_later:"I'll pay later",
+ ag_facts:"Practical info",ag_f_when:"When",ag_f_where:"Where",ag_f_access:"Access",ag_mr_sum:"{u} upcoming, {p}",ag_mr_past_1:"1 past",ag_mr_past_n:"{n} past",ag_badge_season:"{s} season",ag_past_regs:"Past"}
 };
 
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{const entries=Object.entries(v);if(entries.length>250)v=Object.fromEntries(entries.slice(-250));localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -1547,6 +2011,7 @@ window.addEventListener("resize",()=>moveNavThumb(true),{passive:true});
 
 function render(keep,instantThumb){
   document.documentElement.lang=lang;
+  document.body.classList.toggle("pg3",Boolean(configured)&&["accueil","activites","event"].includes(route));
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
   const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
@@ -1580,7 +2045,7 @@ function render(keep,instantThumb){
   if(ghost){appEl.appendChild(ghost);const kill=()=>ghost.remove();ghost.addEventListener("animationend",kill);setTimeout(kill,600)}
   requestAnimationFrame(()=>moveNavThumb(Boolean(keep||instantThumb)));
   if(!keep)window.scrollTo(0,0);
-  observe(keep);if(!keep)stagger();animateStats();
+  observe(keep);if(!keep)stagger();animateStats();agAfterRender();
 }
 function observe(keep){
   if(keep||!("IntersectionObserver" in window)){document.querySelectorAll(".reveal").forEach(e=>e.classList.add("show"));return}
@@ -1708,62 +2173,571 @@ function aboutBlock(){
    <div class="grid">${[1,2,3].map(i=>`<div class="card"><b>${t("about_"+i+"t")}</b><span class="mute">${t("about_"+i)}</span></div>`).join("")}</div>
    ${s.length?`<div class="social">${s.join("")}</div>`:""}</section>`;
 }
+/* ===== NOUVELLE MISE EN PAGE : ACCUEIL, AGENDA, FICHE, INSCRIPTIONS ===== */
+const AG_TYPES={"Training":["#00008E","#ECECF9"],"Conférence":["#E07A1F","#FCEBDD"],"Voyage":["#6F7BF7","#EEF0FF"],"Visite":["#0B7A6C","#E3F4F1"],"Soirée":["#C12A3A","#FBE8EA"]};
+const AG_ORDER=Object.keys(AG_TYPES);
+const agTC=k=>{const c=AG_TYPES[k]||["#9095B8","#F2F3FA"];return `--tc:${c[0]};--tb:${c[1]}`};
+const agTypeName=k=>k?(I18N[lang][k]||k):t("ag_other");
+const AGI={
+  calplus:'<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18M12 12.5v6M9 15.5h6"/>',
+  pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  left:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  chevl:'<path d="M15 6l-6 6 6 6"/>',
+  chevr:'<path d="M9 6l6 6-6 6"/>',
+  ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  doc:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  grid:'<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M9 9.5V21M15 9.5V21M3 15h18"/>',
+  hourglass:'<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  ticket:'<path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a2 2 0 0 0 0 3V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.5a2 2 0 0 0 0-3Z"/><path d="M15 7v10" stroke-dasharray="2 2"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/>'
+};
+const agIco=(k,s=18,w=1.8)=>`<svg class="agi" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${AGI[k]||""}</svg>`;
+const tn=(k,n,v)=>t(k+(Number(n)===1?"_1":"_n"),Object.assign({n},v||{}));
+const agCap=s=>s?String(s).charAt(0).toUpperCase()+String(s).slice(1):"";
+const agIso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const agOk=e=>Boolean(e)&&/^\d{4}-\d{2}-\d{2}/.test(String(e.date||""))&&!isNaN(dd(e.date));
+const agEnd=e=>{const f=isoDay(e.date_fin||e.end_date||"");return /^\d{4}-\d{2}-\d{2}$/.test(f)&&f>isoDay(e.date)?f:isoDay(e.date)};
+const agMulti=e=>agEnd(e)>isoDay(e.date);
+const agPast=e=>agEnd(e)<todayStr();
+const agCapOf=e=>Math.max(0,Number(e.places)||0);
+const agLeft=e=>Math.max(0,agCapOf(e)-(D.taken[e.id]||0));
+const agPaid=e=>Number(e.prix)>0;
+const agF=(d,o)=>dd(d).toLocaleDateString(loc(),o);
+const agSeason=()=>currentSeason().replace("-","–");
+const agSeasonOf=iso=>{const [y,m]=String(iso).split("-").map(Number);const a=m>=8?y:y-1;return `${a}–${a+1}`};
+const agCmp=(a,b)=>isoDay(a.date).localeCompare(isoDay(b.date))||hhmm(a.heure).localeCompare(hhmm(b.heure));
+const agUpcoming=()=>D.events.filter(e=>agOk(e)&&!agPast(e)).sort(agCmp);
+const agGo=e=>`href="#event-${sid(e.id)}" onclick="event.preventDefault();openEvent(${idArg(e.id)})"`;
+const agAddM=(ym,n)=>{const [y,m]=ym.split("-").map(Number);return agIso(new Date(y,m-1+n,1,12)).slice(0,7)};
+const agMonthName=(ym,o)=>{const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,15,12).toLocaleDateString(loc(),o||{month:"long",year:"numeric"})};
+const agExcerpt=(s,n)=>{const x=String(s||"").replace(/\s+/g," ").trim();if(x.length<=n)return x;const c=x.slice(0,n);return c.slice(0,Math.max(c.lastIndexOf(" "),n*.6|0)).replace(/[\s,;:.]+$/,"")+"…"};
+const agSlug=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"evenement";
+const agPriceTxt=e=>agPaid(e)?`${e.prix} €`:safeUrl(e.form_url)?t("ag_on_form"):t("free");
+function agAccess(e){
+  const form=safeUrl(e.form_url),parts=[];
+  if(agPaid(e))parts.push(`${e.prix} €`);else if(!form)parts.push(t("free"));
+  parts.push(e.members_only?t("ag_acc_mem"):form?t("ag_acc_form"):t("ag_acc_all"));
+  return agCap(parts.join(", "));
+}
+function agWhen(e){
+  const h=hhmm(e.heure);
+  if(agMulti(e))return h?t("ag_from",{h}):tn("ag_days",Math.round((dd(agEnd(e))-dd(e.date))/864e5)+1);
+  return h;
+}
+function agParts(e){
+  const s=isoDay(e.date),f=agEnd(e),multi=f>s,a=dd(s),b=dd(f),sameM=s.slice(0,7)===f.slice(0,7);
+  return {
+    day:multi?`${a.getDate()}–${b.getDate()}`:String(a.getDate()),rng:multi,
+    wd:multi?`${agF(s,{weekday:"short"})}–${agF(f,{weekday:"short"})}`:agF(s,{weekday:"short"}),
+    mon:multi&&!sameM?`${agF(s,{month:"short"})}–${agF(f,{month:"short"})}`:agF(s,{month:"short"})
+  };
+}
+function agDayMap(evs){
+  const map={};
+  evs.forEach(e=>{
+    const s=isoDay(e.date),f=agEnd(e);let d=dd(s);
+    for(let i=0;i<62;i++){
+      const k=agIso(d);if(k>f)break;
+      (map[k]=map[k]||[]).push({e,first:k===s,last:k===f});
+      d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,12);
+    }
+  });
+  Object.values(map).forEach(l=>l.sort((a,b)=>agCmp(a.e,b.e)));
+  return map;
+}
+function agCenterIn(box,el){
+  if(!box||!el||box.scrollWidth<=box.clientWidth+4)return;
+  const b=box.getBoundingClientRect(),r=el.getBoundingClientRect();
+  box.scrollLeft+=r.left-b.left-(b.width-r.width)/2;
+}
+
+/* Places en hémicycle, comme sur le logo : pleines = prises, vides = libres, or = la tienne */
+function agSeatsSVG(e,dark,width){
+  const n=agCapOf(e),taken=Math.min(n,D.taken[e.id]||0);
+  if(!n||n>120)return "";
+  const you=D.myRegs[e.id]&&taken>0?taken-1:-1;
+  const rows=n<=14?2:n<=36?3:n<=64?4:5,rIn=46,rOut=100;
+  const radii=Array.from({length:rows},(_,i)=>rIn+(rOut-rIn)*i/(rows-1));
+  const tot=radii.reduce((a,b)=>a+b,0),per=radii.map(r=>Math.max(3,Math.round(n*r/tot)));
+  let sum=per.reduce((a,b)=>a+b,0);
+  while(sum>n){per[per.indexOf(Math.max(...per))]--;sum--}
+  while(sum<n){per[per.indexOf(Math.max(...per))]++;sum++}
+  const seats=[];
+  radii.forEach((r,ri)=>{for(let j=0;j<per[ri];j++){const a=Math.PI*(j+.5)/per[ri];seats.push([Math.PI-a,110-r*Math.cos(a),108-r*Math.sin(a)])}});
+  seats.sort((p,q)=>q[0]-p[0]);
+  const rad=Math.min(7.2,.42*Math.PI*rIn/Math.max(per[0],1));
+  const full=dark?"#FFFFFF":"#020259",free=dark?"rgba(255,255,255,.5)":"#7D84B8";
+  const dots=seats.map(([,x,y],i)=>{
+    const c=`cx="${x.toFixed(1)}" cy="${y.toFixed(1)}"`;
+    if(i===you)return `<circle ${c} r="${(rad+.8).toFixed(1)}" fill="#EBC000" stroke="#020259" stroke-width="1.6"/>`;
+    if(i<taken)return `<circle ${c} r="${rad.toFixed(1)}" fill="${full}"/>`;
+    return `<circle ${c} r="${Math.max(1,rad-.8).toFixed(1)}" fill="none" stroke="${free}" stroke-width="1.6"/>`;
+  }).join("");
+  const lbl=t("ag_seats_aria",{t:taken,n})+(you>=0?t("ag_seats_aria_you"):"");
+  return `<svg class="ag-hemi" viewBox="0 0 220 118" width="${width}" height="${Math.round(width*118/220)}" role="img" aria-label="${esc(lbl)}">${dots}</svg>`;
+}
+function agGauge(e){
+  const n=agCapOf(e),tk=D.taken[e.id]||0,free=Math.max(0,n-tk);
+  if(!n)return "";
+  const txt=agPast(e)?tn("ag_regd",tk):free===0?t("full"):tn("ag_gl",free,{c:n});
+  return `<span class="ag-gauge${free===0?" full":""}"><b aria-hidden="true"><i style="width:${Math.min(100,Math.round(tk/n*100))}%"></i></b><span>${esc(txt)}</span></span>`;
+}
+function agAction(e,big){
+  const id=idArg(e.id),st=D.myRegs[e.id],past=agPast(e),sz=big?"":" sm";
+  if(st==="confirmed")return `<span class="ag-done"><i>${agIco("check",15,2.6)}</i>${t("ag_confirmed")}</span>`;
+  if(st==="pending"&&!past)return agPaid(e)?`<button class="btn gold${sz}" onclick="payEvent(${id})">${t("ag_pay_x",{p:esc(e.prix)})}</button>`:`<span class="ag-wait">${agIco("hourglass",16,2)}${t("pending")}</span>`;
+  if(past)return `<span class="ag-muted">${t("ended")}</span>`;
+  if(safeUrl(e.form_url))return `<button class="btn ghost${sz}" onclick="openFormEvent(${id})">${t("form_badge")}${agIco("ext",15)}</button>`;
+  if(agLeft(e)<=0)return `<span class="ag-muted">${t("full")}</span>`;
+  return `<button class="btn${sz}" onclick="openReg(${id})">${t("reg")}${agPaid(e)?" · "+esc(e.prix)+" €":""}</button>`;
+}
+function agRow(e){
+  const p=agParts(e),st=D.myRegs[e.id],past=agPast(e),when=agWhen(e),id=idArg(e.id);
+  return `<li class="ag-row${st&&!past?" mine":""}${past?" past":""}" style="${agTC(e.type)}">
+   <div class="ag-when"><span class="sr">${esc(long(e.date))}</span><small aria-hidden="true">${esc(p.wd)}</small><span class="ag-day${p.rng?" rng":""}" aria-hidden="true">${esc(p.day)}</span><small aria-hidden="true">${esc(p.mon)}</small></div>
+   <div class="ag-main">
+    <div class="ag-tags"><span class="ag-chip">${esc(agTypeName(e.type))}</span><span>${esc(agPriceTxt(e))}</span>${e.members_only?`<span class="ag-lock">${agIco("lock",14)}${t("members_only")}</span>`:""}</div>
+    <h3 class="ag-title"><a ${agGo(e)}>${esc(T(e.title))}</a></h3>
+    <p class="ag-meta">${when?`<span>${agIco("clock",15)}${esc(when)}</span>`:""}${e.lieu?`<span>${agIco("pin",15)}${esc(T(e.lieu))}</span>`:""}</p>
+   </div>
+   <div class="ag-side">${agAction(e)}${agGauge(e)}</div>
+   ${isStaff()?`<div class="ag-staff"><button class="btn ghost xs" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger xs" onclick="delRow('events',${id},this)">${t("del")}</button></div>`:""}
+  </li>`;
+}
+function agSteps(steps,done,cur,dark){
+  return `<ol class="stp${dark?"":" light"}">${steps.map(([a,b],i)=>`<li class="${i<done?"done":i===cur?"cur":""}"${i===cur?' aria-current="step"':""}><span class="dot" aria-hidden="true">${i<done?agIco("check",17,2.6):i+1}</span><span class="tx"><b>${a}</b><span>${b}</span></span></li>`).join("")}</ol>`;
+}
+
+/* --- Mini-calendrier (accueil) --- */
+let mmMonth="";
+function agMiniHTML(){
+  const ym=mmMonth||todayStr().slice(0,7),[Y,M]=ym.split("-").map(Number);
+  const start=(new Date(Y,M-1,1,12).getDay()+6)%7,cells=Math.ceil((start+new Date(Y,M,0).getDate())/7)*7;
+  const map=agDayMap(D.events.filter(agOk)),today=todayStr();
+  const wd=[0,1,2,3,4,5,6].map(i=>`<span class="mm-wd" aria-hidden="true">${esc(new Date(2024,0,1+i,12).toLocaleDateString(loc(),{weekday:"short"}))}</span>`).join("");
+  let days="";
+  for(let i=0;i<cells;i++){
+    const d=new Date(Y,M-1,1-start+i,12),k=agIso(d),evs=(map[k]||[]).map(x=>x.e),mine=evs.some(e=>D.myRegs[e.id]);
+    const cls=["mm-d",k.slice(0,7)!==ym?"oth":"",k<today?"gone":"",k===today?"today":"",evs.length?"has":"",mine?"mine":""].filter(Boolean).join(" ");
+    const lbl=agCap(agF(k,{weekday:"long",day:"numeric",month:"long"}))+(evs.length?", "+tn("ag_cnt",evs.length):"")+(mine?", "+t("ag_you_in"):"");
+    days+=`<button type="button" class="${cls}"${evs.length?` style="${agTC(evs[0].type)}"`:""} aria-label="${esc(lbl)}" onclick="agOpenDay('${k}')"><b>${d.getDate()}</b><i aria-hidden="true"></i></button>`;
+  }
+  return `<div class="tile mm" id="mm">
+   <div class="mm-head"><h2 class="agh">${esc(agCap(agMonthName(ym)))}</h2><span class="mm-nav"><button type="button" class="ag-arrow" data-nav="-1" aria-label="${esc(t("ag_prev"))}" onclick="agMini(-1)">${agIco("chevl")}</button><button type="button" class="ag-arrow" data-nav="1" aria-label="${esc(t("ag_nextm"))}" onclick="agMini(1)">${agIco("chevr")}</button></span></div>
+   <div class="mm-grid">${wd}${days}</div>
+   <div class="mm-leg">${S.user?`<span><i aria-hidden="true"></i>${t("ag_yours")}</span>`:""}<span><i class="t" aria-hidden="true"></i>${esc(agCap(t("today")))}</span></div>
+  </div>`;
+}
+function agMini(n){
+  mmMonth=agAddM(mmMonth||todayStr().slice(0,7),n);
+  const el=$("#mm");if(!el)return;
+  el.outerHTML=agMiniHTML();
+  const b=document.querySelector(`#mm .ag-arrow[data-nav="${n}"]`);if(b)b.focus();
+}
+function agOpenDay(k){agMonth=k.slice(0,7);agDay=k;agView="month";go("activites")}
+
+/* --- Frise de la saison (accueil) --- */
+function agRibbonHTML(){
+  const y=Number(currentSeason().slice(0,4));
+  const all=Array.from({length:12},(_,i)=>agIso(new Date(y,7+i,1,12)).slice(0,7));
+  const evs=D.events.filter(e=>agOk(e)&&isoDay(e.date)>=all[0]+"-01"&&isoDay(e.date)<=all[11]+"-31");
+  if(!evs.length)return "";
+  const used=new Set();evs.forEach(e=>{used.add(isoDay(e.date).slice(0,7));used.add(agEnd(e).slice(0,7))});
+  const months=all.slice(used.has(all[0])?0:1,(used.has(all[11])?11:10)+1),M=months.length;
+  const pos=iso=>{
+    const mi=months.indexOf(iso.slice(0,7));
+    if(mi<0)return iso<months[0]?0:100;
+    const [yy,mm,d]=iso.split("-").map(Number);
+    return 100*(mi+(d-1)/new Date(yy,mm,0).getDate())/M;
+  };
+  const lanes=[...AG_ORDER.filter(k=>evs.some(e=>e.type===k)),...new Set(evs.map(e=>e.type||"").filter(k=>!AG_TYPES[k]))];
+  const H=34,h=H*lanes.length,today=todayStr(),nowIn=today>=months[0]+"-01"&&today.slice(0,7)<=months[M-1],x0=nowIn?pos(today):0;
+  const ticks=evs.map(e=>{
+    const li=lanes.indexOf(e.type||""),x=pos(isoDay(e.date)),st=D.myRegs[e.id];
+    const w=agMulti(e)?`calc(${(pos(agEnd(e))-x).toFixed(2)}% + 14px)`:"14px";
+    const lbl=`${T(e.title)}, ${long(e.date)}${st==="confirmed"?", "+t("ag_confirmed"):st==="pending"?", "+t("pending"):""}`;
+    return `<a class="sv-tick${st?" mine":""}${agPast(e)?" past":""}" ${agGo(e)} title="${esc(lbl)}" aria-label="${esc(lbl)}" style="${agTC(e.type)};left:${x.toFixed(2)}%;top:${li*H+(H-14)/2}px;width:${w}"></a>`;
+  }).join("");
+  const cur=today.slice(0,7);
+  return `<section class="tile sv" aria-labelledby="sv-h">
+   <div class="sv-head"><h2 class="agh" id="sv-h">${t("ag_ribbon_t")}</h2><p>${t("ag_ribbon_s")}${S.user?" "+t("ag_ribbon_me"):""}</p></div>
+   <div class="sv-scroll"><div class="sv-grid">
+    <div class="sv-lanes">${lanes.map(k=>`<span class="sv-lane" style="${agTC(k)}">${esc(agTypeName(k))}</span>`).join("")}</div>
+    <div>
+     <div class="sv-months" style="grid-template-columns:repeat(${M},minmax(0,1fr))">${months.map(m=>`<span${m===cur?' class="cur"':""}>${esc(agMonthName(m,{month:"short"}))}</span>`).join("")}</div>
+     <div class="sv-plot" style="height:${h}px">
+      ${nowIn?`<span class="sv-past" style="width:${x0.toFixed(2)}%" aria-hidden="true"></span>`:""}
+      ${months.slice(1).map((m,i)=>`<span class="sv-sep" style="left:${(100*(i+1)/M).toFixed(2)}%" aria-hidden="true"></span>`).join("")}
+      ${lanes.slice(1).map((k,i)=>`<span class="sv-hl" style="top:${(i+1)*H}px" aria-hidden="true"></span>`).join("")}
+      ${nowIn?`<span class="sv-now" style="left:${x0.toFixed(2)}%" aria-hidden="true"></span><span class="sv-pill${x0<7?" l":x0>93?" r":""}" style="left:${x0.toFixed(2)}%;top:${h+10}px">${esc(t("ag_today",{d:agF(today,{day:"numeric",month:"short"})}))}</span>`:""}
+      ${ticks}
+     </div>
+    </div>
+   </div></div>
+  </section>`;
+}
+
+/* --- Accueil --- */
 function vAccueil(){
   if(D.loading)return loadingBox();
-  const next=D.events.filter(e=>isoDay(e.date)>=todayStr()).sort((a,b)=>isoDay(a.date).localeCompare(isoDay(b.date))).slice(0,3);
-  const myRegCount=Object.values(D.myRegs).filter(s=>s==="confirmed").length;
-  const totalRegs=Object.values(D.taken).reduce((a,b)=>a+b,0);
-  const name=S.profile&&S.profile.prenom,hImg=safeAsset(cfg("hero_img"));
-  const heroBg=hImg?`background-image:url('${hImg.replace(/['"\\()]/g,"")}')`:"";
-  return `<section class="hero">
-   <div class="hero-visual ${hImg?"has-photo":""}" style="${heroBg}">
+  const up=agUpcoming(),mineUp=S.user?up.filter(e=>D.myRegs[e.id]):[];
+  const pend=mineUp.filter(e=>D.myRegs[e.id]==="pending"&&agPaid(e));
+  const name=S.user&&S.profile&&S.profile.prenom?protectProperNames(String(S.profile.prenom).trim()):"";
+  const h1=S.user?esc(t("hello"))+(name?"<br>"+esc(name):""):esc(t("hero_out"));
+  const sum=S.user?(mineUp.length?tn("ag_up",mineUp.length)+(pend.length?", "+tn("ag_pay",pend.length):"")+".":t("hero_sub_in")):t("hero_sub_out");
+  const hello=`<div class="tile bn-hello">
+   <div><p class="bn-kick">${esc(t("ag_season",{s:agSeason()}))}</p><h1 class="bn-h1${S.user?(name.length>9?" mid":""):" long"}">${h1}</h1></div>
+   <div class="bn-foot"><p class="bn-sum">${esc(sum)}</p><div class="bn-cta"><button class="btn" onclick="go('activites')">${t("ag_see")}</button>${S.user?`<button class="btn ghost" onclick="goMyRegs()">${t("my_regs")}</button>`:`<button class="btn ghost" onclick="go('login')">${t("login")}</button>`}</div></div>
+  </div>`;
+  let gold="";
+  if(pend.length){
+    const e=pend[0],more=pend.length-1;
+    gold=`<div class="bn-gold"><span class="bn-gold-ico">${agIco("hourglass",24,2)}</span><div class="bn-gold-txt"><p class="bn-gold-t">${esc(T(e.title))}</p><p>${esc(t("ag_hold",{p:e.prix}))}${more?" "+esc(tn("ag_more_pay",more)):""}</p></div><button class="btn" onclick="payEvent(${idArg(e.id)})">${t("ag_pay_btn")}${agIco("ext",16)}</button></div>`;
+  }else if(S.user&&!hasPaid()){
+    gold=`<div class="bn-gold"><span class="bn-gold-ico">${agIco("ticket",24,2)}</span><div class="bn-gold-txt"><p class="bn-gold-t">${esc(t("ag_join_t",{s:agSeason()}))}</p><p>${esc(t("ag_join_txt"))}</p></div><button class="btn" onclick="go('adherer')">${t("join")}</button></div>`;
+  }else if(!S.user){
+    gold=`<div class="bn-gold"><span class="bn-gold-ico">${agIco("user",24,2)}</span><div class="bn-gold-txt"><p class="bn-gold-t">${esc(t("join_t"))}</p><p>${esc(t("ag_visit_txt"))}</p></div><button class="btn" onclick="go('adherer')">${t("join")}</button></div>`;
+  }
+  const nx=mineUp[0]||up[0];
+  let next;
+  if(!nx){
+    next=`<article class="bn-next" aria-labelledby="bn-next-h"><div class="hero-globe" aria-hidden="true"></div><h2 class="agh bn-next-lbl" id="bn-next-h">${t("ag_next")}</h2><p class="bn-empty">${t("no_events")}</p><div class="bn-acts"><button class="btn gold" onclick="go('activites')">${t("ag_see")}</button></div></article>`;
+  }else{
+    const st=D.myRegs[nx.id],s=isoDay(nx.date),f=agEnd(nx),multi=f>s,id=idArg(nx.id);
+    const num=multi?`${dd(s).getDate()}–${dd(f).getDate()}`:String(dd(s).getDate());
+    const wd=multi?`${agF(s,{weekday:"short"})}–${agF(f,{weekday:"short"})}`:agF(s,{weekday:"long"});
+    const my=multi&&s.slice(0,7)!==f.slice(0,7)?`${agF(s,{month:"short"})}–${agF(f,{month:"short",year:"numeric"})}`:agF(s,{month:"long",year:"numeric"});
+    const time=agWhen(nx),n=agCapOf(nx),tk=D.taken[nx.id]||0,left=agLeft(nx);
+    const sg=safeUrl(nx.study_guide_url),canSG=Boolean(sg)&&(st==="confirmed"||(nx.type==="Training"&&isTrainingLead()));
+    const sTitle=st==="confirmed"?t("ag_held"):st==="pending"?t("ag_held_pend"):left>0?agCap(tn("ag_free",left)):t("full");
+    const sText=st?t("ag_seats",{a:tn("ag_regd",tk),b:tn("ag_free",left)})+(tk>0&&n<=120?" "+t("ag_gold_seat"):""):t("ag_regd_of",{a:tn("ag_regd",tk),c:n});
+    const ics=`<button class="btn ghost-dark" onclick="agIcs(${id})">${agIco("calplus")}${t("ag_ics")}</button>`;
+    let acts;
+    if(st==="confirmed")acts=(canSG?`<a class="btn gold" href="${esc(sg)}" target="_blank" rel="noopener noreferrer">${agIco("doc")}${t("ag_sg")}</a>`:"")+ics;
+    else if(st==="pending")acts=(agPaid(nx)?`<button class="btn gold" onclick="payEvent(${id})">${t("ag_pay_x",{p:esc(nx.prix)})}</button>`:"")+ics;
+    else if(safeUrl(nx.form_url))acts=`<button class="btn gold" onclick="openFormEvent(${id})">${t("ag_form_btn")}${agIco("ext",16)}</button>`+ics;
+    else acts=(left>0?`<button class="btn gold" onclick="openReg(${id})">${agPaid(nx)?t("go_pay"):t("reg")}</button>`:"")+ics;
+    next=`<article class="bn-next" aria-labelledby="bn-next-h">
      <div class="hero-globe" aria-hidden="true"></div>
-     <div class="hero-crest">${logoImg()}</div>
-   </div>
-   <div class="hero-txt">
-   <p class="kicker">Sorbonne Model United Nations</p>
-   <h1>${S.user?esc(t("hello"))+(name?" "+esc(name):"")+" 👋":esc(t("hero_out"))}</h1>
-   <p>${S.user?t("hero_sub_in"):t("hero_sub_out")}</p>
-   <div class="cta"><button class="btn" onclick="go('activites')">${t("see_acts")}</button>${S.user?"":`<button class="btn ghost" onclick="go('login')">${t("login")}</button>`}</div>
-   <div class="stats"><div class="stat"><b>${D.events.length}</b><span>${t("st_events")}</span></div><div class="stat"><b>${D.poles.length}</b><span>${t("st_poles")}</span></div><div class="stat"><b>${S.user?myRegCount:totalRegs}</b><span>${S.user?t("st_my_regs"):t("st_regs")}</span></div></div>
-  </div></section>
-  ${S.user?"":aboutBlock()}
-  <h2>${t("next")} ${isStaff()?`<button onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}<button onclick="go('activites')">${t("see_all")}</button></h2>
-  ${next.length?`<div class="grid">${next.map(evCard).join("")}</div>`:`<div class="card empty">${t("no_events")}</div>`}
-  <h2>${t("news")} <button onclick="go('actus')">${t("see_all")}</button></h2>
-  ${D.news.length?`<div class="grid">${D.news.slice(0,3).map(newsCard).join("")}</div>`:`<div class="card empty">${t("no_news")}</div>`}`;
+     <div class="bn-next-top"><h2 class="agh bn-next-lbl" id="bn-next-h">${st?t("ag_next_mine"):t("ag_next")}</h2><span class="ag-chip" style="${agTC(nx.type)}">${esc(agTypeName(nx.type))}</span></div>
+     <div class="bn-date"><span class="sr">${esc(multi?t("ag_from_to",{a:long(s),b:long(f)}):long(s))}${time?", "+esc(time):""}</span><span class="bn-num${multi?" rng":""}" aria-hidden="true">${num}</span><span class="bn-dl" aria-hidden="true"><span class="bn-wd">${esc(wd)}</span><span class="bn-my">${esc(my)}</span>${time?`<span class="bn-time">${agIco("clock",20,2)}${esc(time)}</span>`:""}</span></div>
+     <h3 class="bn-title"><a ${agGo(nx)}>${esc(T(nx.title))}</a></h3>
+     ${nx.lieu?`<p class="bn-place">${agIco("pin",17)}${esc(T(nx.lieu))}</p>`:""}
+     ${n?`<div class="bn-seats">${agSeatsSVG(nx,true,180)}<div class="bn-seats-t"><b>${esc(sTitle)}</b><p>${esc(sText)}</p></div></div>`:""}
+     <div class="bn-acts">${acts}</div>
+    </article>`;
+  }
+  const agenda=`<div class="tile ag-tile">
+   <div class="ag-tile-h"><h2 class="agh">${t("ag_odj")}</h2><div>${isStaff()?`<button class="btn ghost sm" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}<a class="ag-link" href="#activites" onclick="event.preventDefault();go('activites')">${t("ag_all")}${agIco("chevr",16,2)}</a></div></div>
+   ${up.length?`<ol class="ag-rows">${up.slice(0,6).map(agRow).join("")}</ol>`:`<p class="ag-none">${t("no_events")}</p>`}
+  </div>`;
+  const news=`<div class="tile bn-news"><h2 class="agh">${t("news")}</h2>
+   ${D.news.length?`<ul>${D.news.slice(0,2).map(n=>`<li><a class="t" href="#actus" onclick="event.preventDefault();go('actus')">${esc(T(n.title))}</a>${n.body?`<p>${esc(agExcerpt(T(n.body),140))}</p>`:""}</li>`).join("")}</ul>`:`<p class="mute" style="margin:6px 0 14px">${t("no_news")}</p>`}
+   ${D.news.length?`<div class="bn-news-more"><a class="ag-link" href="#actus" onclick="event.preventDefault();go('actus')">${t("ag_news_all")}${agIco("chevr",16,2)}</a></div>`:""}
+  </div>`;
+  return `<div class="v3 v3-page bn-page">
+   <section class="bn"><div class="bn-left">${hello}${gold}</div>${next}</section>
+   ${S.user?"":aboutBlock()}
+   ${agRibbonHTML()}
+   <section class="bn-row2">${agenda}<aside class="bn-aside" aria-label="${esc(t("ag_aside"))}">${agMiniHTML()}${news}</aside></section>
+  </div>`;
 }
+function goMyRegs(){
+  go("account");
+  setTimeout(()=>{const el=$("#my-regs");if(el)el.scrollIntoView({behavior:reduceMotionGlobe()?"auto":"smooth",block:"start"})},80);
+}
+
+/* --- Agenda : mois ou liste --- */
+let agView="",agMonth="",agDay="",agPastOpen=false;
+const agV=()=>agView||ls.get("somun_agview","")||(window.innerWidth<720?"list":"month");
 function vActivites(){
   if(D.loading)return loadingBox();
-  const hasTripsOrConfs=D.events.some(e=>e.type==="Voyage"||e.type==="Conférence");
-  const base=S.user?["all","mine"]:["all"];
-  if(hasTripsOrConfs)base.push("trips_confs");
   if(!S.user&&filt==="mine")filt="all";
-  const types=[...base,...new Set(D.events.map(e=>e.type).filter(Boolean))];
-  return `<div class="page-head"><h1 style="margin:6px 0 8px">${t("activities")}</h1>${isStaff()?`<button class="btn sm" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}</div>
-  <input class="search" id="q" placeholder="🔍  ${esc(t("search"))}" value="${esc(q)}" oninput="q=this.value;list()" style="margin:8px 0">
-  <div class="chips">${types.map(k=>`<button class="chip ${k===filt?"on":""}" onclick="filt='${sid(k)}';render(false,true)">${esc(k==="all"?t("all"):k==="mine"?t("mine"):k==="trips_confs"?t("trips_confs"):(I18N[lang][k]||k))}</button>`).join("")}</div>
-  <div class="grid" id="list">${listHTML()}</div>`;
+  if(!agMonth)agMonth=todayStr().slice(0,7);
+  const v=agV();
+  return `<div class="v3 v3-page ag-page">
+   <div class="ag-head">
+    <div><h1 class="ag-h1">${t("activities")}</h1><p class="ag-sub">${esc(t("ag_sub",{s:agSeason()}))}</p></div>
+    <div class="ag-tools">
+     <label class="ag-search">${agIco("search")}<span class="sr">${t("search")}</span><input id="q" type="search" autocomplete="off" placeholder="${esc(t("ag_search"))}" value="${esc(q)}" oninput="agSearch(this.value)"></label>
+     <div class="ag-seg" role="group" aria-label="${esc(t("ag_view"))}"><button type="button" data-v="month" aria-pressed="${v==="month"}" onclick="agSetView('month')">${agIco("grid",16)}${t("ag_month")}</button><button type="button" data-v="list" aria-pressed="${v==="list"}" onclick="agSetView('list')">${agIco("list",16)}${t("ag_list")}</button></div>
+     ${isStaff()?`<button class="btn" onclick="openNewEvent()">+ ${t("add_ev")}</button>`:""}
+    </div>
+   </div>
+   <div class="ag-filters" id="agf" role="group" aria-label="${esc(t("ag_filter"))}">${agFiltersHTML()}</div>
+   <div id="list">${listHTML()}</div>
+  </div>`;
 }
-function listHTML(){
-  const needle=q.trim().toLowerCase(),today=todayStr();
-  const sorted=[...D.events].sort((a,b)=>{
-    const pa=isoDay(a.date)<today,pb=isoDay(b.date)<today;
-    if(pa!==pb)return pa?1:-1;
-    return pa?isoDay(b.date).localeCompare(isoDay(a.date)):isoDay(a.date).localeCompare(isoDay(b.date));
-  });
-  const l=sorted.filter(e=>{
-    const okType=filt==="all"
-      ||(filt==="mine"?Boolean(D.myRegs[e.id])
-      :filt==="trips_confs"?(e.type==="Voyage"||e.type==="Conférence")
-      :e.type===filt);
+function agFiltersHTML(){
+  const types=[...AG_ORDER.filter(k=>D.events.some(e=>e.type===k)),...new Set(D.events.map(e=>e.type).filter(k=>k&&!AG_TYPES[k]))];
+  const b=(k,label,dots)=>`<button type="button" class="ag-f" data-k="${esc(k)}" aria-pressed="${filt===k}" onclick="agFilt(this.dataset.k)">${dots||""}${esc(label)}</button>`;
+  let h=b("all",t("all"));
+  if(S.user)h+=b("mine",t("mine"),'<i class="me" aria-hidden="true"></i>');
+  types.forEach(k=>{h+=b(k,agTypeName(k),`<i aria-hidden="true" style="${agTC(k)}"></i>`)});
+  if(D.events.some(e=>e.type==="Voyage"||e.type==="Conférence"))h+=b("trips_confs",t("ag_trips"),`<i aria-hidden="true" style="${agTC("Voyage")}"></i><i aria-hidden="true" style="${agTC("Conférence")}"></i>`);
+  return h;
+}
+function agFilt(k){
+  filt=k;
+  const f=$("#agf");
+  if(f){f.innerHTML=agFiltersHTML();const b=[...f.querySelectorAll(".ag-f")].find(x=>x.dataset.k===k);if(b)b.focus()}
+  list();
+}
+function agSetView(v){
+  agView=v;ls.set("somun_agview",v);
+  document.querySelectorAll(".ag-seg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
+  list();
+}
+function agFiltered(){
+  const needle=q.trim().toLowerCase();
+  return D.events.filter(e=>{
+    if(!agOk(e))return false;
+    const okType=filt==="all"||(filt==="mine"?Boolean(D.myRegs[e.id]):filt==="trips_confs"?(e.type==="Voyage"||e.type==="Conférence"):e.type===filt);
     if(!okType)return false;
     if(!needle)return true;
-    return `${T(e.title)} ${e.title} ${T(e.lieu)} ${e.lieu} ${e.type||""}`.toLowerCase().includes(needle);
+    return `${T(e.title)} ${e.title} ${T(e.lieu)} ${e.lieu} ${e.type||""} ${agTypeName(e.type)}`.toLowerCase().includes(needle);
   });
-  return l.length?l.map(e=>evCard(e).replace("reveal","reveal show")).join(""):`<div class="empty">${t("no_res")}</div>`;
 }
-const list=()=>{$("#list").innerHTML=listHTML()};
+function agSearch(v){q=v;list()}
+function listHTML(){const evs=agFiltered();return agV()==="list"?agListHTML(evs):agMonthHTML(evs)}
+const list=()=>{const l=$("#list");if(!l)return;l.innerHTML=listHTML();agCenterIn(l.querySelector(".ag-strip"),l.querySelector(".ag-strip [aria-current]"))};
+function agListHTML(evs){
+  if(!evs.length)return `<div class="tile ag-nores ag-lgroup">${t("no_res")}</div>`;
+  const up=evs.filter(e=>!agPast(e)).sort(agCmp),past=evs.filter(agPast).sort((a,b)=>agCmp(b,a));
+  const g={};up.forEach(e=>{const k=isoDay(e.date).slice(0,7);(g[k]=g[k]||[]).push(e)});
+  let h=Object.keys(g).sort().map(k=>`<section class="tile ag-tile ag-lgroup" aria-labelledby="agl-${k}"><div class="ag-tile-h"><h2 class="agh" id="agl-${k}">${esc(agCap(agMonthName(k)))}</h2><span class="ag-cnt">${esc(tn("ag_cnt",g[k].length))}</span></div><ol class="ag-rows">${g[k].map(agRow).join("")}</ol></section>`).join("");
+  if(!up.length)h+=`<div class="tile ag-nores ag-lgroup">${t("no_events")}</div>`;
+  if(past.length)h+=`<details class="tile ag-tile ag-lgroup ag-pastg"${agPastOpen||!up.length?" open":""} ontoggle="agPastOpen=this.open"><summary><h2 class="agh">${t("ag_past_t")}</h2><span class="ag-cnt">${esc(tn("ag_cnt",past.length))}</span></summary><ol class="ag-rows">${past.map(agRow).join("")}</ol></details>`;
+  return h;
+}
+function agMonthHTML(evs){
+  if(!agMonth)agMonth=todayStr().slice(0,7);
+  const ym=agMonth,[Y,M]=ym.split("-").map(Number),today=todayStr(),map=agDayMap(evs),inM=k=>k.slice(0,7)===ym;
+  if(!agDay||!inM(agDay)){const ks=Object.keys(map).filter(inM).sort();agDay=ks.find(k=>k>=today)||ks[0]||(inM(today)?today:ym+"-01")}
+  // Mois de la saison (août à juillet ; août et juillet seulement s'ils ont des événements)
+  const sy=M>=8?Y:Y-1,all=Array.from({length:12},(_,i)=>agIso(new Date(sy,7+i,1,12)).slice(0,7));
+  const byM={};evs.forEach(e=>{const k=isoDay(e.date).slice(0,7),o=byM[k]=byM[k]||{c:0,m:0};o.c++;if(D.myRegs[e.id])o.m++});
+  const strip=all.filter((m,i)=>(i>0&&i<11)||byM[m]||m===ym).map(m=>{
+    const o=byM[m];
+    return `<button type="button"${o?"":' class="nil"'}${m===ym?' aria-current="true"':""} aria-label="${esc(agCap(agMonthName(m))+", "+(o?tn("ag_cnt",o.c):t("ag_mnone")))}" onclick="agGoMonth('${m}')"><b>${esc(agMonthName(m,{month:"short"}))}</b><span>${o&&o.m?'<i aria-hidden="true"></i>':""}${o?esc(tn("ag_cnt",o.c)):"—"}</span></button>`;
+  }).join("");
+  const touch=evs.filter(e=>isoDay(e.date)<=ym+"-31"&&agEnd(e)>=ym+"-01"),mine=touch.filter(e=>D.myRegs[e.id]).length;
+  const sum=touch.length?t("ag_msum",{c:tn("ag_cnt",touch.length)})+(mine?tn("ag_mmine",mine):""):t("ag_mnone");
+  const prev=agAddM(ym,-1),next=agAddM(ym,1),curYM=today.slice(0,7);
+  const nav=`<div class="ag-mnav"><div><button type="button" class="ag-arrow" data-nav="-1" aria-label="${esc(agCap(agMonthName(prev)))}" onclick="agShift(-1)">${agIco("chevl")}</button><h2 class="agh ag-mh" id="ag-mh">${esc(agCap(agMonthName(ym)))}</h2><button type="button" class="ag-arrow" data-nav="1" aria-label="${esc(agCap(agMonthName(next)))}" onclick="agShift(1)">${agIco("chevr")}</button></div><p>${esc(sum)}</p>${ym!==curYM?`<button class="btn ghost sm" onclick="agGoMonth('${curYM}')">${esc(t("ag_this_month"))}</button>`:""}</div>`;
+  const start=(new Date(Y,M-1,1,12).getDay()+6)%7,cells=Math.ceil((start+new Date(Y,M,0).getDate())/7)*7;
+  const head=[0,1,2,3,4,5,6].map(i=>{const d=new Date(2024,0,1+i,12);return `<th scope="col"><span class="lg">${esc(d.toLocaleDateString(loc(),{weekday:"long"}))}</span><span class="st">${esc(d.toLocaleDateString(loc(),{weekday:"narrow"}))}</span></th>`}).join("");
+  let body="",row="";
+  for(let i=0;i<cells;i++){
+    const d=new Date(Y,M-1,1-start+i,12),k=agIso(d),oth=!inM(k),dow=i%7,l=map[k]||[];
+    const bars=l.slice(0,3).map(({e,first,last})=>{
+      const st=D.myRegs[e.id],past=agPast(e),hm=first?hhmm(e.heure):"";
+      const c=["ag-bar",st==="confirmed"?"mine":"",st==="pending"&&!past?"pend":"",!last&&dow<6?"cr":"",!first&&dow>0?"cl":"",past?"past":""].filter(Boolean).join(" ");
+      return `<a class="${c}" ${agGo(e)} style="${agTC(e.type)}" title="${esc(T(e.title))}"><i aria-hidden="true"></i><span>${hm?`<b>${esc(hm)}</b> `:""}${esc(T(e.title))}</span></a>`;
+    }).join("");
+    const more=l.length>3?`<span class="ag-more">${esc(t("ag_more_n",{n:l.length-3}))}</span>`:"";
+    const lbl=agCap(agF(k,{weekday:"long",day:"numeric",month:"long"}))+(l.length?", "+tn("ag_cnt",l.length):"");
+    const cls=[oth?"oth":"",k===today?"today":"",k===agDay?"sel":""].filter(Boolean).join(" ");
+    row+=`<td${cls?` class="${cls}"`:""}><button type="button" class="ag-dn" data-d="${k}" aria-pressed="${k===agDay}" aria-label="${esc(lbl)}" onclick="agPick('${k}')"><span>${d.getDate()}</span>${oth&&(d.getDate()===1||i===0)?`<small>${esc(agF(k,{month:"short"}))}</small>`:""}</button>${l.length?`<div class="ag-bars">${bars}${more}</div>`:""}</td>`;
+    if(dow===6){body+=`<tr>${row}</tr>`;row=""}
+  }
+  const legend=`<div class="ag-legend">${S.user?`<span><i aria-hidden="true"></i>${t("ag_yours")}</span><span><i class="p" aria-hidden="true"></i>${t("pending")}</span>`:""}<span><i class="t" aria-hidden="true"></i>${esc(agCap(t("today")))}</span></div>`;
+  return `<nav class="ag-strip" aria-label="${esc(t("ag_months"))}">${strip}</nav>${nav}
+  <div class="ag-cal"><div class="ag-gridw"><table class="ag-grid" aria-labelledby="ag-mh"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>${legend}</div>${agPanelHTML(map)}</div>`;
+}
+function agPanelHTML(map){
+  const l=(map[agDay]||[]).map(x=>x.e);
+  return `<aside class="ag-panel" id="agp" aria-labelledby="agp-h">
+   <h2 class="agh ag-ph" id="agp-h">${esc(agCap(agF(agDay,{weekday:"long",day:"numeric",month:"long"})))}</h2>
+   <p class="ag-pc">${esc(l.length?t("ag_dsum",{c:tn("ag_cnt",l.length)}):t("ag_dnone"))}</p>
+   ${l.map(agPanelEv).join("")}
+  </aside>`;
+}
+function agPanelEv(e){
+  const n=agCapOf(e),left=agLeft(e),past=agPast(e),when=agWhen(e),id=idArg(e.id);
+  return `<div class="ag-pev" style="${agTC(e.type)}">
+   <div class="ag-pev-i"><div class="ag-tags"><span class="ag-chip">${esc(agTypeName(e.type))}</span><span>${esc(agAccess(e))}</span></div>
+   <h3><a ${agGo(e)}>${esc(T(e.title))}</a></h3>
+   <p class="ag-meta">${when?`<span>${agIco("clock",16)}${esc(when)}</span>`:""}${e.lieu?`<span>${agIco("pin",16)}${esc(T(e.lieu))}</span>`:""}</p>
+   ${e.description?`<p class="ag-desc">${esc(agExcerpt(T(e.description),170))}</p>`:""}</div>
+   <div class="ag-pev-a">${n&&!past?`<div class="ag-seats">${agSeatsSVG(e,false,150)}<p><b>${left}</b>${esc(left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
+   <div class="ag-pact">${agAction(e,true)}${past?"":`<button class="btn ghost" onclick="agIcs(${id})">${agIco("calplus")}${t("ag_ics")}</button>`}<a class="ag-fiche" ${agGo(e)}>${t("ag_full_sheet")}${agIco("chevr",16,2)}</a></div></div>
+  </div>`;
+}
+function agPick(k){
+  agMonth=k.slice(0,7);agDay=k;list();
+  const b=document.querySelector(`#list .ag-dn[data-d="${k}"]`);if(b)b.focus({preventScroll:true});
+  if(window.innerWidth<720){const p=$("#agp");if(p)p.scrollIntoView({behavior:reduceMotionGlobe()?"auto":"smooth",block:"nearest"})}
+}
+function agShift(n){
+  agMonth=agAddM(agMonth||todayStr().slice(0,7),n);agDay="";list();
+  const b=document.querySelector(`#list .ag-arrow[data-nav="${n}"]`);if(b)b.focus({preventScroll:true});
+}
+function agGoMonth(ym){agMonth=ym;agDay="";list()}
+
+/* --- Fiche événement --- */
+function vEvent(){
+  if(D.loading)return loadingBox();
+  const back=`<a class="ev3-back" href="#activites" onclick="event.preventDefault();go('activites')">${agIco("left")}${t("activities")}</a>`;
+  const e=D.events.find(x=>String(x.id)===String(evSel));
+  if(!e)return `<div class="v3 v3-page">${back}<div class="tile ag-nores" style="margin-top:14px">${t("ev_404")}</div></div>`;
+  const id=idArg(e.id),st=D.myRegs[e.id],ok=agOk(e),past=ok?agPast(e):false,img=safeUrl(e.image_url),formHref=safeUrl(e.form_url);
+  const canEditSG=e.type==="Training"&&isTrainingLead();
+  const sgHref=safeUrl(e.study_guide_url);
+  const canSeeSG=Boolean(sgHref)&&(st==="confirmed"||canEditSG);
+  const n=agCapOf(e),tk=D.taken[e.id]||0,left=agLeft(e),paid=agPaid(e);
+
+  let dateHTML="";
+  if(ok){
+    const s=isoDay(e.date),f=agEnd(e),multi=f>s,h=hhmm(e.heure),sameM=s.slice(0,7)===f.slice(0,7);
+    const srTxt=multi?t("ag_from_to",{a:long(s),b:long(f)})+(h?", "+t("ag_from",{h}):""):long(s)+(h?" "+t("at")+" "+h:"");
+    const day=x=>`<span class="ev3-d" aria-hidden="true"><small>${esc(agF(x,{weekday:"long"}))}</small><span class="ev3-n">${dd(x).getDate()}</span></span>`;
+    const mo=multi&&!sameM?`${agF(s,{month:"short"})} – ${agF(f,{month:"short"})}`:agF(s,{month:"long"});
+    const tm=h?(multi?t("ag_from",{h}):h):"";
+    dateHTML=`<div class="ev3-date"><span class="sr">${esc(srTxt)}</span>${day(s)}${multi?`<span class="ev3-to" aria-hidden="true">→</span>${day(f)}`:""}<span class="ev3-my" aria-hidden="true"><b>${esc(mo)}</b><span>${dd(f).getFullYear()}</span>${tm?`<em>${agIco("clock",18,2)}${esc(tm)}</em>`:""}</span></div>`;
+  }
+  const mapHref=e.lieu?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.lieu)}`:"";
+  const head=`<div class="ev3-head">${dateHTML}<div class="ev3-id"><div class="ag-tags" style="${agTC(e.type)}"><span class="ag-chip">${esc(agTypeName(e.type))}</span><span>${esc(agAccess(e))}</span></div><h1 class="ev3-h1">${esc(T(e.title))}</h1>${e.lieu?`<p class="ev3-where"><span>${agIco("pin",17)}${esc(T(e.lieu))}</span><a href="${esc(mapHref)}" target="_blank" rel="noopener noreferrer">${t("ag_map")}${agIco("ext",15)}</a></p>`:""}</div></div>`;
+  const staff=(isStaff()||canEditSG)?`<div class="ev3-staff">${isStaff()?`<button class="btn ghost sm" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">${t("del")}</button>`:""}${canEditSG?`<button class="btn ghost sm" onclick="editStudyGuide(${id})">${t("sg_edit")}</button>`:""}</div>`:"";
+
+  const sgTitle=esc(T(e.study_guide_title||t("sg_box")));
+  const docs=(sgHref||canEditSG)?`<section><h2 class="agh ev3-h2">${t("ag_docs")}</h2>${
+    canSeeSG?`<a class="ev3-doc open" href="${esc(sgHref)}" target="_blank" rel="noopener noreferrer"><span class="ev3-doc-ico">${agIco("doc",21)}</span><span class="ev3-doc-t"><b>${sgTitle}</b><span>${t("ag_sg_go")}</span></span>${agIco("ext",17)}</a>`
+    :sgHref?`<div class="ev3-doc"><span class="ev3-doc-ico">${agIco("lock",20)}</span><span class="ev3-doc-t"><b>${sgTitle}</b><span>${t("ag_sg_locked")}</span></span></div>`
+    :`<div class="ev3-doc"><span class="ev3-doc-ico">${agIco("doc",20)}</span><span class="ev3-doc-t"><b>${esc(t("sg_box"))}</b><span>${t("ag_sg_none")}</span></span></div>`}</section>`:"";
+  const facts=!e.description&&!img&&ok?`<section><h2 class="agh ev3-h2">${t("ag_facts")}</h2><dl class="ev3-facts"><div><dt>${t("ag_f_when")}</dt><dd>${esc(agCap(agMulti(e)?t("ag_from_to",{a:long(e.date),b:long(agEnd(e))}):long(e.date)))}${agWhen(e)?", "+esc(agWhen(e)):""}</dd></div>${e.lieu?`<div><dt>${t("ag_f_where")}</dt><dd>${esc(T(e.lieu))}</dd></div>`:""}<div><dt>${t("ag_f_access")}</dt><dd>${esc(agAccess(e))}</dd></div></dl></section>`:"";
+  const mainInner=`${facts}${img?`<img class="ev3-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">`:""}${e.description?`<section><h2 class="agh ev3-h2">${t("ag_odj_ev")}</h2><p class="ev3-desc">${esc(T(e.description))}</p></section>`:""}${docs}${paid&&!past&&st!=="confirmed"&&!formHref?`<p class="ev3-note">${t("paid_cancel")}</p>`:""}`;
+
+  const ics=`<button class="btn ghost-dark" onclick="agIcs(${id})">${agIco("calplus")}${t("ag_ics")}</button>`;
+  const steps=[[t("ag_s1_t"),t("ag_s1_d")],[t("ag_s2_t",{p:esc(e.prix)}),t("ag_s2_d")],[t("ag_s3_t"),t("ag_s3_d")]];
+  let status="",stepsHTML="",info="",acts="";
+  if(past){
+    info=`<p class="ev3-line">${t("ag_past_line")}</p>`;
+  }else if(st==="confirmed"){
+    status=`<div class="ev3-status"><i>${agIco("check",17,2.6)}</i><span><b>${t("ag_s3_t")}</b><small>${t("ag_conf_sub")}</small></span></div>`;
+    acts=(canSeeSG?`<a class="btn gold" href="${esc(sgHref)}" target="_blank" rel="noopener noreferrer">${agIco("doc")}${t("ag_sg")}</a>`:"")+ics+(paid?"":`<button class="ev3-cancel" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`);
+    if(paid)info=`<p class="ev3-line">${t("paid_cancel")}</p>`;
+  }else if(st==="pending"){
+    status=`<div class="ev3-status"><i>${agIco("hourglass",17,2.2)}</i><span><b>${t("pending")}</b>${paid?`<small>${t("ag_pend_sub")}</small>`:""}</span></div>`;
+    if(paid)stepsHTML=agSteps(steps,1,1,true);
+    acts=(paid?`<button class="btn gold" onclick="payEvent(${id})">${t("ag_pay_ha",{p:esc(e.prix)})}${agIco("ext",16)}</button>`:"")+ics+`<button class="ev3-cancel" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`;
+  }else if(formHref){
+    info=`<p class="ev3-line">${t("ag_form_line")}</p>`;
+    acts=`<button class="btn gold" onclick="openFormEvent(${id})">${t("ag_form_btn")}${agIco("ext",16)}</button>`+ics;
+  }else if(left<=0){
+    info=`<p class="ev3-line">${t("ag_full_line")}</p>`;
+  }else{
+    if(e.members_only)info+=`<p class="ev3-line">${t("ag_mem_line")}</p>`;
+    if(paid)stepsHTML=agSteps(steps,0,0,true);else info+=`<p class="ev3-line">${t("ag_free_line")}</p>`;
+    acts=`<button class="btn gold" onclick="openReg(${id})">${paid?t("go_pay"):t("reg")}</button>`+ics;
+  }
+  const panel=`<aside class="ev3-panel" aria-labelledby="ev3-reg">
+   <div class="ev3-ph"><h2 class="agh" id="ev3-reg">${t("ag_reg_t")}</h2><span class="ev3-price">${esc(agPriceTxt(e))}</span></div>
+   ${n?`<div class="ev3-seats">${agSeatsSVG(e,true,180)}<p><b>${past?tk:left}</b>${esc(past?tn("ag_tkof",tk,{c:n}):left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
+   ${status}${stepsHTML?`<div class="ev3-steps">${stepsHTML}</div>`:""}${info}
+   ${acts?`<div class="ev3-acts">${acts}</div>`:""}
+   ${paid&&!past&&st!=="confirmed"&&!formHref?`<p class="ev3-fine">${t("ag_secure")}</p>`:""}
+  </aside>`;
+
+  const more=agUpcoming().filter(x=>String(x.id)!==String(e.id)).slice(0,3);
+  const moreHTML=more.length?`<section class="ev3-more"><h2 class="agh ev3-h2">${t("ag_also")}</h2><div class="ev3-tiles">${more.map(x=>{
+    const p=agParts(x),l=agLeft(x),s2=D.myRegs[x.id];
+    return `<a class="ev3-tile" ${agGo(x)} style="${agTC(x.type)}"><span class="ag-when"><small>${esc(p.wd)}</small><span class="ag-day${p.rng?" rng":""}">${esc(p.day)}</span><small>${esc(p.mon)}</small></span><span class="ev3-tt"><span class="ag-chip">${esc(agTypeName(x.type))}</span><b>${esc(T(x.title))}</b><span>${esc(s2==="confirmed"?t("ag_confirmed"):s2==="pending"?t("pending"):l>0?agCap(tn("ag_free",l)):t("full"))}</span></span></a>`;
+  }).join("")}</div></section>`:"";
+
+  return `<div class="v3 v3-page ev3">${back}${head}${staff}
+   <div class="ev3-cols">${mainInner?`<div class="ev3-main">${mainInner}</div>`:""}${panel}</div>
+   ${(isStaff()||canEditSG)?registrantsBlock(e):""}
+   ${moreHTML}
+  </div>`;
+}
+
+/* --- Fenêtres d'inscription et de paiement --- */
+function agPaySheetHTML(e,u){
+  const steps=[[t("ag_s1_done"),t("ag_s1_dd")],[t("ag_s2_t",{p:esc(e.prix)}),t("ag_s2_dd",{m:esc((S.user&&S.user.email)||"")})],[t("ag_s3_t"),t("ag_s3_d")]];
+  return `<p class="pay-kick">${esc(t("ag_step_k",{a:2}))}</p><h2 class="agh pay-h">${t("ag_pay_h")}</h2>
+  <p class="pay-ev">${esc(T(e.title))}, ${esc(long(e.date))}</p>
+  <div class="pay-hold">${agIco("hourglass",22,2)}<span><b>${t("ag_hold_b")}</b> ${t("ag_hold_d")}</span></div>
+  <div class="pay-steps">${agSteps(steps,1,1,false)}</div>
+  <div class="pay-acts"><a class="btn gold" target="_blank" rel="noopener noreferrer" href="${u}" onclick="closeSheet()">${t("ag_pay_ha",{p:esc(e.prix)})}${agIco("ext",16)}</a><button class="btn ghost" onclick="closeSheet()">${t("ag_later")}</button></div>`;
+}
+
+/* --- Mes inscriptions : badges --- */
+function agBadge(e){
+  const st=D.myRegs[e.id],p=agParts(e),id=idArg(e.id),sg=safeUrl(e.study_guide_url),s=isoDay(e.date),when=agWhen(e);
+  const line=agMulti(e)?`${p.wd}, ${agF(s,{month:"long"})}`:`${agF(s,{weekday:"long"})}, ${agF(s,{month:"long"})}`;
+  const status=st==="confirmed"?`<span class="ag-done"><i>${agIco("check",15,2.6)}</i>${t("ag_confirmed")}</span>`:`<span class="ag-wait">${agIco("hourglass",16,2)}${t("pending")}</span>`;
+  const acts=st==="confirmed"
+    ?`<span class="mr-acts">${sg?`<a class="mr-ibtn" href="${esc(sg)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(t("ag_sg"))}" title="${esc(t("ag_sg"))}">${agIco("doc",19)}</a>`:""}<button class="mr-ibtn" onclick="agIcs(${id})" aria-label="${esc(t("ag_ics"))}" title="${esc(t("ag_ics"))}">${agIco("calplus",19)}</button></span>`
+    :agPaid(e)?`<button class="btn gold sm" onclick="payEvent(${id})">${t("ag_pay_x",{p:esc(e.prix)})}</button>`:"";
+  return `<article class="mr-b${st==="pending"?" pend":""}" style="${agTC(e.type)}">
+   <div class="mr-band"><span>${esc(t("ag_badge_season",{s:agSeasonOf(s)}))}</span><span>${esc(agTypeName(e.type))}</span></div>
+   <div class="mr-body"><div class="mr-date"><span class="mr-n${p.rng?" rng":""}">${esc(p.day)}</span><span>${esc(line)}${when?`<br>${esc(when)}`:""}</span></div>
+   <h3 class="mr-t"><a ${agGo(e)}>${esc(T(e.title))}</a></h3>${e.lieu?`<p class="mr-place">${agIco("pin",14)}${esc(T(e.lieu))}</p>`:""}
+   <div class="mr-foot">${status}${acts}</div></div>
+  </article>`;
+}
+function myRegsHTML(){
+  const regs=D.events.filter(e=>D.myRegs[e.id]&&agOk(e));
+  const up=regs.filter(e=>!agPast(e)).sort(agCmp),past=regs.filter(agPast).sort((a,b)=>agCmp(b,a));
+  let h=`<h2 id="my-regs">${t("my_regs")}</h2>`;
+  if(!regs.length)return h+`<p class="mute">${t("none_yet")}</p>`;
+  h+=`<div class="v3 mr"><div class="mr-head"><p>${esc(past.length?t("ag_mr_sum",{u:up.length,p:tn("ag_mr_past",past.length)}):t("ag_mr_up",{u:up.length}))}</p>${up.length?`<button class="btn ghost sm" onclick="agIcsMine()">${agIco("calplus",17)}${t("ag_ics_all")}</button>`:""}</div>`;
+  if(up.length)h+=`<div class="mr-grid">${up.map(agBadge).join("")}</div>`;
+  if(past.length)h+=`<h3 class="mr-past-h">${t("ag_past_regs")}</h3><div class="mr-past">${past.map(e=>`<a class="mr-prow" ${agGo(e)}><b>${esc(agParts(e).day)}</b><span><em>${esc(T(e.title))}</em>${esc(long(e.date))}</span></a>`).join("")}</div>`;
+  return h+`</div>`;
+}
+
+/* --- Ajout au calendrier (.ics) : fichier créé dans le navigateur, sans service extérieur --- */
+const AG_VTZ=["BEGIN:VTIMEZONE","TZID:Europe/Paris","BEGIN:DAYLIGHT","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT","BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD","END:VTIMEZONE"];
+function agIcsText(list){
+  const enc=new TextEncoder(),stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const tx=s=>String(s??"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+  const fold=l=>{let out="",n=0;for(const ch of l){const b=enc.encode(ch).length;if(n+b>74){out+="\r\n ";n=1}out+=ch;n+=b}return out};
+  const ymd=d=>agIso(d).replace(/-/g,""),hm=d=>String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0")+"00";
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SOMUN//Agenda//FR","CALSCALE:GREGORIAN","METHOD:PUBLISH",...AG_VTZ];
+  list.forEach(e=>{
+    const s=isoDay(e.date),[y,m,d]=s.split("-").map(Number),h=hhmm(e.heure),multi=agMulti(e);
+    const url=location.origin+location.pathname+"#event-"+sid(e.id);
+    L.push("BEGIN:VEVENT","UID:somun-event-"+sid(e.id)+"@somun","DTSTAMP:"+stamp);
+    if(h&&!multi){
+      const [H,Mi]=h.split(":").map(Number),a=new Date(y,m-1,d,H,Mi||0),b=new Date(y,m-1,d,H+2,Mi||0);
+      L.push(`DTSTART;TZID=Europe/Paris:${ymd(a)}T${hm(a)}`,`DTEND;TZID=Europe/Paris:${ymd(b)}T${hm(b)}`);
+    }else{
+      const fin=dd(agEnd(e));fin.setDate(fin.getDate()+1);
+      L.push("DTSTART;VALUE=DATE:"+s.replace(/-/g,""),"DTEND;VALUE=DATE:"+ymd(fin));
+    }
+    L.push(fold("SUMMARY:"+tx(T(e.title))));
+    if(e.lieu)L.push(fold("LOCATION:"+tx(T(e.lieu))));
+    L.push(fold("DESCRIPTION:"+tx([e.description?T(e.description):"",multi&&h?t("ag_from",{h}):"",url].filter(Boolean).join("\n\n"))),fold("URL:"+url),"END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.join("\r\n")+"\r\n";
+}
+function agIcsDownload(list,name){
+  const blob=new Blob([agIcsText(list)],{type:"text/calendar;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+function agIcs(id){
+  const e=D.events.find(x=>String(x.id)===String(id));if(!e||!agOk(e))return;
+  agIcsDownload([e],`somun-${isoDay(e.date)}-${agSlug(e.title)}.ics`);
+}
+function agIcsMine(){
+  const l=D.events.filter(e=>D.myRegs[e.id]&&agOk(e)&&!agPast(e)).sort(agCmp);
+  if(!l.length)return toast(t("ag_ics_none"));
+  agIcsDownload(l,"somun-mes-inscriptions.ics");
+}
+function agAfterRender(){
+  const v=document.querySelector("#app>.view:not(.view-ghost)");if(!v)return;
+  const sc=v.querySelector(".sv-scroll");if(sc)agCenterIn(sc,sc.querySelector(".sv-now"));
+  const s=v.querySelector(".ag-strip");if(s)agCenterIn(s,s.querySelector("[aria-current]"));
+}
 const vActus=()=>D.loading?loadingBox():`<h1>${t("news")}</h1>${D.news.length?`<div class="grid" style="margin-top:12px">${D.news.map(newsCard).join("")}</div>`:`<div class="card empty" style="margin-top:12px">${t("no_news")}</div>`}`;
 
 /* --- Ressources & ROP (public) --- */
@@ -2118,48 +3092,6 @@ function vDiplomatie(){
   return backGames()+`<div class="card empty" style="margin-top:12px">${t("diplo_load")}</div>`;
 }
 
-/* --- Fiche événement --- */
-function vEvent(){
-  if(D.loading)return loadingBox();
-  const back=`<button class="chip" onclick="go('activites')">${t("back_acts")}</button>`;
-  const e=D.events.find(x=>String(x.id)===String(evSel));
-  if(!e)return back+`<div class="card empty" style="margin-top:12px">${t("ev_404")}</div>`;
-  const id=idArg(e.id),cap=Math.max(0,Number(e.places)||0),taken=D.taken[e.id]||0,left=Math.max(0,cap-taken);
-  const st=D.myRegs[e.id],past=daysTo(e.date)<0,img=safeUrl(e.image_url),formHref=safeUrl(e.form_url);
-  const canEditSG=e.type==="Training"&&isTrainingLead();
-  const sgHref=safeUrl(e.study_guide_url);
-  const canSeeSG=Boolean(sgHref)&&(st==="confirmed"||canEditSG);
-
-  let action;
-  if(past)action=`<span class="tag gray">${t("ended")}</span>`;
-  else if(st==="confirmed")action=`<span class="tag free" style="font-size:13px;padding:6px 12px">${t("done_reg")}</span>`+
-    (Number(e.prix)>0?`<p class="mute" style="width:100%;margin:4px 0 0">${t("paid_cancel")}</p>`:`<button class="btn sm danger" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`);
-  else if(st==="pending")action=`<button class="btn gold" onclick="payEvent(${id})">${t("pay_now")} · ${e.prix} €</button><button class="btn sm danger" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`;
-  else if(formHref)action=`<button class="btn" onclick="openFormEvent(${id})">${t("open_form")}</button>`;
-  else if(left<=0)action=`<span class="tag gray">${t("full")}</span>`;
-  else action=`<button class="btn" onclick="openReg(${id})">${t("reg")}${e.prix?" · "+e.prix+" €":""}</button>`;
-  if(isStaff())action+=`<button class="btn ghost sm" onclick="editEvent(${id})">✏️ ${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">🗑️ ${t("del")}</button>`;
-  if(canEditSG)action+=`<button class="btn ghost sm" onclick="editStudyGuide(${id})">📘 ${t("sg_edit")}</button>`;
-
-  const sgBlock=(canSeeSG||canEditSG)?`<div class="sg-box">
-    <h3>📘 ${esc(T(e.study_guide_title||t("sg_box")))}</h3>
-    <div class="actions" style="margin-top:10px">
-      ${sgHref?`<a class="btn sm" href="${esc(sgHref)}" target="_blank" rel="noopener noreferrer">${t("sg_open")}</a>`:`<span class="mute">${t("none_yet")}</span>`}
-    </div></div>`:"";
-
-  return `${back}
-  <div class="card" style="margin-top:12px">
-   <div><span class="tag">${esc(I18N[lang][e.type]||e.type)}</span><span class="tag ${e.prix?"paid":"free"}">${e.prix?e.prix+" €":t("free")}</span>${e.members_only?`<span class="tag red">${t("members_only")}</span>`:""}${formHref?`<span class="tag">${t("form_badge")}</span>`:""}</div>
-   <h1 style="margin-top:10px">${esc(T(e.title))}</h1>
-   <div class="meta"><span>🗓️ ${long(e.date)}${hhmm(e.heure)?" "+t("at")+" "+hhmm(e.heure):""}</span><span>📍 ${esc(T(e.lieu))}</span><span>👥 ${past?`${taken}/${cap}`:left>0?left+" "+t("places"):t("full")}</span></div>
-   ${img?`<img class="ev-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">`:""}
-   ${e.description?`<p class="desc">${esc(T(e.description))}</p>`:""}
-   ${sgBlock}
-   <div class="actions">${action}</div>
-  </div>
-  ${(isStaff()||canEditSG)?registrantsBlock(e):""}`;
-}
-
 function editStudyGuide(id){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
   openSheet(`<h3>📘 ${t("sg_edit")}</h3><form onsubmit="saveStudyGuide(event,${idArg(e.id)})">
@@ -2241,11 +3173,12 @@ function openReg(id){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
   if(e.members_only&&!hasPaid()){toast(t("t_err_members"));go("adherer");return}
   if(Number(e.prix)>0&&!eventUrl(e))return toast(t("t_err_slug"));
-  const ei=idArg(e.id);
-  openSheet(`<h3>${esc(T(e.title))}</h3><p class="mute">${long(e.date)} · ${esc(T(e.lieu))}</p>
-   <p>${e.prix?t("pay_note",{p:e.prix}):t("free_note")}</p>
-   <button class="btn" style="width:100%" onclick="confirmReg(${ei},this)">${e.prix?t("go_pay"):t("confirm")}</button>
-   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+  const ei=idArg(e.id),paid=Number(e.prix)>0;
+  const steps=[[t("ag_s1_t"),t("ag_s1_d")],[t("ag_s2_t",{p:esc(e.prix)}),t("ag_s2_d")],[t("ag_s3_t"),t("ag_s3_d")]];
+  openSheet(`${paid?`<p class="pay-kick">${esc(t("ag_step_k",{a:1}))}</p>`:""}<h2 class="agh pay-h">${paid?t("ag_book_h"):t("ag_reg_h")}</h2>
+   <p class="pay-ev">${esc(T(e.title))}, ${esc(long(e.date))}${e.lieu?", "+esc(T(e.lieu)):""}</p>
+   ${paid?`<div class="pay-steps">${agSteps(steps,0,0,false)}</div><p class="mute" style="margin:16px 0 0;font-size:13.5px">${t("pay_note",{p:esc(e.prix)})}</p>`:`<p style="margin:14px 0 0">${t("free_note")}</p>`}
+   <div class="pay-acts"><button class="btn${paid?" gold":""}" onclick="confirmReg(${ei},this)">${paid?t("go_pay"):t("confirm")}</button><button class="btn ghost" onclick="closeSheet()">${t("cancel")}</button></div>`);
 }
 async function confirmReg(id,btn){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
@@ -2257,9 +3190,7 @@ async function confirmReg(id,btn){
     await Promise.all([loadTaken(),loadPrivate(false)]);
     if(route==="event")await loadRegistrants();
     if(Number(e.prix)>0){
-      openSheet(`<h3>${esc(T(e.title))}</h3><p>${t("ha_after")}</p><p class="mute" style="font-size:13px">${esc(S.user.email)}</p>
-      <a class="btn gold" style="width:100%" target="_blank" rel="noopener noreferrer" href="${u}" onclick="closeSheet()">${t("go_ha")}</a>
-      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+      openSheet(agPaySheetHTML(e,u));
     }else{closeSheet();toast(t("t_reg"))}
     render(true);
   });
@@ -2267,8 +3198,7 @@ async function confirmReg(id,btn){
 function payEvent(id){
   const e=D.events.find(x=>String(x.id)===String(id)),u=eventUrl(e);
   if(!u)return toast(t("t_err_slug"));
-  openSheet(`<h3>${esc(T(e.title))}</h3><p>${t("ha_after")}</p><p class="mute" style="font-size:13px">${esc(S.user.email)}</p>
-   <a class="btn gold" style="width:100%" target="_blank" rel="noopener noreferrer" href="${u}" onclick="closeSheet()">${t("go_ha")}</a>`);
+  openSheet(agPaySheetHTML(e,u));
 }
 async function cancelReg(id,btn){
   if(!confirm(t("confirm_cancel")))return;
@@ -3109,7 +4039,6 @@ function vAccount(){
   if(!S.user){go("login",true);return""}
   const p=S.profile||{};
   const poles=D.poles.filter(x=>D.myPoles.includes(x.id)).map(x=>poleName(x)).join(", ")||t("none");
-  const regs=D.events.filter(e=>D.myRegs[e.id]);
   const staff=isStaff();
   return `<h1>${t("account")}</h1>
   <div class="card"><div class="top" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
@@ -3133,11 +4062,7 @@ function vAccount(){
     <br><button class="btn sm" type="submit">${t("save")}</button>
   </form></div>
 
-  <h2>${t("my_regs")}</h2>
-  ${regs.length?regs.map(e=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
-   <span><button class="linkish" onclick="openEvent(${idArg(e.id)})"><b>${esc(T(e.title))}</b></button> <span class="mute">· ${long(e.date)}</span></span>
-   <span>${D.myRegs[e.id]==="confirmed"?`<span class="tag free">${t("done_reg")}</span>`:`<button class="btn sm" onclick="payEvent(${idArg(e.id)})">${t("pay_now")}</button>`}</span></div>`).join("")
-   :`<p class="mute">${t("none_yet")}</p>`}
+  ${myRegsHTML()}
 
   <h2>${t("my_history")}</h2>
   ${D.myHistory.length?D.myHistory.map(h=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
@@ -3477,13 +4402,13 @@ function setHeroTilt(hero,nx,ny){
 }
 document.addEventListener("pointermove",e=>{
   if(e.pointerType==="touch")return;
-  const hero=e.target.closest&&e.target.closest(".hero");
+  const hero=e.target.closest&&e.target.closest(".hero,.bn-next");
   if(!hero)return;
   const r=hero.getBoundingClientRect();
   setHeroTilt(hero,((e.clientX-r.left)/r.width-.5)*2,((e.clientY-r.top)/r.height-.5)*2);
 },{passive:true});
 document.addEventListener("pointerout",e=>{
-  const hero=e.target.closest&&e.target.closest(".hero");
+  const hero=e.target.closest&&e.target.closest(".hero,.bn-next");
   if(hero&&(!e.relatedTarget||!hero.contains(e.relatedTarget)))setHeroTilt(hero,0,0);
 },{passive:true});
 
