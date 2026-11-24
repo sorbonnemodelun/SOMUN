@@ -3219,7 +3219,8 @@ const SUBPOLE_MATCH={
 };
 function isGroupPole(p){
   const s=`${p.slug||""} ${p.name_fr||""} ${p.name_en||""}`.toLowerCase();
-  return s.includes("culturel")&&(s.includes("partenar")||s.includes("alumni"));
+  // Le pôle « Relations externes » regroupe les sous-pôles Culturel, Partenariats et Alumni
+  return /relations?[\s_-]*ext|external[\s_-]*relations?/.test(s)||(s.includes("culturel")&&(s.includes("partenar")||s.includes("alumni")));
 }
 function getSubPoleKey(task){
   const txt=String(task.title||"");
