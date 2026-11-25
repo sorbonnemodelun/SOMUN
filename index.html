@@ -1029,16 +1029,17 @@ a.ev3-doc:hover{box-shadow:var(--shadow-md)}
 .cf-dl li>span{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}
 .cf-dl li small{font-size:12.5px;color:var(--mute);overflow-wrap:anywhere}
 .more-list .agi{display:inline-block;vertical-align:-4px;color:var(--bleu)}
-/* Photos : couverture, vignettes, galerie du formulaire, envoi, visionneuse */
-.cf-cover{grid-column:1/-1;display:block;width:100%;padding:0;border:0;margin:0 0 2px;border-radius:16px;overflow:hidden;background:var(--soft);aspect-ratio:16/9;cursor:zoom-in}
+
+/* Photos : couverture en arrière-plan sur tout le rectangle, vignettes, galerie du formulaire, envoi, visionneuse */
+.cf-card.has-cover{position:relative;overflow:hidden}
+.cf-card.has-cover > *:not(.cf-cover){position:relative;z-index:1}
+.cf-cover{position:absolute;inset:0;width:100%;height:100%;padding:0;margin:0;border:0;border-radius:inherit;overflow:hidden;background:var(--soft);cursor:zoom-in;z-index:0}
 .cf-cover img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
 .cf-cover:hover img{transform:scale(1.025)}
-@media(min-width:720px){.cf-cover{aspect-ratio:5/2;border-radius:18px}}
-/* Grand écran : la couverture passe à droite pour garder des cartes compactes */
-@media(min-width:960px){
-  .cf-card.has-cover{grid-template-columns:112px minmax(0,1fr) minmax(240px,32%)}
-  .cf-card.has-cover .cf-cover{grid-column:3;grid-row:1;align-self:start;aspect-ratio:4/3;margin:0}
-}
+.cf-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(95deg,rgba(255,255,255,.94) 0%,rgba(255,255,255,.86) 55%,rgba(255,255,255,.68) 100%);pointer-events:none}
+.cf-card.past.has-cover .cf-cover::after{background:linear-gradient(95deg,rgba(244,246,251,.95) 0%,rgba(244,246,251,.88) 55%,rgba(244,246,251,.72) 100%)}
+.cf-card.has-cover .cf-staff{border-top-color:rgba(2,2,89,.14)}
+
 .cf-thumbs{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
 .cf-th{position:relative;flex:none;width:58px;height:58px;padding:0;border:0;border-radius:12px;overflow:hidden;background:var(--soft);cursor:zoom-in}
 .cf-th img{display:block;width:100%;height:100%;object-fit:cover}
