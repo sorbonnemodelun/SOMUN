@@ -983,6 +983,52 @@ a.ev3-doc:hover{box-shadow:var(--shadow-md)}
 .mr-prow>span{display:flex;flex-direction:column;font-size:13px;min-width:0}
 .mr-prow em{font-style:normal;font-weight:600;color:var(--marine)}
 </style>
+<style id="conf">
+/* ===== Conférences : espace adhérents et espace délégués ===== */
+.cf-gate{margin-top:22px;padding:34px 26px;text-align:center}
+.cf-gate p{margin:0 auto 16px;max-width:34em;color:var(--ink);font-size:16px;line-height:1.55}
+.cf-warn{margin-top:18px;padding:16px 18px;border-radius:18px;background:#FFF7D1;color:var(--marine);font-size:14.5px;line-height:1.5}
+.cf-mine{margin-top:22px;display:grid;gap:14px}
+.cf-me{background:var(--marine);color:#fff;border-radius:var(--tile-r);padding:26px 22px}
+.cf-me :focus-visible{outline-color:#fff}
+.cf-me-k{margin:0;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--or)}
+.cf-me-h{margin:10px 0 0;font:800 clamp(30px,5vw,48px)/1 var(--f-titre);letter-spacing:-.03em;color:#fff}
+.cf-me-h::before{display:none}
+.cf-me-when{margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:15px;color:rgba(255,255,255,.78)}
+.cf-me-when span{display:inline-flex;align-items:center;gap:6px}
+.cf-assign{display:inline-block;margin-top:14px;padding:6px 12px;border-radius:99px;background:rgba(235,192,0,.16);color:var(--or);font-weight:600;font-size:13.5px}
+.cf-me-grid{margin-top:22px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr))}
+.cf-item{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;padding:16px 16px 18px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.cf-item h3{margin:0;display:flex;align-items:center;gap:8px;font:700 16px/1.2 var(--f-titre);color:#fff}
+.cf-item h3 .agi{color:var(--or)}
+.cf-item p{margin:0;font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.88);white-space:pre-line;overflow-wrap:anywhere}
+.cf-item p.tbd{color:rgba(255,255,255,.55);font-style:italic}
+.cf-item small{font-size:12.5px;color:rgba(255,255,255,.62)}
+.cf-me-wait{margin:18px 0 0;font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.82)}
+@media(min-width:720px){.cf-me{padding:32px 32px 30px}}
+.cf-sec{margin-top:34px}
+.cf-sec>.agh{font-size:clamp(28px,4vw,40px)}
+.cf-list{margin-top:16px;display:grid;gap:14px}
+.cf-card{display:grid;grid-template-columns:70px minmax(0,1fr);gap:16px;padding:20px 18px}
+.cf-card.past{background:var(--soft);box-shadow:none}
+.cf-body{min-width:0}
+.cf-title{margin:8px 0 0;font:800 clamp(22px,3vw,28px)/1.1 var(--f-titre);letter-spacing:-.02em;color:var(--marine)}
+.cf-desc{margin:12px 0 0;max-width:46em;font-size:15px;line-height:1.65;color:var(--ink);white-space:pre-line;overflow-wrap:anywhere}
+.cf-facts{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;color:var(--mute)}
+.cf-facts b{font-weight:600;color:var(--marine)}
+.cf-acts{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cf-sel{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;background:var(--or);color:var(--marine);font-weight:700;font-size:12.5px}
+.cf-staff{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px}
+.cf-past{margin-top:22px}
+.cf-past .cf-list{margin:0 12px 4px}
+@media(min-width:720px){.cf-card{grid-template-columns:112px minmax(0,1fr);gap:24px;padding:26px 28px}.cf-past .cf-list{margin:0 22px 8px}}
+.cf-sheet-note{margin:6px 0 0;font-size:13px;line-height:1.5;color:var(--mute)}
+.cf-dl{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.cf-dl li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft)}
+.cf-dl li>span{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}
+.cf-dl li small{font-size:12.5px;color:var(--mute);overflow-wrap:anywhere}
+.more-list .agi{display:inline-block;vertical-align:-4px;color:var(--bleu)}
+</style>
 </head>
 <body>
 <div id="sp"></div>
@@ -1847,6 +1893,7 @@ async function refreshAll(){
   await Promise.all([loadPublic(),loadPrivate()]);
   if(poleSel)await loadTasks();
   if(route==="event")await loadRegistrants();
+  if(route==="conferences")await cfLoad();
   softRender();
 }
 
@@ -2011,7 +2058,7 @@ window.addEventListener("resize",()=>moveNavThumb(true),{passive:true});
 
 function render(keep,instantThumb){
   document.documentElement.lang=lang;
-  document.body.classList.toggle("pg3",Boolean(configured)&&["accueil","activites","event"].includes(route));
+  document.body.classList.toggle("pg3",Boolean(configured)&&["accueil","activites","event","conferences"].includes(route));
   $("#langbtn").textContent=lang==="fr"?"EN":"FR";
   const fl=[],cMail=cfg("contact_email")||DEFAULT_CONTACT,ig=normalizeUrl(cfg("instagram_url"),"instagram"),li=normalizeUrl(cfg("linkedin_url"),"linkedin");
   if(cMail)fl.push(`<a href="mailto:${esc(cMail)}">${t("contact")}</a>`);
@@ -2020,7 +2067,7 @@ function render(keep,instantThumb){
   if(li)fl.push(`<a href="${esc(li)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`);
   $("#foot").innerHTML=`<div class="f-inner"><div class="f-brand">${logoImg()}</div><div class="f-meta">${fl.length?`<div class="f-links" style="margin-bottom:4px">${fl.join("")}</div>`:""}<div>${esc(t("foot")+(lang==="en"?" · "+t("autotr"):""))}</div></div></div>`;
   const staff=isStaff(),cur=route==="event"?"activites":(route==="quiz"||route==="diplomatie")?"jeu":route;
-  const nav=[["accueil","home"],["activites","activities"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
+  const nav=[["accueil","home"],["activites","activities"],["conferences","cf_nav"],["ressources","resources"],["jeu","game"],["adherer","join"],["pole","poles"],["bureau","bureau"],["partenaires","partners"]];
   if(staff)nav.push(["admin","admin"]);
   tabsBuild("dnav",nav.map(([k,l])=>[k,t(l)]),cur,{pill:"nav-pill",ink:true,hover:true,label:lang==="fr"?"Menu principal":"Main menu"});
   const main=[["accueil","home","home"],["activites","cal","activities"],["adherer","ticket","join"],["pole","users","poles"]];
@@ -2028,7 +2075,7 @@ function render(keep,instantThumb){
   tabsBuild("tabbar",main.map(([k,i,l])=>[k,t(l),TABICON[i]]).concat([["more",t("more"),TABICON.menu,"openMore()"]]),inMore?"more":cur,{pill:"tab-pill",label:"Menu"});
   const initial=((S.profile&&S.profile.prenom)||(S.user&&S.user.email)||"?")[0];
   $("#auth").innerHTML=S.user?`<button class="avatar" onclick="go('account')" aria-label="${esc(t("account"))}">${esc(initial).toUpperCase()}</button>`:`<button class="btn sm" onclick="go('login')">${t("login")}</button>`;
-  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset,mentions:vMentions};
+  const V={event:vEvent,accueil:vAccueil,activites:vActivites,ressources:vRessources,jeu:vJeux,quiz:vQuiz,diplomatie:vDiplomatie,adherer:vAdherer,bureau:vBureau,admin:vAdmin,account:vAccount,login:vAuth,pole:vPole,partenaires:vPartenaires,actus:vActus,reset:vReset,mentions:vMentions,conferences:vConferences};
   const animCls=keep?"":(navDir==="left"?"anim-left":"anim-right");
   const appEl=$("#app");
   let ghost=null;
@@ -2066,7 +2113,7 @@ function closeSheet(){
   document.body.style.overflow="";
 }
 function openMore(){
-  const items=[["jeu","🎮",t("game")],["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")],["mentions","⚖️",t("legal_link")]];
+  const items=[["jeu","🎮",t("game")],["conferences",agIco("globe",19),t("cf_nav")],["ressources","📘",t("resources")],["bureau","👔",t("bureau")],["partenaires","🤝",t("partners")],["actus","📰",t("news")],[S.user?"account":"login","👤",S.user?t("account"):t("login")],["mentions","⚖️",t("legal_link")]];
   if(isStaff())items.push(["admin","⚙️",t("admin")]);
   openSheet(`<h3>${t("more")}</h3><div class="more-list">${items.map(([k,i,l])=>`<button onclick="go('${k}')">${i}  ${esc(l)}</button>`).join("")}${appInstalled()?"":`<button onclick="showInstall()">📲  ${esc(t("app_install"))}</button>`}</div>`);
 }
@@ -2737,6 +2784,257 @@ function agAfterRender(){
   const v=document.querySelector("#app>.view:not(.view-ghost)");if(!v)return;
   const sc=v.querySelector(".sv-scroll");if(sc)agCenterIn(sc,sc.querySelector(".sv-now"));
   const s=v.querySelector(".ag-strip");if(s)agCenterIn(s,s.querySelector("[aria-current]"));
+}
+/* ===== CONFÉRENCES : espace adhérents (infos et inscription) et espace délégués sélectionnés =====
+   Tables Supabase : conferences, conference_delegates, conference_logistics (voir conferences.sql).
+   Les règles de sécurité de Supabase décident de qui lit quoi ; seuls les membres du Bureau écrivent. */
+Object.assign(AGI,{
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  right:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  bed:'<path d="M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11.5" r="2"/>'
+});
+Object.assign(I18N.fr,{ag_mr_up:"{u} à venir",
+  cf_nav:"Conférences",cf_sub:"Les conférences de la saison : inscris-toi, et retrouve ici tes infos de voyage si tu es sélectionné·e.",
+  cf_add:"Ajouter une conférence",cf_new_t:"Nouvelle conférence",cf_edit_t:"Modifier la conférence",
+  cf_f_name:"Nom de la conférence",cf_f_city:"Ville ou lieu",cf_f_start:"Premier jour",cf_f_end:"Dernier jour",
+  cf_f_desc:"Infos utiles (thème, comités, programme…)",cf_f_cost:"Coût pour un délégué",cf_f_cost_ph:"ex. 120 € (hors transport)",cf_f_seats:"Places dans la délégation",
+  cf_f_apply:"Lien du formulaire d'inscription",cf_f_deadline:"Date limite d'inscription",cf_f_site:"Site de la conférence",
+  cf_season:"Conférences de la saison",cf_past:"Conférences passées",cf_none:"Aucune conférence annoncée pour le moment.",
+  cf_cost:"Coût",cf_seats:"Places",cf_deadline:"Inscriptions jusqu'au {d}",cf_closed:"Inscriptions closes",
+  cf_apply_btn:"Formulaire d'inscription",cf_site_btn:"Site de la conférence",cf_dates_tbd:"Dates à venir",cf_selected:"Sélectionné·e",
+  cf_mine_t:"Ma délégation",cf_in:"Tu fais partie de la délégation",cf_dep:"Départ",cf_ret:"Retour",cf_hotel:"Hôtel",cf_hotel_link:"Voir l'hôtel",
+  cf_reg:"Inscription à la conférence",cf_reg_mymun:"Ouvrir MyMUN",cf_reg_form:"Ouvrir le formulaire",cf_hb:"Delegate handbook",cf_hb_btn:"Ouvrir le handbook",
+  cf_hb_by:"Préparé par le pôle logistique.",cf_notes:"À savoir",cf_tbd:"Pas encore communiqué.",
+  cf_wait:"Le Bureau publiera ici les infos de départ, de retour, d'hôtel et le delegate handbook.",
+  cf_gate_login:"Connecte-toi pour voir les conférences de la saison.",cf_gate_member:"L'espace conférences est réservé aux adhérents.",
+  cf_missing:"Les tables des conférences n'existent pas encore dans Supabase : lance le fichier conferences.sql dans l'éditeur SQL, puis recharge la page.",
+  cf_deleg:"Délégation",cf_deleg_t:"Délégation : {c}",cf_deleg_note:"Les membres ajoutés ici voient les infos réservées aux délégués de cette conférence.",
+  cf_deleg_none:"Personne n'est encore sélectionné.",cf_deleg_add:"Ajouter à la délégation",cf_deleg_pick:"Membre",cf_deleg_choose:"Choisir un membre…",
+  cf_deleg_assign:"Comité et pays (facultatif)",cf_deleg_assign_ph:"ex. UNSC, France",cf_deleg_remove:"Retirer",cf_not_member:"non adhérent",
+  cf_logi:"Infos des délégués",cf_logi_t:"Infos des délégués : {c}",cf_logi_note:"Visibles uniquement par les membres de la délégation et le Bureau.",
+  cf_f_dep:"Départ (date, heure, lieu de rendez-vous, transport)",cf_f_ret:"Retour",cf_f_hotel:"Hôtel (nom, adresse)",cf_f_hotel_url:"Lien de l'hôtel",
+  cf_f_mymun:"Lien MyMUN ou formulaire d'inscription de la conférence",cf_f_hb:"Lien du delegate handbook",cf_f_notes:"Autres infos (contacts, tenue, à emporter…)",
+  cf_e_url:"Lien invalide : colle une adresse complète, par exemple https://…",cf_e_dates:"Le dernier jour doit être après le premier.",
+  cf_confirm_del:"Supprimer cette conférence, sa délégation et ses infos réservées ?",cf_confirm_rm:"Retirer {n} de la délégation ?",cf_close:"Fermer"});
+Object.assign(I18N.en,{ag_mr_up:"{u} upcoming",
+  cf_nav:"Conferences",cf_sub:"This season's conferences: sign up, and find your travel details here once you're selected.",
+  cf_add:"Add a conference",cf_new_t:"New conference",cf_edit_t:"Edit the conference",
+  cf_f_name:"Conference name",cf_f_city:"City or venue",cf_f_start:"First day",cf_f_end:"Last day",
+  cf_f_desc:"Useful info (theme, committees, programme…)",cf_f_cost:"Cost per delegate",cf_f_cost_ph:"e.g. €120 (travel not included)",cf_f_seats:"Spots in the delegation",
+  cf_f_apply:"Sign-up form link",cf_f_deadline:"Sign-up deadline",cf_f_site:"Conference website",
+  cf_season:"This season's conferences",cf_past:"Past conferences",cf_none:"No conference announced yet.",
+  cf_cost:"Cost",cf_seats:"Spots",cf_deadline:"Sign-ups open until {d}",cf_closed:"Sign-ups closed",
+  cf_apply_btn:"Sign-up form",cf_site_btn:"Conference website",cf_dates_tbd:"Dates to be announced",cf_selected:"Selected",
+  cf_mine_t:"My delegation",cf_in:"You're part of the delegation",cf_dep:"Departure",cf_ret:"Return",cf_hotel:"Hotel",cf_hotel_link:"See the hotel",
+  cf_reg:"Conference registration",cf_reg_mymun:"Open MyMUN",cf_reg_form:"Open the form",cf_hb:"Delegate handbook",cf_hb_btn:"Open the handbook",
+  cf_hb_by:"Prepared by the logistics team.",cf_notes:"Good to know",cf_tbd:"Not announced yet.",
+  cf_wait:"The Board will post departure, return and hotel details and the delegate handbook here.",
+  cf_gate_login:"Log in to see this season's conferences.",cf_gate_member:"The conference area is for members only.",
+  cf_missing:"The conference tables don't exist in Supabase yet: run conferences.sql in the SQL editor, then reload the page.",
+  cf_deleg:"Delegation",cf_deleg_t:"Delegation: {c}",cf_deleg_note:"Members added here can see the delegate-only details for this conference.",
+  cf_deleg_none:"Nobody has been selected yet.",cf_deleg_add:"Add to the delegation",cf_deleg_pick:"Member",cf_deleg_choose:"Choose a member…",
+  cf_deleg_assign:"Committee and country (optional)",cf_deleg_assign_ph:"e.g. UNSC, France",cf_deleg_remove:"Remove",cf_not_member:"not a member",
+  cf_logi:"Delegate details",cf_logi_t:"Delegate details: {c}",cf_logi_note:"Only visible to the delegation and the Board.",
+  cf_f_dep:"Departure (date, time, meeting point, transport)",cf_f_ret:"Return",cf_f_hotel:"Hotel (name, address)",cf_f_hotel_url:"Hotel link",
+  cf_f_mymun:"MyMUN link or conference sign-up form",cf_f_hb:"Delegate handbook link",cf_f_notes:"Other details (contacts, dress code, what to bring…)",
+  cf_e_url:"Invalid link: paste a full address, for example https://…",cf_e_dates:"The last day must come after the first.",
+  cf_confirm_del:"Delete this conference, its delegation and its delegate-only details?",cf_confirm_rm:"Remove {n} from the delegation?",cf_close:"Close"});
+ROUTES.push("conferences");
+ROUTE_RANK.conferences=1.8;
+
+let CF={ready:false,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};
+const cfUid=()=>S.user?S.user.id:null;
+const cfIsDelegate=id=>Boolean(S.user)&&CF.deleg.some(d=>String(d.conference_id)===String(id)&&d.user_id===S.user.id);
+const cfCanSee=()=>Boolean(S.user)&&(hasPaid()||isStaff()||CF.deleg.some(d=>d.user_id===S.user.id));
+const cfDay=v=>{const s=isoDay(v||"");return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:""};
+const cfPast=c=>{const e=cfDay(c.end_date)||cfDay(c.start_date);return Boolean(e)&&e<todayStr()};
+const cfName=m=>m?(`${m.prenom||""} ${m.nom||""}`.trim()||m.email||"?"):"?";
+/* Lien https vers un vrai domaine (le site accepte sinon « drive » ou « pas un lien ») */
+const cfLink=raw=>{const u=normalizeUrl(raw);if(!u)return null;try{return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(new URL(u).hostname)?u:null}catch(e){return null}};
+const cfUrl=v=>{const raw=String(v||"").trim();return raw?cfLink(raw):null};
+const cfFind=id=>CF.list.find(x=>String(x.id)===String(id));
+
+async function cfLoad(){
+  if(!sb||!S.user){CF={ready:true,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};return}
+  CF.busy=true;
+  try{
+    const [c,d,l]=await Promise.all([
+      sb.from("conferences").select("*").order("start_date",{ascending:true}),
+      sb.from("conference_delegates").select("*"),
+      sb.from("conference_logistics").select("*")
+    ]);
+    CF.missing=[c,d,l].some(r=>isMissingTableErr(r.error));
+    CF.list=c.error?[]:(c.data||[]);CF.deleg=d.error?[]:(d.data||[]);CF.logi=l.error?[]:(l.data||[]);
+  }finally{CF.ready=true;CF.busy=false;CF.uid=cfUid()}
+}
+function cfParts(c){
+  const s=cfDay(c.start_date);if(!s)return null;
+  const e=cfDay(c.end_date),f=e&&e>s?e:s,multi=f>s,a=dd(s),b=dd(f),sameM=s.slice(0,7)===f.slice(0,7);
+  return {multi,
+    day:multi?`${a.getDate()}–${b.getDate()}`:String(a.getDate()),
+    wd:multi?`${agF(s,{weekday:"short"})}–${agF(f,{weekday:"short"})}`:agF(s,{weekday:"short"}),
+    mon:multi&&!sameM?`${agF(s,{month:"short"})}–${agF(f,{month:"short"})}`:agF(s,{month:"short",year:"numeric"}),
+    long:multi?t("ag_from_to",{a:long(s),b:long(f)}):long(s)};
+}
+
+function vConferences(){
+  if(D.loading)return loadingBox();
+  if(S.user&&(!CF.ready||CF.uid!==cfUid())){
+    if(!CF.busy)cfLoad().then(()=>{if(route==="conferences")render(true)});
+    return loadingBox();
+  }
+  const head=`<div class="ag-head"><div><h1 class="ag-h1">${t("cf_nav")}</h1><p class="ag-sub">${esc(t("cf_sub"))}</p></div>${isStaff()?`<div class="ag-tools"><button class="btn" onclick="cfEdit()">+ ${t("cf_add")}</button></div>`:""}</div>`;
+  const wrap=html=>`<div class="v3 v3-page cf-page">${head}${html}</div>`;
+  if(!S.user)return wrap(`<div class="tile cf-gate"><p>${t("cf_gate_login")}</p><button class="btn" onclick="go('login')">${t("login")}</button></div>`);
+  if(!cfCanSee())return wrap(`<div class="tile cf-gate"><p>${t("cf_gate_member")}</p><button class="btn" onclick="go('adherer')">${t("join")}</button></div>`);
+  const up=CF.list.filter(c=>!cfPast(c)),past=CF.list.filter(cfPast).reverse(),mine=up.filter(c=>cfIsDelegate(c.id));
+  return wrap(`${CF.missing&&isStaff()?`<div class="cf-warn">${t("cf_missing")}</div>`:""}
+   ${mine.length?`<section class="cf-mine" aria-label="${esc(t("cf_mine_t"))}">${mine.map(cfMine).join("")}</section>`:""}
+   <section class="cf-sec"><h2 class="agh">${t("cf_season")}</h2>${up.length?`<div class="cf-list">${up.map(c=>cfCard(c,false)).join("")}</div>`:`<div class="tile ag-nores" style="margin-top:16px">${t("cf_none")}</div>`}</section>
+   ${past.length?`<details class="tile ag-tile ag-pastg cf-past"><summary><h2 class="agh">${t("cf_past")}</h2><span class="ag-cnt">${past.length}</span></summary><div class="cf-list">${past.map(c=>cfCard(c,true)).join("")}</div></details>`:""}`);
+}
+function cfCard(c,compact){
+  const p=cfParts(c),id=idArg(c.id),me=cfIsDelegate(c.id);
+  const apply=cfUrl(c.application_url),site=cfUrl(c.website_url),dl=cfDay(c.application_deadline),closed=Boolean(dl)&&dl<todayStr();
+  const date=p?`<div class="ag-when"><span class="sr">${esc(p.long)}</span><small aria-hidden="true">${esc(p.wd)}</small><span class="ag-day${p.multi?" rng":""}" aria-hidden="true">${esc(p.day)}</span><small aria-hidden="true">${esc(p.mon)}</small></div>`:`<div class="ag-when"><small>${t("cf_dates_tbd")}</small></div>`;
+  const facts=[c.cost?`<span><b>${t("cf_cost")}</b> ${esc(T(c.cost))}</span>`:"",Number(c.seats)>0?`<span><b>${t("cf_seats")}</b> ${Number(c.seats)}</span>`:"",dl?`<span>${esc(closed?t("cf_closed"):t("cf_deadline",{d:agF(dl,{day:"numeric",month:"long"})}))}</span>`:""].join("");
+  const acts=compact?"":(apply&&!closed?`<a class="btn" href="${esc(apply)}" target="_blank" rel="noopener noreferrer">${t("cf_apply_btn")}${agIco("ext",16)}</a>`:"")+(site?`<a class="btn ghost" href="${esc(site)}" target="_blank" rel="noopener noreferrer">${t("cf_site_btn")}${agIco("ext",16)}</a>`:"");
+  const n=CF.deleg.filter(d=>String(d.conference_id)===String(c.id)).length;
+  const staff=isStaff()?`<div class="cf-staff"><button class="btn ghost xs" onclick="cfEdit(${id})">${t("edit")}</button><button class="btn ghost xs" onclick="cfDelegates(${id})">${t("cf_deleg")} (${n})</button><button class="btn ghost xs" onclick="cfLogi(${id})">${t("cf_logi")}</button><button class="btn danger xs" onclick="cfDelete(${id},this)">${t("del")}</button></div>`:"";
+  return `<article class="tile cf-card${compact?" past":""}" style="${agTC("Conférence")}">${date}<div class="cf-body">
+   <div class="ag-tags"><span class="ag-chip">${esc(agTypeName("Conférence"))}</span>${c.city?`<span class="ag-lock">${agIco("pin",14)}${esc(T(c.city))}</span>`:""}${me?`<span class="cf-sel">${agIco("check",13,2.8)}${t("cf_selected")}</span>`:""}</div>
+   <h3 class="cf-title">${esc(T(c.name))}</h3>
+   ${!compact&&c.description?`<p class="cf-desc">${esc(T(c.description))}</p>`:""}
+   ${!compact&&facts?`<p class="cf-facts">${facts}</p>`:""}
+   ${acts?`<div class="cf-acts">${acts}</div>`:""}${staff}
+  </div></article>`;
+}
+function cfMine(c){
+  const L=CF.logi.find(x=>String(x.conference_id)===String(c.id)),me=CF.deleg.find(x=>String(x.conference_id)===String(c.id)&&x.user_id===S.user.id)||{},p=cfParts(c);
+  const txt=v=>v?`<p>${esc(T(v))}</p>`:`<p class="tbd">${t("cf_tbd")}</p>`;
+  const btn=(u,label)=>u?`<a class="btn gold sm" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${label}${agIco("ext",15)}</a>`:"";
+  let body=`<p class="cf-me-wait">${t("cf_wait")}</p>`;
+  if(L){
+    const reg=cfUrl(L.mymun_url),hb=cfUrl(L.handbook_url),hotelUrl=cfUrl(L.hotel_url);
+    const items=[
+      ["right",t("cf_dep"),txt(L.departure)],
+      ["left",t("cf_ret"),txt(L.return_trip)],
+      ["bed",t("cf_hotel"),txt(L.hotel)+btn(hotelUrl,t("cf_hotel_link"))],
+      ["ticket",t("cf_reg"),reg?btn(reg,/mymun/i.test(reg)?t("cf_reg_mymun"):t("cf_reg_form")):txt("")],
+      ["doc",t("cf_hb"),(hb?btn(hb,t("cf_hb_btn")):txt(""))+`<small>${t("cf_hb_by")}</small>`]
+    ];
+    if(L.notes)items.push(["list",t("cf_notes"),txt(L.notes)]);
+    body=`<div class="cf-me-grid">${items.map(([i,h,b])=>`<div class="cf-item"><h3>${agIco(i,18)}${h}</h3>${b}</div>`).join("")}</div>`;
+  }
+  return `<article class="cf-me" aria-labelledby="cfm-${sid(c.id)}">
+   <p class="cf-me-k">${agIco("check",16,2.6)}${t("cf_in")}</p>
+   <h2 class="cf-me-h" id="cfm-${sid(c.id)}">${esc(T(c.name))}</h2>
+   <p class="cf-me-when">${p?`<span>${agIco("calplus",16)}${esc(agCap(p.long))}</span>`:""}${c.city?`<span>${agIco("pin",16)}${esc(T(c.city))}</span>`:""}</p>
+   ${me.assignment?`<span class="cf-assign">${esc(T(me.assignment))}</span>`:""}
+   ${body}
+  </article>`;
+}
+
+/* --- Gestion par le Bureau --- */
+function cfEdit(id){
+  if(!isStaff())return;
+  const c=id!=null?cfFind(id):null,v=k=>esc(c&&c[k]!=null?String(c[k]):"");
+  openSheet(`<h3>${c?t("cf_edit_t"):t("cf_new_t")}</h3><form onsubmit="cfSave(event${c?","+idArg(c.id):""})">
+    <label>${t("cf_f_name")}</label><input name="name" required maxlength="140" value="${v("name")}">
+    <label>${t("cf_f_city")}</label><input name="city" maxlength="120" value="${v("city")}">
+    <div class="row2"><div><label>${t("cf_f_start")}</label><input name="start_date" type="date" value="${c?cfDay(c.start_date):""}"></div><div><label>${t("cf_f_end")}</label><input name="end_date" type="date" value="${c?cfDay(c.end_date):""}"></div></div>
+    <label>${t("cf_f_desc")}</label><textarea name="description" rows="5" maxlength="4000">${v("description")}</textarea>
+    <div class="row2"><div><label>${t("cf_f_cost")}</label><input name="cost" maxlength="120" placeholder="${esc(t("cf_f_cost_ph"))}" value="${v("cost")}"></div><div><label>${t("cf_f_seats")}</label><input name="seats" type="number" min="0" value="${c&&c.seats!=null?Number(c.seats):""}"></div></div>
+    <label>${t("cf_f_apply")}</label><input name="application_url" type="text" placeholder="https://docs.google.com/forms/…" value="${v("application_url")}">
+    <label>${t("cf_f_deadline")}</label><input name="application_deadline" type="date" value="${c?cfDay(c.application_deadline):""}">
+    <label>${t("cf_f_site")}</label><input name="website_url" type="text" placeholder="https://…" value="${v("website_url")}">
+    <br><button class="btn" type="submit" style="width:100%">${c?t("save"):t("publish")}</button>
+   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+function cfRead(f){
+  const out={};
+  for(const k of ["application_url","website_url"]){const raw=String(f.get(k)||"").trim();out[k]=raw?cfLink(raw):null;if(raw&&!out[k]){toast(t("cf_e_url"));return null}}
+  const s=f.get("start_date")||null,e=f.get("end_date")||null,seats=String(f.get("seats")||"").trim(),txt=k=>String(f.get(k)||"").trim()||null;
+  if(s&&e&&e<s){toast(t("cf_e_dates"));return null}
+  return Object.assign(out,{name:String(f.get("name")||"").trim(),city:txt("city"),start_date:s,end_date:e,description:txt("description"),cost:txt("cost"),seats:seats===""?null:Math.max(0,Math.round(Number(seats))||0),application_deadline:f.get("application_deadline")||null});
+}
+async function cfSave(ev,id){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const row=cfRead(new FormData(ev.target));if(!row)return;
+    const {error}=id!=null?await sb.from("conferences").update(row).eq("id",id):await sb.from("conferences").insert(row);
+    if(error)return toast(errMsg(error));
+    closeSheet();await cfLoad();render(true);toast(t("t_ok"));
+  });
+}
+async function cfDelete(id,btn){
+  if(!confirm(t("cf_confirm_del")))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("conferences").delete().eq("id",id);
+    if(error)return toast(errMsg(error));
+    await cfLoad();render(true);toast(t("t_ok"));
+  });
+}
+function cfDelegates(id){
+  if(!isStaff())return;
+  const c=cfFind(id);if(!c)return;
+  const ds=CF.deleg.filter(d=>String(d.conference_id)===String(id)),byId=Object.fromEntries(D.members.map(m=>[m.id,m])),taken=new Set(ds.map(d=>d.user_id));
+  const paidOf=m=>Boolean(m&&(m.paid||m.is_member||m.adherent)&&(!m.paid_until||isoDay(m.paid_until)>=todayStr()));
+  const cands=D.members.filter(m=>!taken.has(m.id)).sort((a,b)=>cfName(a).localeCompare(cfName(b),"fr"));
+  openSheet(`<h3>${esc(t("cf_deleg_t",{c:T(c.name)}))}</h3><p class="cf-sheet-note">${t("cf_deleg_note")}</p>
+   ${ds.length?`<ul class="cf-dl">${ds.map(d=>{const m=byId[d.user_id];return `<li><span><b>${esc(cfName(m))}</b><small>${esc([d.assignment,m&&m.email].filter(Boolean).join(", "))}</small></span><button class="btn danger xs" data-u="${esc(d.user_id)}" onclick="cfRemoveDelegate(${idArg(c.id)},this.dataset.u,this)">${t("cf_deleg_remove")}</button></li>`}).join("")}</ul>`:`<p class="mute" style="margin:14px 0 0">${t("cf_deleg_none")}</p>`}
+   <form onsubmit="cfAddDelegate(event,${idArg(c.id)})" style="margin-top:18px">
+    <label>${t("cf_deleg_pick")}</label><select name="user_id" required><option value="">${t("cf_deleg_choose")}</option>${cands.map(m=>`<option value="${esc(m.id)}">${esc(cfName(m))}${paidOf(m)?"":" ("+esc(t("cf_not_member"))+")"}</option>`).join("")}</select>
+    <label>${t("cf_deleg_assign")}</label><input name="assignment" maxlength="120" placeholder="${esc(t("cf_deleg_assign_ph"))}">
+    <br><button class="btn" type="submit" style="width:100%">${t("cf_deleg_add")}</button>
+   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cf_close")}</button>`);
+}
+async function cfAddDelegate(ev,id){
+  ev.preventDefault();
+  const f=new FormData(ev.target),uid=String(f.get("user_id")||"");if(!uid)return;
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("conference_delegates").insert({conference_id:id,user_id:uid,assignment:String(f.get("assignment")||"").trim()||null});
+    if(error)return toast(errMsg(error));
+    await cfLoad();render(true);cfDelegates(id);toast(t("t_ok"));
+  });
+}
+async function cfRemoveDelegate(id,uid,btn){
+  if(!confirm(t("cf_confirm_rm",{n:cfName(D.members.find(x=>x.id===uid))})))return;
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("conference_delegates").delete().eq("conference_id",id).eq("user_id",uid);
+    if(error)return toast(errMsg(error));
+    await cfLoad();render(true);cfDelegates(id);toast(t("t_ok"));
+  });
+}
+function cfLogi(id){
+  if(!isStaff())return;
+  const c=cfFind(id);if(!c)return;
+  const L=CF.logi.find(x=>String(x.conference_id)===String(id))||{},v=k=>esc(L[k]!=null?String(L[k]):"");
+  openSheet(`<h3>${esc(t("cf_logi_t",{c:T(c.name)}))}</h3><p class="cf-sheet-note">${t("cf_logi_note")}</p>
+   <form onsubmit="cfLogiSave(event,${idArg(c.id)})">
+    <label>${t("cf_f_dep")}</label><textarea name="departure" rows="3" maxlength="2000">${v("departure")}</textarea>
+    <label>${t("cf_f_ret")}</label><textarea name="return_trip" rows="3" maxlength="2000">${v("return_trip")}</textarea>
+    <label>${t("cf_f_hotel")}</label><textarea name="hotel" rows="2" maxlength="1000">${v("hotel")}</textarea>
+    <label>${t("cf_f_hotel_url")}</label><input name="hotel_url" type="text" placeholder="https://…" value="${v("hotel_url")}">
+    <label>${t("cf_f_mymun")}</label><input name="mymun_url" type="text" placeholder="https://mymun.com/…" value="${v("mymun_url")}">
+    <label>${t("cf_f_hb")}</label><input name="handbook_url" type="text" placeholder="https://drive.google.com/…" value="${v("handbook_url")}">
+    <label>${t("cf_f_notes")}</label><textarea name="notes" rows="3" maxlength="2000">${v("notes")}</textarea>
+    <br><button class="btn" type="submit" style="width:100%">${t("save")}</button>
+   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+}
+async function cfLogiSave(ev,id){
+  ev.preventDefault();
+  const f=new FormData(ev.target),txt=k=>String(f.get(k)||"").trim()||null,row={conference_id:id};
+  for(const k of ["hotel_url","mymun_url","handbook_url"]){const raw=String(f.get(k)||"").trim();row[k]=raw?cfLink(raw):null;if(raw&&!row[k])return toast(t("cf_e_url"))}
+  Object.assign(row,{departure:txt("departure"),return_trip:txt("return_trip"),hotel:txt("hotel"),notes:txt("notes"),updated_at:new Date().toISOString()});
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {error}=await sb.from("conference_logistics").upsert(row,{onConflict:"conference_id"});
+    if(error)return toast(errMsg(error));
+    closeSheet();await cfLoad();render(true);toast(t("t_ok"));
+  });
 }
 const vActus=()=>D.loading?loadingBox():`<h1>${t("news")}</h1>${D.news.length?`<div class="grid" style="margin-top:12px">${D.news.map(newsCard).join("")}</div>`:`<div class="card empty" style="margin-top:12px">${t("no_news")}</div>`}`;
 
