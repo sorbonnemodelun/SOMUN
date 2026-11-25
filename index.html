@@ -1024,6 +1024,7 @@ a.ev3-doc:hover{box-shadow:var(--shadow-md)}
 .cf-past .cf-list{margin:0 12px 4px}
 @media(min-width:720px){.cf-card{grid-template-columns:112px minmax(0,1fr);gap:24px;padding:26px 28px}.cf-past .cf-list{margin:0 22px 8px}}
 .cf-sheet-note{margin:6px 0 0;font-size:13px;line-height:1.5;color:var(--mute)}
+.cf-nodate{margin:10px 0 0;font-size:13.5px;line-height:1.45;color:var(--mute)}
 .cf-dl{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
 .cf-dl li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft)}
 .cf-dl li>span{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}
@@ -1877,6 +1878,7 @@ async function loadPublic(){
   if(!re.error)D.resources=re.data||[];else if(!isMissingTableErr(re.error))console.error(re.error);
   if(!se.error&&se.data)D.settings=Object.fromEntries(se.data.map(x=>[x.key,x.value]));
   else if(se.error&&!isMissingTableErr(se.error))console.error(se.error);
+  if(typeof cfMergeAgenda==="function")cfMergeAgenda();
   lastSync=Date.now();
 }
 async function loadPrivate(autoSync=true){
@@ -2691,7 +2693,10 @@ function vEvent(){
   if(D.loading)return loadingBox();
   const back=`<a class="ev3-back" href="#activites" onclick="event.preventDefault();go('activites')">${agIco("left")}${t("activities")}</a>`;
   const e=D.events.find(x=>String(x.id)===String(evSel));
-  if(!e)return `<div class="v3 v3-page">${back}<div class="tile ag-nores" style="margin-top:14px">${t("ev_404")}</div></div>`;
+  if(!e){
+    if(/^cf-/.test(String(evSel))&&S.user&&(!CF.ready||CF.busy||CF.uid!==cfUid()))return loadingBox();
+    return `<div class="v3 v3-page">${back}<div class="tile ag-nores" style="margin-top:14px">${t("ev_404")}</div></div>`;
+  }
   const id=idArg(e.id),st=D.myRegs[e.id],ok=agOk(e),past=ok?agPast(e):false,img=safeUrl(e.image_url),formHref=safeUrl(e.form_url);
   const canEditSG=e.type==="Training"&&isTrainingLead();
   const sgHref=safeUrl(e.study_guide_url);
@@ -2847,11 +2852,15 @@ function agAfterRender(){
   const sc=v.querySelector(".sv-scroll");if(sc)agCenterIn(sc,sc.querySelector(".sv-now"));
   const s=v.querySelector(".ag-strip");if(s)agCenterIn(s,s.querySelector("[aria-current]"));
   if(typeof upEnhance==="function")upEnhance(v);
+  if(typeof cfAgendaSync==="function")cfAgendaSync();
 }
 /* ===== CONFÉRENCES : espace adhérents (infos et inscription) et espace délégués sélectionnés =====
    Tables Supabase : conferences, conference_delegates, conference_logistics (voir conferences.sql).
-   Chaque conférence datée apparaît aussi dans l'agenda : un déclencheur Supabase crée et met à jour
-   la ligne correspondante de la table events (colonne conference_id), avec la photo de couverture.
+   Chaque conférence datée apparaît aussi dans l'agenda, de deux façons qui ne se doublent jamais :
+   - le site l'ajoute lui-même à l'agenda dès qu'elle est créée, pour tous ceux qui peuvent la lire
+     (adhérents à jour, Bureau, délégués), sans rien à faire dans Supabase (cfMergeAgenda) ;
+   - si conferences.sql a été lancé, un déclencheur Supabase crée aussi sa ligne dans la table events
+     (colonne conference_id) : elle est alors visible de tous, visiteurs compris.
    Les règles de sécurité de Supabase décident de qui lit quoi ; seuls les membres du Bureau écrivent. */
 Object.assign(AGI,{
   globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
@@ -2887,6 +2896,9 @@ Object.assign(I18N.fr,{ag_mr_up:"{u} à venir",
   ag_on_sel:"Sur sélection",cf_see:"Voir la conférence",cf_edit_in:"Modifier dans Conférences",
   cf_ev_line:"Les infos utiles et l'inscription se trouvent dans l'espace Conférences, réservé aux adhérents.",
   cf_ev_managed:"Cet événement vient de l'espace Conférences : modifie-le là-bas.",
+  cf_dates_hint:"Dès que le premier jour est indiqué, la conférence s'affiche dans le calendrier.",
+  cf_nodate:"Pas encore dans le calendrier : indique le premier jour pour l'y afficher.",
+  cf_agenda_sql:"Les conférences datées s'affichent dans le calendrier des adhérents connectés. Pour que les visiteurs les voient aussi, et pour activer les photos, lance conferences.sql dans Supabase (SQL Editor, New query, Run).",
   cf_f_photos:"Photos de la conférence",cf_ph_add:"Ajouter des photos",cf_ph_note:"La première photo sert de couverture, y compris dans l'agenda.",
   cf_ph_none:"Aucune photo pour l'instant.",cf_ph_cover:"Couverture",cf_ph_make_cover:"Mettre en couverture",cf_ph_remove:"Retirer la photo",
   cf_ph_n:"Photo {i}",cf_ph_make_cover_n:"Mettre la photo {i} en couverture",cf_ph_remove_n:"Retirer la photo {i}",cf_ph_open:"Agrandir la photo {i} sur {n}",cf_ph_max:"{n} photos au maximum par conférence.",
@@ -2923,6 +2935,9 @@ Object.assign(I18N.en,{ag_mr_up:"{u} upcoming",
   ag_on_sel:"By selection",cf_see:"See the conference",cf_edit_in:"Edit in Conferences",
   cf_ev_line:"Details and sign-up are in the Conferences area, for members only.",
   cf_ev_managed:"This event comes from the Conferences area: edit it there.",
+  cf_dates_hint:"As soon as the first day is set, the conference shows in the calendar.",
+  cf_nodate:"Not in the calendar yet: set the first day to show it there.",
+  cf_agenda_sql:"Conferences with dates show in the calendar for logged-in members. To show them to visitors too, and to enable photos, run conferences.sql in Supabase (SQL Editor, New query, Run).",
   cf_f_photos:"Conference photos",cf_ph_add:"Add photos",cf_ph_note:"The first photo is the cover, in the calendar too.",
   cf_ph_none:"No photos yet.",cf_ph_cover:"Cover",cf_ph_make_cover:"Make it the cover",cf_ph_remove:"Remove the photo",
   cf_ph_n:"Photo {i}",cf_ph_make_cover_n:"Make photo {i} the cover",cf_ph_remove_n:"Remove photo {i}",cf_ph_open:"Enlarge photo {i} of {n}",cf_ph_max:"{n} photos at most per conference.",
@@ -3043,7 +3058,7 @@ const cfPhotosOf=c=>(c&&Array.isArray(c.photos)?c.photos:[]).map(u=>safeUrl(u)).
 const CF_PH_MAX=30;
 
 async function cfLoad(){
-  if(!sb||!S.user){CF={ready:true,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};return}
+  if(!sb||!S.user){CF={ready:true,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};cfMergeAgenda();return}
   CF.busy=true;
   try{
     const [c,d,l]=await Promise.all([
@@ -3053,8 +3068,38 @@ async function cfLoad(){
     ]);
     CF.missing=[c,d,l].some(r=>isMissingTableErr(r.error));
     CF.list=c.error?[]:(c.data||[]);CF.deleg=d.error?[]:(d.data||[]);CF.logi=l.error?[]:(l.data||[]);
-  }finally{CF.ready=true;CF.busy=false;CF.uid=cfUid()}
+  }finally{CF.ready=true;CF.busy=false;CF.uid=cfUid();cfMergeAgenda()}
 }
+/* Agenda : chaque conférence datée y est ajoutée par le site, sauf si elle y est déjà
+   (ligne créée par le déclencheur Supabase, ou événement ajouté à la main avec le même nom et la même date) */
+const cfEvKey=e=>[e.id,e.title,e.date,e.date_fin,e.lieu,e.image_url,e.places].join("|");
+function cfMergeAgenda(){
+  if(!Array.isArray(D.events))return false;
+  const before=D.events.filter(e=>e._cf).map(cfEvKey).join("§"),real=D.events.filter(e=>!e._cf),add=[];
+  const norm=v=>String(v||"").trim().toLowerCase();
+  if(S.user&&CF.uid===cfUid()&&cfCanSee())CF.list.forEach(c=>{
+    const s=cfDay(c.start_date);if(!s)return; /* sans date, pas de place dans le calendrier */
+    if(real.some(e=>e.conference_id!=null&&String(e.conference_id)===String(c.id)))return;
+    if(real.some(e=>e.conference_id==null&&e.type==="Conférence"&&cfDay(e.date)===s&&norm(e.title)===norm(c.name)))return;
+    const f=cfDay(c.end_date),ph=cfPhotosOf(c);
+    add.push({id:"cf-"+c.id,_cf:true,conference_id:c.id,title:c.name,type:"Conférence",lieu:c.city||"",date:s,date_fin:f&&f>s?f:null,heure:null,
+      prix:0,places:Math.max(Number(c.seats)||0,1),image_url:ph[0]||null,description:null,form_url:null,helloasso_slug:null,members_only:true});
+  });
+  D.events=add.length?real.concat(add).sort((a,b)=>String(cfDay(a.date)).localeCompare(String(cfDay(b.date)))):real;
+  return before!==add.map(cfEvKey).join("§");
+}
+/* Charge les conférences en arrière-plan dès qu'un membre est connecté, pour l'agenda et l'accueil */
+function cfAgendaSync(){
+  const uid=cfUid();
+  if(uid&&(!CF.ready||CF.uid!==uid)){
+    if(!CF.busy)cfLoad().then(()=>render(true));
+  }else if(!uid&&CF.uid){
+    CF={ready:true,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};
+    if(cfMergeAgenda())render(true);
+  }
+}
+/* Vrai si conferences.sql n'a pas encore été lancé (la table events n'a pas la colonne conference_id) */
+const cfNoAgendaLink=()=>{const real=(D.events||[]).filter(e=>!e._cf);return real.length>0&&!real.some(e=>"conference_id" in e)};
 function cfParts(c){
   const s=cfDay(c.start_date);if(!s)return null;
   const e=cfDay(c.end_date),f=e&&e>s?e:s,multi=f>s,a=dd(s),b=dd(f),sameM=s.slice(0,7)===f.slice(0,7);
@@ -3076,7 +3121,7 @@ function vConferences(){
   if(!S.user)return wrap(`<div class="tile cf-gate"><p>${t("cf_gate_login")}</p><button class="btn" onclick="go('login')">${t("login")}</button></div>`);
   if(!cfCanSee())return wrap(`<div class="tile cf-gate"><p>${t("cf_gate_member")}</p><button class="btn" onclick="go('adherer')">${t("join")}</button></div>`);
   const up=CF.list.filter(c=>!cfPast(c)),past=CF.list.filter(cfPast).reverse(),mine=up.filter(c=>cfIsDelegate(c.id));
-  return wrap(`${CF.missing&&isStaff()?`<div class="cf-warn">${t("cf_missing")}</div>`:""}
+  return wrap(`${CF.missing&&isStaff()?`<div class="cf-warn">${t("cf_missing")}</div>`:!CF.missing&&isStaff()&&cfNoAgendaLink()?`<div class="cf-warn">${t("cf_agenda_sql")}</div>`:""}
    ${mine.length?`<section class="cf-mine" aria-label="${esc(t("cf_mine_t"))}">${mine.map(cfMine).join("")}</section>`:""}
    <section class="cf-sec"><h2 class="agh">${t("cf_season")}</h2>${up.length?`<div class="cf-list">${up.map(c=>cfCard(c,false)).join("")}</div>`:`<div class="tile ag-nores" style="margin-top:16px">${t("cf_none")}</div>`}</section>
    ${past.length?`<details class="tile ag-tile ag-pastg cf-past"><summary><h2 class="agh">${t("cf_past")}</h2><span class="ag-cnt">${past.length}</span></summary><div class="cf-list">${past.map(c=>cfCard(c,true)).join("")}</div></details>`:""}`);
@@ -3098,6 +3143,7 @@ function cfCard(c,compact){
    <h3 class="cf-title">${esc(T(c.name))}</h3>
    ${!compact&&c.description?`<p class="cf-desc">${esc(T(c.description))}</p>`:""}
    ${!compact&&facts?`<p class="cf-facts">${facts}</p>`:""}
+   ${!p&&isStaff()?`<p class="cf-nodate">${t("cf_nodate")}</p>`:""}
    ${thumbs}
    ${acts?`<div class="cf-acts">${acts}</div>`:""}${staff}
   </div></article>`;
@@ -3187,6 +3233,7 @@ function cfEdit(id){
     <label>${t("cf_f_name")}</label><input name="name" required maxlength="140" value="${v("name")}">
     <label>${t("cf_f_city")}</label><input name="city" maxlength="120" value="${v("city")}">
     <div class="row2"><div><label>${t("cf_f_start")}</label><input name="start_date" type="date" value="${c?cfDay(c.start_date):""}"></div><div><label>${t("cf_f_end")}</label><input name="end_date" type="date" value="${c?cfDay(c.end_date):""}"></div></div>
+    <p class="cf-sheet-note">${t("cf_dates_hint")}</p>
     <label>${t("cf_f_desc")}</label><textarea name="description" rows="5" maxlength="4000">${v("description")}</textarea>
     <div class="row2"><div><label>${t("cf_f_cost")}</label><input name="cost" maxlength="120" placeholder="${esc(t("cf_f_cost_ph"))}" value="${v("cost")}"></div><div><label>${t("cf_f_seats")}</label><input name="seats" type="number" min="0" value="${c&&c.seats!=null?Number(c.seats):""}"></div></div>
     <label>${t("cf_f_apply")}</label><input name="application_url" type="text" placeholder="https://docs.google.com/forms/…" value="${v("application_url")}">
@@ -3258,7 +3305,7 @@ async function cfSave(ev,id){
     if(error)return toast(errMsg(error));
     upRemove(noCol?g.added:[...g.orig,...g.added].filter(u=>!g.list.includes(u)));
     CFP={list:[],orig:[],added:[],busy:false};
-    closeSheet();await Promise.all([cfLoad(),loadPublic()]);render(true);toast(noCol?t("cf_e_photos_col"):t("t_ok"));
+    closeSheet();await Promise.all([cfLoad(),loadPublic()]);cfMergeAgenda();render(true);toast(noCol?t("cf_e_photos_col"):t("t_ok"));
   });
 }
 async function cfDelete(id,btn){
@@ -3268,7 +3315,7 @@ async function cfDelete(id,btn){
     const {error}=await sb.from("conferences").delete().eq("id",id);
     if(error)return toast(errMsg(error));
     upRemove(ph);
-    await Promise.all([cfLoad(),loadPublic()]);render(true);toast(t("t_ok"));
+    await Promise.all([cfLoad(),loadPublic()]);cfMergeAgenda();render(true);toast(t("t_ok"));
   });
 }
 function cfDelegates(id){
@@ -3717,6 +3764,7 @@ async function saveStudyGuide(ev,id){
 async function loadRegistrants(){
   if(!configured||(!isStaff()&&!isTrainingLead())||route!=="event"||evSel==null)return;
   const e=D.events.find(x=>String(x.id)===String(evSel));
+  if(e&&e.conference_id)return;
   const targetId=e?e.id:evSel;
   const [r]=await Promise.all([
     sb.from("registrations").select("user_id,status").eq("event_id",targetId),
