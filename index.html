@@ -3197,12 +3197,15 @@ function openBoardBio(id){
   const socialBlock=links.length
     ?`<div class="bio-socials"><span class="bio-socials-lbl">${t("follow")}</span><div class="bio-socials-links">${links.join("")}</div></div>`
     :"";
-  const focusCls=key==="come"?"focus-come":"";
+  const isCome=key==="come";
+  const focusCls=isCome?"focus-come":"";
+  const wrapExtraCls=isCome?"focus-come-wrap":"";
+  const fadeExtraCls=isCome?"focus-come-fade":"";
 
   openSheet(`<div class="bio-modal">
-    <div class="bio-hero-wrap">
+    <div class="bio-hero-wrap ${wrapExtraCls}">
       ${avatarMarkup(bUrl,init,"bio-hero-photo",focusCls)}
-      <div class="bio-hero-fade"></div>
+      <div class="bio-hero-fade ${fadeExtraCls}"></div>
     </div>
     <div class="bio-body">
       <span class="tag">${esc(roleLabel)}</span>
