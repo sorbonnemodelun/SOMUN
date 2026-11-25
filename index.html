@@ -3141,14 +3141,12 @@ function vConferences(){
 }
 function cfCard(c,compact){
   const p=cfParts(c),id=idArg(c.id),me=cfIsDelegate(c.id),ph=cfPhotosOf(c);
-  const fullAccess=cfHasFullAccess(c.id);
-  const apply=fullAccess?cfUrl(c.application_url):null,site=cfUrl(c.website_url),dl=cfDay(c.application_deadline),closed=Boolean(dl)&&dl<todayStr();
+  const apply=cfUrl(c.application_url),site=cfUrl(c.website_url),dl=cfDay(c.application_deadline),closed=Boolean(dl)&&dl<todayStr();
   const date=p?`<div class="ag-when"><span class="sr">${esc(p.long)}</span><small aria-hidden="true">${esc(p.wd)}</small><span class="ag-day${p.multi?" rng":""}" aria-hidden="true">${esc(p.day)}</span><small aria-hidden="true">${esc(p.mon)}</small></div>`:`<div class="ag-when"><small>${t("cf_dates_tbd")}</small></div>`;
   const facts=[c.cost?`<span><b>${t("cf_cost")}</b> ${esc(T(c.cost))}</span>`:"",Number(c.seats)>0?`<span><b>${t("cf_seats")}</b> ${Number(c.seats)}</span>`:"",dl?`<span>${esc(closed?t("cf_closed"):t("cf_deadline",{d:agF(dl,{day:"numeric",month:"long"})}))}</span>`:""].join("");
-  const acts=compact?"":((apply&&!closed?`<a class="btn" href="${esc(apply)}" target="_blank" rel="noopener noreferrer">${t("cf_apply_btn")}${agIco("ext",16)}</a>`:!fullAccess&&!closed?`<button type="button" class="btn gold" onclick="go('adherer')">${t("join")}</button>`:"")+(site?`<a class="btn ghost" href="${esc(site)}" target="_blank" rel="noopener noreferrer">${t("cf_site_btn")}${agIco("ext",16)}</a>`:""));
+  const acts=compact?"":(apply&&!closed?`<a class="btn" href="${esc(apply)}" target="_blank" rel="noopener noreferrer">${t("cf_apply_btn")}${agIco("ext",16)}</a>`:"")+(site?`<a class="btn ghost" href="${esc(site)}" target="_blank" rel="noopener noreferrer">${t("cf_site_btn")}${agIco("ext",16)}</a>`:"");
   const n=CF.deleg.filter(d=>String(d.conference_id)===String(c.id)).length;
   const staff=isStaff()?`<div class="cf-staff"><button class="btn ghost xs" onclick="cfEdit(${id})">${t("edit")}</button><button class="btn ghost xs" onclick="cfDelegates(${id})">${t("cf_deleg")} (${n})</button><button class="btn ghost xs" onclick="cfLogi(${id})">${t("cf_logi")}</button><button class="btn danger xs" onclick="cfDelete(${id},this)">${t("del")}</button></div>`:"";
-
   /* Couverture en grand, puis les autres photos en vignettes (les passées : vignettes seulement) */
   const cover=!compact&&ph.length?`<button type="button" class="cf-cover" onclick="cfLb(${id},0)" aria-label="${esc(t("cf_ph_open",{i:1,n:ph.length}))}"><img src="${esc(ph[0])}" alt="" loading="lazy" onerror="this.parentNode.remove()"></button>`:"";
   const from=compact?0:1,rest=ph.slice(from),MAX=5,extra=rest.length-MAX;
