@@ -1044,6 +1044,17 @@ a.ev3-doc:hover{box-shadow:var(--shadow-md)}
 .cf-card.has-cover .cf-facts,
 .cf-card.has-cover > :first-child{text-shadow:0 1px 12px rgba(255,255,255,.95),0 0 2px rgba(255,255,255,.9)}
 .cf-card.has-cover .cf-facts{color:var(--marine);font-weight:500}
+/* Accueil et agenda : photo de la conférence en fond de ligne, comme dans l'onglet Conférences */
+.ag-row.has-cover{position:relative;overflow:hidden}
+.ag-row.has-cover>*:not(.ag-cover){position:relative;z-index:1}
+.ag-cover{position:absolute;inset:0;z-index:0;border-radius:inherit;overflow:hidden;background:var(--soft);pointer-events:none}
+.ag-cover img{display:block;width:100%;height:100%;object-fit:cover;filter:contrast(1.06) saturate(1.08)}
+.ag-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(95deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.68) 46%,rgba(255,255,255,.32) 100%)}
+.ag-row.past.has-cover .ag-cover::after{background:linear-gradient(95deg,rgba(244,246,251,.88) 0%,rgba(244,246,251,.72) 46%,rgba(244,246,251,.40) 100%)}
+.ag-row.has-cover .ag-title,
+.ag-row.has-cover .ag-meta,
+.ag-row.has-cover .ag-when{text-shadow:0 1px 12px rgba(255,255,255,.95),0 0 2px rgba(255,255,255,.9)}
+.ag-row.has-cover .ag-meta{color:var(--marine);font-weight:500}
 
 .cf-thumbs{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
 .cf-th{position:relative;flex:none;width:58px;height:58px;padding:0;border:0;border-radius:12px;overflow:hidden;background:var(--soft);cursor:zoom-in}
@@ -2405,7 +2416,9 @@ function agAction(e,big){
 }
 function agRow(e){
   const p=agParts(e),st=D.myRegs[e.id],past=agPast(e),when=agWhen(e),id=idArg(e.id);
-  return `<li class="ag-row${st&&!past?" mine":""}${past?" past":""}" style="${agTC(e.type)}">
+  const img=e.conference_id?safeUrl(e.image_url):null;
+  const cover=img?`<div class="ag-cover" aria-hidden="true"><img src="${esc(img)}" alt="" loading="lazy" onerror="this.closest('.ag-row').classList.remove('has-cover');this.parentNode.remove()"></div>`:"";
+  return `<li class="ag-row${st&&!past?" mine":""}${past?" past":""}${img?" has-cover":""}" style="${agTC(e.type)}">${cover}
    <div class="ag-when"><span class="sr">${esc(long(e.date))}</span><small aria-hidden="true">${esc(p.wd)}</small><span class="ag-day${p.rng?" rng":""}" aria-hidden="true">${esc(p.day)}</span><small aria-hidden="true">${esc(p.mon)}</small></div>
    <div class="ag-main">
     <div class="ag-tags"><span class="ag-chip">${esc(agTypeName(e.type))}</span><span>${esc(agPriceTxt(e))}</span>${e.members_only?`<span class="ag-lock">${agIco("lock",14)}${t("members_only")}</span>`:""}</div>
