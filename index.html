@@ -1670,7 +1670,17 @@ let route="accueil",poleSel=null,subPoleSel="culturel",authMode="login",authInfo
 let trCache=ls.get("somun_tr",{});
 const pending=new Set();let flushing=false,nativeT=null,trFailures=0;
 function protectProperNames(str){
-  return String(str).replace(/\bC[ôo]me\b/gi,"Côme");
+  return String(str)
+    .replace(/\bC[ôo]me\b/gi,"Côme")
+    .replace(/\bConstance\b/gi,"Constance");
+}
+function fixCachedNames(str){
+  return protectProperNames(
+    String(str)
+      .replace(/\bComo\b/g,"Côme")
+      .replace(/\bConsistency\b/g,"Constance")
+      .replace(/\bconsistency\b/g,"constance")
+  );
 }
 function isBadTranslation(res,orig){
   if(!res||typeof res!=="string")return true;
@@ -1699,7 +1709,7 @@ function T(txt){
   if(lang==="fr")return protectProperNames(raw);
   const cached=trCache[raw];
   if(cached&&!isBadTranslation(cached,raw)){
-    return protectProperNames(cached.replace(/\bComo\b/g,"Côme"));
+    return fixCachedNames(cached);
   }
   if(cached)delete trCache[raw];
   if(trFailures<2&&!pending.has(raw)){pending.add(raw);if(!flushing)flush()}
@@ -1741,7 +1751,7 @@ async function flush(){
       try{
         const r=await translateOne(txt);
         if(!isBadTranslation(r,txt)){
-          trCache[txt]=protectProperNames(r.replace(/\bComo\b/g,"Côme"));
+          trCache[txt]=fixCachedNames(r);
           changed=true;trFailures=0;
         }else if(r&&r.toUpperCase().includes("MYMEMORY WARNING")){trFailures=2}
       }catch(e){trFailures++}
