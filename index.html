@@ -647,7 +647,8 @@ body.pg3{background:#ECEEF7}
 .bn-next-lbl{font:600 14.5px/1.3 var(--f-texte);letter-spacing:0;color:rgba(255,255,255,.74)}
 .bn-date{display:flex;align-items:flex-end;gap:16px;margin-top:18px}
 .bn-num{font:800 clamp(124px,32vw,210px)/.74 var(--f-titre);font-variant-numeric:tabular-nums;color:var(--or);letter-spacing:-.04em;white-space:nowrap}
-.bn-num.rng{font-size:clamp(80px,19vw,132px)}
+.bn-num.rng{font-size:clamp(80px,19vw,132px);font-size:clamp(56px,calc((100cqi - 160px) / 2.6),132px)}
+.bn-next{container-type:inline-size}
 .bn-dl{display:flex;flex-direction:column;gap:2px;padding-bottom:4px;min-width:0}
 .bn-wd{font:800 clamp(24px,4vw,32px)/1 var(--f-titre);letter-spacing:-.03em}
 .bn-my{font-size:14.5px;color:rgba(255,255,255,.74)}
@@ -1028,6 +1029,54 @@ a.ev3-doc:hover{box-shadow:var(--shadow-md)}
 .cf-dl li>span{flex:1;min-width:0;display:flex;flex-direction:column;font-size:14px}
 .cf-dl li small{font-size:12.5px;color:var(--mute);overflow-wrap:anywhere}
 .more-list .agi{display:inline-block;vertical-align:-4px;color:var(--bleu)}
+/* Photos : couverture, vignettes, galerie du formulaire, envoi, visionneuse */
+.cf-cover{grid-column:1/-1;display:block;width:100%;padding:0;border:0;margin:0 0 2px;border-radius:16px;overflow:hidden;background:var(--soft);aspect-ratio:16/9;cursor:zoom-in}
+.cf-cover img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
+.cf-cover:hover img{transform:scale(1.025)}
+@media(min-width:720px){.cf-cover{aspect-ratio:5/2;border-radius:18px}}
+/* Grand écran : la couverture passe à droite pour garder des cartes compactes */
+@media(min-width:960px){
+  .cf-card.has-cover{grid-template-columns:112px minmax(0,1fr) minmax(240px,32%)}
+  .cf-card.has-cover .cf-cover{grid-column:3;grid-row:1;align-self:start;aspect-ratio:4/3;margin:0}
+}
+.cf-thumbs{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.cf-th{position:relative;flex:none;width:58px;height:58px;padding:0;border:0;border-radius:12px;overflow:hidden;background:var(--soft);cursor:zoom-in}
+.cf-th img{display:block;width:100%;height:100%;object-fit:cover}
+.cf-th.more span{position:absolute;inset:0;display:grid;place-items:center;background:rgba(2,2,89,.66);color:#fff;font-weight:700;font-size:15px}
+@media(min-width:720px){.cf-th{width:68px;height:68px}}
+.cf-th[hidden],.up-prev[hidden],.lb[hidden],.lb-b[hidden]{display:none!important}
+.cf-phset{margin-top:4px}
+.cf-phl{margin-bottom:0}
+.cf-phs{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.cf-ph{position:relative;margin:0;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--soft)}
+.cf-ph img{display:block;width:100%;height:100%;object-fit:cover}
+.cf-ph-cover{position:absolute;left:6px;bottom:6px;padding:3px 8px;border-radius:99px;background:var(--or);color:var(--marine);font-size:11.5px;font-weight:700}
+.cf-ph-b{position:absolute;top:5px;width:32px;height:32px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(2,2,89,.72);color:#fff;cursor:pointer}
+.cf-ph-b:hover{background:var(--marine)}
+.cf-ph-b.cv{left:5px}
+.cf-ph-b.rm{right:5px}
+.cf-ph-none{grid-column:1/-1;margin:0;padding:14px;border-radius:12px;border:1.5px dashed var(--line);color:var(--mute);font-size:13.5px;text-align:center}
+.up-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:8px}
+.up-msg{font-size:13px;line-height:1.4;color:var(--mute)}
+.up-msg:empty{display:none}
+.up-msg.ok{color:#17663c}
+.up-msg.err{color:var(--rouge)}
+.up-prev{flex:none;width:52px;height:52px;border-radius:12px;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.up-prev img{display:block;width:100%;height:100%;object-fit:cover}
+body.lb-open{overflow:hidden}
+.lb{position:fixed;inset:0;z-index:250;display:grid;place-items:center;padding:64px 12px 28px;background:rgba(2,2,32,.97)}
+.lb-fig{margin:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:0}
+.lb-img{display:block;max-width:100%;max-height:calc(100% - 44px);object-fit:contain;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.lb-cap{color:rgba(255,255,255,.86);font-size:14.5px;text-align:center}
+.lb-b{position:absolute;width:48px;height:48px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;transition:background .2s var(--ease)}
+.lb-b:hover{background:rgba(255,255,255,.24)}
+.lb-b:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.lb-x{top:12px;right:12px}
+.lb-p,.lb-n{top:50%;transform:translateY(-50%)}
+.lb-p{left:12px}
+.lb-n{right:12px}
+@media(max-width:719px){.lb-p,.lb-n{top:auto;bottom:16px;transform:none}.lb{padding-bottom:84px}}
+@media(min-width:720px){.lb{padding:72px 84px 36px}}
 </style>
 </head>
 <body>
@@ -2103,6 +2152,7 @@ function openSheet(html,extraClass=""){
   const sh=$("#sheet");
   sh.className="sheet"+(extraClass?" "+extraClass:"");
   sh.innerHTML=html;
+  if(typeof upEnhance==="function")upEnhance(sh);
   $("#sheetbg").classList.add("open");
   document.body.style.overflow="hidden";
 }
@@ -2264,8 +2314,11 @@ const agAddM=(ym,n)=>{const [y,m]=ym.split("-").map(Number);return agIso(new Dat
 const agMonthName=(ym,o)=>{const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,15,12).toLocaleDateString(loc(),o||{month:"long",year:"numeric"})};
 const agExcerpt=(s,n)=>{const x=String(s||"").replace(/\s+/g," ").trim();if(x.length<=n)return x;const c=x.slice(0,n);return c.slice(0,Math.max(c.lastIndexOf(" "),n*.6|0)).replace(/[\s,;:.]+$/,"")+"…"};
 const agSlug=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"evenement";
-const agPriceTxt=e=>agPaid(e)?`${e.prix} €`:safeUrl(e.form_url)?t("ag_on_form"):t("free");
+/* Conférence liée (colonne conference_id) : la délégation est choisie par le Bureau, le site ne compte pas les places */
+const agTracked=e=>!e.conference_id;
+const agPriceTxt=e=>e.conference_id?t("ag_on_sel"):agPaid(e)?`${e.prix} €`:safeUrl(e.form_url)?t("ag_on_form"):t("free");
 function agAccess(e){
+  if(e.conference_id)return agCap(t("ag_on_sel")+", "+t("ag_acc_mem"));
   const form=safeUrl(e.form_url),parts=[];
   if(agPaid(e))parts.push(`${e.prix} €`);else if(!form)parts.push(t("free"));
   parts.push(e.members_only?t("ag_acc_mem"):form?t("ag_acc_form"):t("ag_acc_all"));
@@ -2330,12 +2383,13 @@ function agSeatsSVG(e,dark,width){
 }
 function agGauge(e){
   const n=agCapOf(e),tk=D.taken[e.id]||0,free=Math.max(0,n-tk);
-  if(!n)return "";
+  if(!n||!agTracked(e))return "";
   const txt=agPast(e)?tn("ag_regd",tk):free===0?t("full"):tn("ag_gl",free,{c:n});
   return `<span class="ag-gauge${free===0?" full":""}"><b aria-hidden="true"><i style="width:${Math.min(100,Math.round(tk/n*100))}%"></i></b><span>${esc(txt)}</span></span>`;
 }
 function agAction(e,big){
   const id=idArg(e.id),st=D.myRegs[e.id],past=agPast(e),sz=big?"":" sm";
+  if(e.conference_id)return past?`<span class="ag-muted">${t("ended")}</span>`:`<button class="btn ghost${sz}" onclick="go('conferences')">${t("cf_see")}</button>`;
   if(st==="confirmed")return `<span class="ag-done"><i>${agIco("check",15,2.6)}</i>${t("ag_confirmed")}</span>`;
   if(st==="pending"&&!past)return agPaid(e)?`<button class="btn gold${sz}" onclick="payEvent(${id})">${t("ag_pay_x",{p:esc(e.prix)})}</button>`:`<span class="ag-wait">${agIco("hourglass",16,2)}${t("pending")}</span>`;
   if(past)return `<span class="ag-muted">${t("ended")}</span>`;
@@ -2353,7 +2407,7 @@ function agRow(e){
     <p class="ag-meta">${when?`<span>${agIco("clock",15)}${esc(when)}</span>`:""}${e.lieu?`<span>${agIco("pin",15)}${esc(T(e.lieu))}</span>`:""}</p>
    </div>
    <div class="ag-side">${agAction(e)}${agGauge(e)}</div>
-   ${isStaff()?`<div class="ag-staff"><button class="btn ghost xs" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger xs" onclick="delRow('events',${id},this)">${t("del")}</button></div>`:""}
+   ${isStaff()?`<div class="ag-staff">${e.conference_id?`<button class="btn ghost xs" onclick="go('conferences')">${t("cf_edit_in")}</button>`:`<button class="btn ghost xs" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger xs" onclick="delRow('events',${id},this)">${t("del")}</button>`}</div>`:""}
   </li>`;
 }
 function agSteps(steps,done,cur,dark){
@@ -2467,6 +2521,7 @@ function vAccueil(){
     let acts;
     if(st==="confirmed")acts=(canSG?`<a class="btn gold" href="${esc(sg)}" target="_blank" rel="noopener noreferrer">${agIco("doc")}${t("ag_sg")}</a>`:"")+ics;
     else if(st==="pending")acts=(agPaid(nx)?`<button class="btn gold" onclick="payEvent(${id})">${t("ag_pay_x",{p:esc(nx.prix)})}</button>`:"")+ics;
+    else if(nx.conference_id)acts=`<button class="btn gold" onclick="go('conferences')">${t("cf_see")}</button>`+ics;
     else if(safeUrl(nx.form_url))acts=`<button class="btn gold" onclick="openFormEvent(${id})">${t("ag_form_btn")}${agIco("ext",16)}</button>`+ics;
     else acts=(left>0?`<button class="btn gold" onclick="openReg(${id})">${agPaid(nx)?t("go_pay"):t("reg")}</button>`:"")+ics;
     next=`<article class="bn-next" aria-labelledby="bn-next-h">
@@ -2475,7 +2530,7 @@ function vAccueil(){
      <div class="bn-date"><span class="sr">${esc(multi?t("ag_from_to",{a:long(s),b:long(f)}):long(s))}${time?", "+esc(time):""}</span><span class="bn-num${multi?" rng":""}" aria-hidden="true">${num}</span><span class="bn-dl" aria-hidden="true"><span class="bn-wd">${esc(wd)}</span><span class="bn-my">${esc(my)}</span>${time?`<span class="bn-time">${agIco("clock",20,2)}${esc(time)}</span>`:""}</span></div>
      <h3 class="bn-title"><a ${agGo(nx)}>${esc(T(nx.title))}</a></h3>
      ${nx.lieu?`<p class="bn-place">${agIco("pin",17)}${esc(T(nx.lieu))}</p>`:""}
-     ${n?`<div class="bn-seats">${agSeatsSVG(nx,true,180)}<div class="bn-seats-t"><b>${esc(sTitle)}</b><p>${esc(sText)}</p></div></div>`:""}
+     ${n&&agTracked(nx)?`<div class="bn-seats">${agSeatsSVG(nx,true,180)}<div class="bn-seats-t"><b>${esc(sTitle)}</b><p>${esc(sText)}</p></div></div>`:""}
      <div class="bn-acts">${acts}</div>
     </article>`;
   }
@@ -2612,7 +2667,7 @@ function agPanelEv(e){
    <h3><a ${agGo(e)}>${esc(T(e.title))}</a></h3>
    <p class="ag-meta">${when?`<span>${agIco("clock",16)}${esc(when)}</span>`:""}${e.lieu?`<span>${agIco("pin",16)}${esc(T(e.lieu))}</span>`:""}</p>
    ${e.description?`<p class="ag-desc">${esc(agExcerpt(T(e.description),170))}</p>`:""}</div>
-   <div class="ag-pev-a">${n&&!past?`<div class="ag-seats">${agSeatsSVG(e,false,150)}<p><b>${left}</b>${esc(left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
+   <div class="ag-pev-a">${n&&!past&&agTracked(e)?`<div class="ag-seats">${agSeatsSVG(e,false,150)}<p><b>${left}</b>${esc(left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
    <div class="ag-pact">${agAction(e,true)}${past?"":`<button class="btn ghost" onclick="agIcs(${id})">${agIco("calplus")}${t("ag_ics")}</button>`}<a class="ag-fiche" ${agGo(e)}>${t("ag_full_sheet")}${agIco("chevr",16,2)}</a></div></div>
   </div>`;
 }
@@ -2650,7 +2705,7 @@ function vEvent(){
   }
   const mapHref=e.lieu?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.lieu)}`:"";
   const head=`<div class="ev3-head">${dateHTML}<div class="ev3-id"><div class="ag-tags" style="${agTC(e.type)}"><span class="ag-chip">${esc(agTypeName(e.type))}</span><span>${esc(agAccess(e))}</span></div><h1 class="ev3-h1">${esc(T(e.title))}</h1>${e.lieu?`<p class="ev3-where"><span>${agIco("pin",17)}${esc(T(e.lieu))}</span><a href="${esc(mapHref)}" target="_blank" rel="noopener noreferrer">${t("ag_map")}${agIco("ext",15)}</a></p>`:""}</div></div>`;
-  const staff=(isStaff()||canEditSG)?`<div class="ev3-staff">${isStaff()?`<button class="btn ghost sm" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">${t("del")}</button>`:""}${canEditSG?`<button class="btn ghost sm" onclick="editStudyGuide(${id})">${t("sg_edit")}</button>`:""}</div>`:"";
+  const staff=(isStaff()||canEditSG)?`<div class="ev3-staff">${isStaff()?(e.conference_id?`<button class="btn ghost sm" onclick="go('conferences')">${t("cf_edit_in")}</button>`:`<button class="btn ghost sm" onclick="editEvent(${id})">${t("edit")}</button><button class="btn danger sm" onclick="delEventFromView(${id},this)">${t("del")}</button>`):""}${canEditSG?`<button class="btn ghost sm" onclick="editStudyGuide(${id})">${t("sg_edit")}</button>`:""}</div>`:"";
 
   const sgTitle=esc(T(e.study_guide_title||t("sg_box")));
   const docs=(sgHref||canEditSG)?`<section><h2 class="agh ev3-h2">${t("ag_docs")}</h2>${
@@ -2673,6 +2728,9 @@ function vEvent(){
     status=`<div class="ev3-status"><i>${agIco("hourglass",17,2.2)}</i><span><b>${t("pending")}</b>${paid?`<small>${t("ag_pend_sub")}</small>`:""}</span></div>`;
     if(paid)stepsHTML=agSteps(steps,1,1,true);
     acts=(paid?`<button class="btn gold" onclick="payEvent(${id})">${t("ag_pay_ha",{p:esc(e.prix)})}${agIco("ext",16)}</button>`:"")+ics+`<button class="ev3-cancel" onclick="cancelReg(${id},this)">${t("cancel_reg")}</button>`;
+  }else if(e.conference_id){
+    info=`<p class="ev3-line">${t("cf_ev_line")}</p>`;
+    acts=`<button class="btn gold" onclick="go('conferences')">${t("cf_see")}</button>`+ics;
   }else if(formHref){
     info=`<p class="ev3-line">${t("ag_form_line")}</p>`;
     acts=`<button class="btn gold" onclick="openFormEvent(${id})">${t("ag_form_btn")}${agIco("ext",16)}</button>`+ics;
@@ -2685,7 +2743,7 @@ function vEvent(){
   }
   const panel=`<aside class="ev3-panel" aria-labelledby="ev3-reg">
    <div class="ev3-ph"><h2 class="agh" id="ev3-reg">${t("ag_reg_t")}</h2><span class="ev3-price">${esc(agPriceTxt(e))}</span></div>
-   ${n?`<div class="ev3-seats">${agSeatsSVG(e,true,180)}<p><b>${past?tk:left}</b>${esc(past?tn("ag_tkof",tk,{c:n}):left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
+   ${n&&agTracked(e)?`<div class="ev3-seats">${agSeatsSVG(e,true,180)}<p><b>${past?tk:left}</b>${esc(past?tn("ag_tkof",tk,{c:n}):left?tn("ag_leftof",left,{c:n}):t("full"))}</p></div>`:""}
    ${status}${stepsHTML?`<div class="ev3-steps">${stepsHTML}</div>`:""}${info}
    ${acts?`<div class="ev3-acts">${acts}</div>`:""}
    ${paid&&!past&&st!=="confirmed"&&!formHref?`<p class="ev3-fine">${t("ag_secure")}</p>`:""}
@@ -2694,12 +2752,12 @@ function vEvent(){
   const more=agUpcoming().filter(x=>String(x.id)!==String(e.id)).slice(0,3);
   const moreHTML=more.length?`<section class="ev3-more"><h2 class="agh ev3-h2">${t("ag_also")}</h2><div class="ev3-tiles">${more.map(x=>{
     const p=agParts(x),l=agLeft(x),s2=D.myRegs[x.id];
-    return `<a class="ev3-tile" ${agGo(x)} style="${agTC(x.type)}"><span class="ag-when"><small>${esc(p.wd)}</small><span class="ag-day${p.rng?" rng":""}">${esc(p.day)}</span><small>${esc(p.mon)}</small></span><span class="ev3-tt"><span class="ag-chip">${esc(agTypeName(x.type))}</span><b>${esc(T(x.title))}</b><span>${esc(s2==="confirmed"?t("ag_confirmed"):s2==="pending"?t("pending"):l>0?agCap(tn("ag_free",l)):t("full"))}</span></span></a>`;
+    return `<a class="ev3-tile" ${agGo(x)} style="${agTC(x.type)}"><span class="ag-when"><small>${esc(p.wd)}</small><span class="ag-day${p.rng?" rng":""}">${esc(p.day)}</span><small>${esc(p.mon)}</small></span><span class="ev3-tt"><span class="ag-chip">${esc(agTypeName(x.type))}</span><b>${esc(T(x.title))}</b><span>${esc(s2==="confirmed"?t("ag_confirmed"):s2==="pending"?t("pending"):x.conference_id?t("ag_on_sel"):l>0?agCap(tn("ag_free",l)):t("full"))}</span></span></a>`;
   }).join("")}</div></section>`:"";
 
   return `<div class="v3 v3-page ev3">${back}${head}${staff}
    <div class="ev3-cols">${mainInner?`<div class="ev3-main">${mainInner}</div>`:""}${panel}</div>
-   ${(isStaff()||canEditSG)?registrantsBlock(e):""}
+   ${(isStaff()||canEditSG)&&!e.conference_id?registrantsBlock(e):""}
    ${moreHTML}
   </div>`;
 }
@@ -2784,14 +2842,20 @@ function agAfterRender(){
   const v=document.querySelector("#app>.view:not(.view-ghost)");if(!v)return;
   const sc=v.querySelector(".sv-scroll");if(sc)agCenterIn(sc,sc.querySelector(".sv-now"));
   const s=v.querySelector(".ag-strip");if(s)agCenterIn(s,s.querySelector("[aria-current]"));
+  if(typeof upEnhance==="function")upEnhance(v);
 }
 /* ===== CONFÉRENCES : espace adhérents (infos et inscription) et espace délégués sélectionnés =====
    Tables Supabase : conferences, conference_delegates, conference_logistics (voir conferences.sql).
+   Chaque conférence datée apparaît aussi dans l'agenda : un déclencheur Supabase crée et met à jour
+   la ligne correspondante de la table events (colonne conference_id), avec la photo de couverture.
    Les règles de sécurité de Supabase décident de qui lit quoi ; seuls les membres du Bureau écrivent. */
 Object.assign(AGI,{
   globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   right:'<path d="M5 12h14M13 6l6 6-6 6"/>',
-  bed:'<path d="M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11.5" r="2"/>'
+  bed:'<path d="M3 19V6M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11.5" r="2"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5.5-5.5L6 20"/>',
+  star:'<path d="M12 3.6l2.6 5.2 5.8.9-4.2 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.2-4.1 5.8-.9z"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>'
 });
 Object.assign(I18N.fr,{ag_mr_up:"{u} à venir",
   cf_nav:"Conférences",cf_sub:"Les conférences de la saison : inscris-toi, et retrouve ici tes infos de voyage si tu es sélectionné·e.",
@@ -2815,7 +2879,20 @@ Object.assign(I18N.fr,{ag_mr_up:"{u} à venir",
   cf_f_dep:"Départ (date, heure, lieu de rendez-vous, transport)",cf_f_ret:"Retour",cf_f_hotel:"Hôtel (nom, adresse)",cf_f_hotel_url:"Lien de l'hôtel",
   cf_f_mymun:"Lien MyMUN ou formulaire d'inscription de la conférence",cf_f_hb:"Lien du delegate handbook",cf_f_notes:"Autres infos (contacts, tenue, à emporter…)",
   cf_e_url:"Lien invalide : colle une adresse complète, par exemple https://…",cf_e_dates:"Le dernier jour doit être après le premier.",
-  cf_confirm_del:"Supprimer cette conférence, sa délégation et ses infos réservées ?",cf_confirm_rm:"Retirer {n} de la délégation ?",cf_close:"Fermer"});
+  cf_confirm_del:"Supprimer cette conférence, sa délégation, ses infos réservées et ses photos ? Elle disparaîtra aussi de l'agenda.",cf_confirm_rm:"Retirer {n} de la délégation ?",cf_close:"Fermer",
+  ag_on_sel:"Sur sélection",cf_see:"Voir la conférence",cf_edit_in:"Modifier dans Conférences",
+  cf_ev_line:"Les infos utiles et l'inscription se trouvent dans l'espace Conférences, réservé aux adhérents.",
+  cf_ev_managed:"Cet événement vient de l'espace Conférences : modifie-le là-bas.",
+  cf_f_photos:"Photos de la conférence",cf_ph_add:"Ajouter des photos",cf_ph_note:"La première photo sert de couverture, y compris dans l'agenda.",
+  cf_ph_none:"Aucune photo pour l'instant.",cf_ph_cover:"Couverture",cf_ph_make_cover:"Mettre en couverture",cf_ph_remove:"Retirer la photo",
+  cf_ph_n:"Photo {i}",cf_ph_make_cover_n:"Mettre la photo {i} en couverture",cf_ph_remove_n:"Retirer la photo {i}",cf_ph_open:"Agrandir la photo {i} sur {n}",cf_ph_max:"{n} photos au maximum par conférence.",
+  cf_ph_done_1:"Photo ajoutée : n'oublie pas d'enregistrer.",cf_ph_done_n:"{n} photos ajoutées : n'oublie pas d'enregistrer.",
+  cf_e_photos_col:"Conférence enregistrée, mais sans les photos : lance la dernière version de conferences.sql dans Supabase pour les activer.",
+  up_btn:"Choisir une photo",up_sending:"Envoi de la photo…",up_sending_n:"Envoi des photos ({a} sur {n})…",up_done:"Photo envoyée : n'oublie pas d'enregistrer.",
+  up_wait:"Attends la fin de l'envoi des photos.",up_e_type:"Format non pris en charge : choisis une photo JPEG, PNG, WebP ou GIF.",
+  up_e_big:"Photo trop lourde, même réduite (5 Mo au maximum).",up_e_bucket:"Le stockage des photos n'est pas encore activé : lance conferences.sql dans Supabase.",
+  up_e_rights:"Seuls les membres du Bureau peuvent envoyer des photos.",
+  lb_prev:"Photo précédente",lb_next:"Photo suivante",lb_close:"Fermer",lb_cap:"{t}, photo {i} sur {n}"});
 Object.assign(I18N.en,{ag_mr_up:"{u} upcoming",
   cf_nav:"Conferences",cf_sub:"This season's conferences: sign up, and find your travel details here once you're selected.",
   cf_add:"Add a conference",cf_new_t:"New conference",cf_edit_t:"Edit the conference",
@@ -2838,9 +2915,114 @@ Object.assign(I18N.en,{ag_mr_up:"{u} upcoming",
   cf_f_dep:"Departure (date, time, meeting point, transport)",cf_f_ret:"Return",cf_f_hotel:"Hotel (name, address)",cf_f_hotel_url:"Hotel link",
   cf_f_mymun:"MyMUN link or conference sign-up form",cf_f_hb:"Delegate handbook link",cf_f_notes:"Other details (contacts, dress code, what to bring…)",
   cf_e_url:"Invalid link: paste a full address, for example https://…",cf_e_dates:"The last day must come after the first.",
-  cf_confirm_del:"Delete this conference, its delegation and its delegate-only details?",cf_confirm_rm:"Remove {n} from the delegation?",cf_close:"Close"});
+  cf_confirm_del:"Delete this conference, its delegation, its delegate-only details and its photos? It will also disappear from the calendar.",cf_confirm_rm:"Remove {n} from the delegation?",cf_close:"Close",
+  ag_on_sel:"By selection",cf_see:"See the conference",cf_edit_in:"Edit in Conferences",
+  cf_ev_line:"Details and sign-up are in the Conferences area, for members only.",
+  cf_ev_managed:"This event comes from the Conferences area: edit it there.",
+  cf_f_photos:"Conference photos",cf_ph_add:"Add photos",cf_ph_note:"The first photo is the cover, in the calendar too.",
+  cf_ph_none:"No photos yet.",cf_ph_cover:"Cover",cf_ph_make_cover:"Make it the cover",cf_ph_remove:"Remove the photo",
+  cf_ph_n:"Photo {i}",cf_ph_make_cover_n:"Make photo {i} the cover",cf_ph_remove_n:"Remove photo {i}",cf_ph_open:"Enlarge photo {i} of {n}",cf_ph_max:"{n} photos at most per conference.",
+  cf_ph_done_1:"Photo added: remember to save.",cf_ph_done_n:"{n} photos added: remember to save.",
+  cf_e_photos_col:"Conference saved, but without the photos: run the latest conferences.sql in Supabase to enable them.",
+  up_btn:"Choose a photo",up_sending:"Uploading the photo…",up_sending_n:"Uploading photos ({a} of {n})…",up_done:"Photo uploaded: remember to save.",
+  up_wait:"Wait until the photos have finished uploading.",up_e_type:"Unsupported format: choose a JPEG, PNG, WebP or GIF photo.",
+  up_e_big:"Photo too large, even after resizing (5 MB at most).",up_e_bucket:"Photo storage isn't set up yet: run conferences.sql in Supabase.",
+  up_e_rights:"Only Board members can upload photos.",
+  lb_prev:"Previous photo",lb_next:"Next photo",lb_close:"Close",lb_cap:"{t}, photo {i} of {n}"});
 ROUTES.push("conferences");
 ROUTE_RANK.conferences=1.8;
+
+/* ===== PHOTOS : envoi depuis le site vers le stockage Supabase (dossier « somun-photos ») =====
+   Réservé au Bureau (règles du stockage dans conferences.sql). La photo est réduite dans le navigateur,
+   ce qui retire aussi les données de localisation des photos de téléphone ; le site ne garde que son adresse. */
+const UP_BUCKET="somun-photos",UP_TYPES=["image/jpeg","image/png","image/webp","image/gif"],UP_LIMIT=5*1024*1024;
+/* Champs d'image du site : nom du champ → dossier de rangement et taille maximale en pixels */
+const UP_FIELDS={image_url:["evenements",1600],hero_img:["site",2000],photo_url:["bureau",900],bio_photo_url:["bureau",900]};
+function upErr(e){
+  const c=String((e&&e.code)||""),m=String((e&&(e.message||e.error))||"").toLowerCase(),s=String((e&&(e.statusCode||e.status))||"");
+  if(c==="up_type"||s==="415"||m.includes("mime type"))return t("up_e_type");
+  if(c==="up_big"||s==="413"||m.includes("maximum allowed size")||m.includes("too large"))return t("up_e_big");
+  if(m.includes("bucket not found"))return t("up_e_bucket");
+  if(m.includes("row-level security")||m.includes("unauthorized")||s==="403")return t("up_e_rights");
+  return errMsg(e);
+}
+/* Erreurs qui empêchent tout envoi : inutile d'essayer les photos suivantes */
+const upFatal=e=>{const m=String((e&&(e.message||e.error))||"").toLowerCase(),s=String((e&&(e.statusCode||e.status))||"");return m.includes("bucket not found")||m.includes("row-level security")||m.includes("unauthorized")||s==="403"};
+async function upDecode(file){
+  if(window.createImageBitmap){try{return await createImageBitmap(file,{imageOrientation:"from-image"})}catch(e){}}
+  /* Repli : lecture en data: (les adresses blob: sont bloquées par la politique de sécurité du site) */
+  const url=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ko({code:"up_type"});r.readAsDataURL(file)});
+  return await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ko({code:"up_type"});i.src=url});
+}
+async function upImage(file,folder,max){
+  const type=String((file&&file.type)||"").toLowerCase();
+  if(!UP_TYPES.includes(type))throw {code:"up_type"};
+  if(file.size>40*1024*1024)throw {code:"up_big"};
+  let blob=file,out=type;
+  if(type!=="image/gif"){ /* GIF envoyé tel quel pour garder l'animation */
+    const img=await upDecode(file),w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+    if(!w||!h)throw {code:"up_type"};
+    const r=Math.min(1,max/Math.max(w,h));
+    if(type==="image/jpeg"||r<1||file.size>1.5*1024*1024){
+      const c=document.createElement("canvas");c.width=Math.max(1,Math.round(w*r));c.height=Math.max(1,Math.round(h*r));
+      const g=c.getContext("2d");
+      if(type==="image/jpeg"){g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height)}
+      g.imageSmoothingQuality="high";g.drawImage(img,0,0,c.width,c.height);
+      if(img.close)img.close();
+      const want=type==="image/jpeg"?"image/jpeg":"image/webp"; /* WebP garde la transparence des PNG */
+      const b=await new Promise(ok=>c.toBlob(ok,want,want==="image/jpeg"?.85:.9));
+      if(!b)throw {code:"up_type"};
+      blob=b;out=b.type||want;
+      if(out!=="image/jpeg"&&out!=="image/webp"&&r===1&&file.size<=b.size){blob=file;out=type}
+    }else if(img.close)img.close();
+  }
+  if(blob.size>UP_LIMIT)throw {code:"up_big"};
+  const ext={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif"}[out]||"jpg";
+  const path=`${folder}/${new Date().getFullYear()}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const {error}=await sb.storage.from(UP_BUCKET).upload(path,blob,{contentType:out,cacheControl:"31536000",upsert:false});
+  if(error)throw error;
+  const {data}=sb.storage.from(UP_BUCKET).getPublicUrl(path);
+  if(!data||!safeUrl(data.publicUrl))throw {code:"up_url"};
+  return data.publicUrl;
+}
+/* Suppression des photos de conférence retirées (sans effet sur les autres dossiers) */
+async function upRemove(urls){
+  const mark=`/storage/v1/object/public/${UP_BUCKET}/`;
+  const paths=[...new Set((urls||[]).map(u=>{const s=String(u||""),i=s.indexOf(mark);return i<0?"":decodeURIComponent(s.slice(i+mark.length).split(/[?#]/)[0])}))].filter(p=>p.startsWith("conferences/"));
+  if(!sb||!paths.length)return;
+  try{await sb.storage.from(UP_BUCKET).remove(paths)}catch(e){}
+}
+/* Ajoute « Choisir une photo » sous chaque champ d'image des formulaires du Bureau */
+function upEnhance(root){
+  if(!root||!sb||!isStaff())return;
+  root.querySelectorAll("input[name]").forEach(inp=>{
+    const conf=UP_FIELDS[inp.name];
+    if(!conf||inp.type==="file"||inp.type==="hidden"||inp.dataset.up)return;
+    inp.dataset.up="1";
+    const own=inp.id!=="bioPhotoInput"; /* la fiche bio a déjà son propre aperçu */
+    const row=document.createElement("div");row.className="up-row";
+    row.innerHTML=`${own?`<span class="up-prev" hidden><img alt=""></span>`:""}<button type="button" class="btn ghost sm up-btn">${agIco("image",16)}${t("up_btn")}</button><span class="up-msg" role="status" aria-live="polite"></span><input type="file" accept="${UP_TYPES.join(",")}" hidden>`;
+    inp.insertAdjacentElement("afterend",row);
+    const btn=row.querySelector(".up-btn"),file=row.querySelector("input[type=file]"),msg=row.querySelector(".up-msg"),prev=row.querySelector(".up-prev");
+    if(prev){
+      const pi=prev.querySelector("img");pi.onerror=()=>{prev.hidden=true};
+      const show=()=>{const s=safeAsset(inp.value);prev.hidden=!s;if(s&&pi.getAttribute("src")!==s)pi.src=s};
+      inp.addEventListener("input",show);show();
+    }
+    btn.onclick=()=>file.click();
+    file.onchange=async()=>{
+      const f=file.files&&file.files[0];file.value="";if(!f)return;
+      const subs=inp.form?[...inp.form.querySelectorAll("button[type=submit]")]:[];
+      btn.disabled=true;subs.forEach(b=>b.disabled=true);msg.className="up-msg";msg.textContent=t("up_sending");
+      try{
+        inp.value=await upImage(f,conf[0],conf[1]);
+        inp.dispatchEvent(new Event("input",{bubbles:true}));
+        msg.className="up-msg ok";msg.textContent=t("up_done");
+      }catch(e){msg.className="up-msg err";msg.textContent=upErr(e)}
+      finally{btn.disabled=false;subs.forEach(b=>b.disabled=false)}
+    };
+  });
+}
 
 let CF={ready:false,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};
 const cfUid=()=>S.user?S.user.id:null;
@@ -2853,6 +3035,8 @@ const cfName=m=>m?(`${m.prenom||""} ${m.nom||""}`.trim()||m.email||"?"):"?";
 const cfLink=raw=>{const u=normalizeUrl(raw);if(!u)return null;try{return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(new URL(u).hostname)?u:null}catch(e){return null}};
 const cfUrl=v=>{const raw=String(v||"").trim();return raw?cfLink(raw):null};
 const cfFind=id=>CF.list.find(x=>String(x.id)===String(id));
+const cfPhotosOf=c=>(c&&Array.isArray(c.photos)?c.photos:[]).map(u=>safeUrl(u)).filter(Boolean);
+const CF_PH_MAX=30;
 
 async function cfLoad(){
   if(!sb||!S.user){CF={ready:true,busy:false,missing:false,uid:null,list:[],deleg:[],logi:[]};return}
@@ -2894,18 +3078,23 @@ function vConferences(){
    ${past.length?`<details class="tile ag-tile ag-pastg cf-past"><summary><h2 class="agh">${t("cf_past")}</h2><span class="ag-cnt">${past.length}</span></summary><div class="cf-list">${past.map(c=>cfCard(c,true)).join("")}</div></details>`:""}`);
 }
 function cfCard(c,compact){
-  const p=cfParts(c),id=idArg(c.id),me=cfIsDelegate(c.id);
+  const p=cfParts(c),id=idArg(c.id),me=cfIsDelegate(c.id),ph=cfPhotosOf(c);
   const apply=cfUrl(c.application_url),site=cfUrl(c.website_url),dl=cfDay(c.application_deadline),closed=Boolean(dl)&&dl<todayStr();
   const date=p?`<div class="ag-when"><span class="sr">${esc(p.long)}</span><small aria-hidden="true">${esc(p.wd)}</small><span class="ag-day${p.multi?" rng":""}" aria-hidden="true">${esc(p.day)}</span><small aria-hidden="true">${esc(p.mon)}</small></div>`:`<div class="ag-when"><small>${t("cf_dates_tbd")}</small></div>`;
   const facts=[c.cost?`<span><b>${t("cf_cost")}</b> ${esc(T(c.cost))}</span>`:"",Number(c.seats)>0?`<span><b>${t("cf_seats")}</b> ${Number(c.seats)}</span>`:"",dl?`<span>${esc(closed?t("cf_closed"):t("cf_deadline",{d:agF(dl,{day:"numeric",month:"long"})}))}</span>`:""].join("");
   const acts=compact?"":(apply&&!closed?`<a class="btn" href="${esc(apply)}" target="_blank" rel="noopener noreferrer">${t("cf_apply_btn")}${agIco("ext",16)}</a>`:"")+(site?`<a class="btn ghost" href="${esc(site)}" target="_blank" rel="noopener noreferrer">${t("cf_site_btn")}${agIco("ext",16)}</a>`:"");
   const n=CF.deleg.filter(d=>String(d.conference_id)===String(c.id)).length;
   const staff=isStaff()?`<div class="cf-staff"><button class="btn ghost xs" onclick="cfEdit(${id})">${t("edit")}</button><button class="btn ghost xs" onclick="cfDelegates(${id})">${t("cf_deleg")} (${n})</button><button class="btn ghost xs" onclick="cfLogi(${id})">${t("cf_logi")}</button><button class="btn danger xs" onclick="cfDelete(${id},this)">${t("del")}</button></div>`:"";
-  return `<article class="tile cf-card${compact?" past":""}" style="${agTC("Conférence")}">${date}<div class="cf-body">
+  /* Couverture en grand, puis les autres photos en vignettes (les passées : vignettes seulement) */
+  const cover=!compact&&ph.length?`<button type="button" class="cf-cover" onclick="cfLb(${id},0)" aria-label="${esc(t("cf_ph_open",{i:1,n:ph.length}))}"><img src="${esc(ph[0])}" alt="" loading="lazy" onerror="this.parentNode.remove()"></button>`:"";
+  const from=compact?0:1,rest=ph.slice(from),MAX=5,extra=rest.length-MAX;
+  const thumbs=rest.length?`<div class="cf-thumbs">${rest.slice(0,MAX).map((u,k)=>{const last=k===MAX-1&&extra>0;return `<button type="button" class="cf-th${last?" more":""}" onclick="cfLb(${id},${from+k})" aria-label="${esc(t("cf_ph_open",{i:from+k+1,n:ph.length}))}"><img src="${esc(u)}" alt="" loading="lazy" onerror="this.parentNode.hidden=true">${last?`<span aria-hidden="true">+${extra+1}</span>`:""}</button>`}).join("")}</div>`:"";
+  return `<article class="tile cf-card${compact?" past":""}${cover?" has-cover":""}" style="${agTC("Conférence")}">${cover}${date}<div class="cf-body">
    <div class="ag-tags"><span class="ag-chip">${esc(agTypeName("Conférence"))}</span>${c.city?`<span class="ag-lock">${agIco("pin",14)}${esc(T(c.city))}</span>`:""}${me?`<span class="cf-sel">${agIco("check",13,2.8)}${t("cf_selected")}</span>`:""}</div>
    <h3 class="cf-title">${esc(T(c.name))}</h3>
    ${!compact&&c.description?`<p class="cf-desc">${esc(T(c.description))}</p>`:""}
    ${!compact&&facts?`<p class="cf-facts">${facts}</p>`:""}
+   ${thumbs}
    ${acts?`<div class="cf-acts">${acts}</div>`:""}${staff}
   </div></article>`;
 }
@@ -2935,10 +3124,61 @@ function cfMine(c){
   </article>`;
 }
 
+/* --- Visionneuse de photos (clavier : flèches et Échap ; glisser du doigt sur téléphone) --- */
+let LB=null;
+function cfLb(id,i){
+  const c=cfFind(id),ph=cfPhotosOf(c);if(!ph.length)return;
+  LB={ph,i:Math.max(0,Math.min(ph.length-1,Number(i)||0)),name:T(c.name),back:document.activeElement,x:null};
+  let el=$("#lb");
+  if(!el){
+    el=document.createElement("div");el.id="lb";el.className="lb";el.hidden=true;
+    el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-labelledby","lbCap");
+    el.innerHTML=`<figure class="lb-fig"><img class="lb-img" alt=""><figcaption class="lb-cap" id="lbCap" aria-live="polite"></figcaption></figure>
+     <button type="button" class="lb-b lb-x" onclick="lbClose()"></button><button type="button" class="lb-b lb-p" onclick="lbGo(-1)"></button><button type="button" class="lb-b lb-n" onclick="lbGo(1)"></button>`;
+    el.addEventListener("click",e=>{if(e.target===el||e.target.classList.contains("lb-fig"))lbClose()});
+    el.addEventListener("touchstart",e=>{if(LB)LB.x=e.touches[0].clientX},{passive:true});
+    el.addEventListener("touchend",e=>{if(!LB||LB.x==null)return;const dx=e.changedTouches[0].clientX-LB.x;LB.x=null;if(Math.abs(dx)>45)lbGo(dx<0?1:-1)});
+    document.body.appendChild(el);
+  }
+  [[".lb-x","x","lb_close"],[".lb-p","chevl","lb_prev"],[".lb-n","chevr","lb_next"]].forEach(([s,ic,k])=>{const b=el.querySelector(s);b.innerHTML=agIco(ic,24,2.2);b.setAttribute("aria-label",t(k))});
+  lbDraw();
+  el.hidden=false;document.body.classList.add("lb-open");
+  document.addEventListener("keydown",lbKey,true);window.addEventListener("hashchange",lbClose);
+  el.querySelector(".lb-x").focus();
+}
+function lbDraw(){
+  const el=$("#lb");if(!el||!LB)return;
+  const n=LB.ph.length;
+  el.querySelector(".lb-img").src=LB.ph[LB.i];
+  el.querySelector(".lb-cap").textContent=t("lb_cap",{t:LB.name,i:LB.i+1,n});
+  el.querySelectorAll(".lb-p,.lb-n").forEach(b=>{b.hidden=n<2});
+  if(n>1)[1,-1].forEach(d=>{const im=new Image();im.src=LB.ph[(LB.i+d+n)%n]});
+}
+function lbGo(d){if(!LB)return;const n=LB.ph.length;LB.i=(LB.i+d+n)%n;lbDraw()}
+function lbClose(){
+  const el=$("#lb");if(!el||el.hidden)return;
+  el.hidden=true;document.body.classList.remove("lb-open");
+  document.removeEventListener("keydown",lbKey,true);window.removeEventListener("hashchange",lbClose);
+  const b=LB&&LB.back;LB=null;
+  if(b&&document.contains(b)&&b.focus)b.focus();
+}
+function lbKey(e){
+  if(!LB)return;
+  if(e.key==="Escape"){e.preventDefault();e.stopPropagation();lbClose()}
+  else if(e.key==="ArrowLeft"){e.preventDefault();lbGo(-1)}
+  else if(e.key==="ArrowRight"){e.preventDefault();lbGo(1)}
+  else if(e.key==="Tab"){
+    const f=[...$("#lb").querySelectorAll("button:not([hidden])")],k=f.indexOf(document.activeElement);
+    e.preventDefault();f[(k+(e.shiftKey?-1:1)+f.length)%f.length].focus();
+  }
+}
+
 /* --- Gestion par le Bureau --- */
+let CFP={list:[],orig:[],added:[],busy:false}; /* photos du formulaire ouvert */
 function cfEdit(id){
   if(!isStaff())return;
   const c=id!=null?cfFind(id):null,v=k=>esc(c&&c[k]!=null?String(c[k]):"");
+  CFP={list:cfPhotosOf(c),orig:cfPhotosOf(c),added:[],busy:false};
   openSheet(`<h3>${c?t("cf_edit_t"):t("cf_new_t")}</h3><form onsubmit="cfSave(event${c?","+idArg(c.id):""})">
     <label>${t("cf_f_name")}</label><input name="name" required maxlength="140" value="${v("name")}">
     <label>${t("cf_f_city")}</label><input name="city" maxlength="120" value="${v("city")}">
@@ -2948,9 +3188,52 @@ function cfEdit(id){
     <label>${t("cf_f_apply")}</label><input name="application_url" type="text" placeholder="https://docs.google.com/forms/…" value="${v("application_url")}">
     <label>${t("cf_f_deadline")}</label><input name="application_deadline" type="date" value="${c?cfDay(c.application_deadline):""}">
     <label>${t("cf_f_site")}</label><input name="website_url" type="text" placeholder="https://…" value="${v("website_url")}">
+    <div class="cf-phset" role="group" aria-labelledby="cfPhL">
+     <label id="cfPhL" class="cf-phl">${t("cf_f_photos")}</label>
+     <p class="cf-sheet-note">${t("cf_ph_note")}</p>
+     <div class="cf-phs" id="cfPh"></div>
+     <div class="up-row"><button type="button" class="btn ghost sm" id="cfPhBtn" onclick="$('#cfPhFile').click()">${agIco("image",16)}${t("cf_ph_add")}</button><span class="up-msg" id="cfPhMsg" role="status" aria-live="polite"></span><input type="file" id="cfPhFile" accept="${UP_TYPES.join(",")}" multiple hidden onchange="cfPhUpload(this)"></div>
+    </div>
     <br><button class="btn" type="submit" style="width:100%">${c?t("save"):t("publish")}</button>
-   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">${t("cancel")}</button>`);
+   </form><button class="btn ghost" style="width:100%;margin-top:8px" onclick="cfPhDiscard();closeSheet()">${t("cancel")}</button>`);
+  cfPhRender();
 }
+function cfPhRender(){
+  const box=$("#cfPh");if(!box)return;
+  box.innerHTML=CFP.list.length?CFP.list.map((u,i)=>`<figure class="cf-ph"><img src="${esc(u)}" alt="${esc(t("cf_ph_n",{i:i+1}))}" loading="lazy">
+     ${i?`<button type="button" class="cf-ph-b cv" onclick="cfPhCover(${i})" aria-label="${esc(t("cf_ph_make_cover_n",{i:i+1}))}" title="${esc(t("cf_ph_make_cover"))}">${agIco("star",16,2)}</button>`:`<span class="cf-ph-cover">${t("cf_ph_cover")}</span>`}
+     <button type="button" class="cf-ph-b rm" onclick="cfPhRemove(${i})" aria-label="${esc(t("cf_ph_remove_n",{i:i+1}))}" title="${esc(t("cf_ph_remove"))}">${agIco("x",16,2.4)}</button></figure>`).join(""):`<p class="cf-ph-none">${t("cf_ph_none")}</p>`;
+}
+function cfPhCover(i){
+  const u=CFP.list.splice(i,1)[0];if(u)CFP.list.unshift(u);
+  cfPhRender();const b=$("#cfPh .cf-ph .rm");if(b)b.focus();
+}
+function cfPhRemove(i){
+  CFP.list.splice(i,1);cfPhRender();
+  const bs=[...document.querySelectorAll("#cfPh .rm")],b=bs[Math.min(i,bs.length-1)]||$("#cfPhBtn");if(b)b.focus();
+}
+async function cfPhUpload(inp){
+  const files=[...(inp.files||[])],g=CFP;inp.value="";if(!files.length)return;
+  const msg=$("#cfPhMsg"),btn=$("#cfPhBtn"),sub=btn&&btn.closest("form")&&btn.closest("form").querySelector("button[type=submit]");
+  const room=CF_PH_MAX-g.list.length,todo=files.slice(0,Math.max(0,room));
+  if(!todo.length){msg.className="up-msg err";msg.textContent=t("cf_ph_max",{n:CF_PH_MAX});return}
+  g.busy=true;btn.disabled=true;if(sub)sub.disabled=true;
+  let ok=0,err=null;
+  try{
+    for(let k=0;k<todo.length;k++){
+      msg.className="up-msg";msg.textContent=todo.length>1?t("up_sending_n",{a:k+1,n:todo.length}):t("up_sending");
+      try{
+        const u=await upImage(todo[k],"conferences",1600);
+        if(CFP!==g){upRemove([u]);return} /* formulaire annulé pendant l'envoi */
+        g.list.push(u);g.added.push(u);ok++;cfPhRender();
+      }catch(e){err=upErr(e);if(upFatal(e))break}
+    }
+  }finally{g.busy=false;btn.disabled=false;if(sub)sub.disabled=false}
+  msg.className="up-msg "+(err?"err":"ok");
+  msg.textContent=[ok?tn("cf_ph_done",ok):"",err||"",files.length>todo.length?t("cf_ph_max",{n:CF_PH_MAX}):""].filter(Boolean).join(" ");
+}
+function cfPhDiscard(){const a=CFP.added;CFP={list:[],orig:[],added:[],busy:false};upRemove(a)}
+const cfNoPhotoCol=e=>/photos/.test(String((e&&e.message)||""))&&(e.code==="PGRST204"||e.code==="42703"||/column/i.test(String(e.message||"")));
 function cfRead(f){
   const out={};
   for(const k of ["application_url","website_url"]){const raw=String(f.get(k)||"").trim();out[k]=raw?cfLink(raw):null;if(raw&&!out[k]){toast(t("cf_e_url"));return null}}
@@ -2960,20 +3243,28 @@ function cfRead(f){
 }
 async function cfSave(ev,id){
   ev.preventDefault();
+  if(CFP.busy)return toast(t("up_wait"));
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
     const row=cfRead(new FormData(ev.target));if(!row)return;
-    const {error}=id!=null?await sb.from("conferences").update(row).eq("id",id):await sb.from("conferences").insert(row);
+    const g=CFP,send=r=>id!=null?sb.from("conferences").update(r).eq("id",id):sb.from("conferences").insert(r);
+    row.photos=g.list.slice();
+    let {error}=await send(row),noCol=false;
+    if(error&&cfNoPhotoCol(error)){noCol=true;delete row.photos;({error}=await send(row))}
     if(error)return toast(errMsg(error));
-    closeSheet();await cfLoad();render(true);toast(t("t_ok"));
+    upRemove(noCol?g.added:[...g.orig,...g.added].filter(u=>!g.list.includes(u)));
+    CFP={list:[],orig:[],added:[],busy:false};
+    closeSheet();await Promise.all([cfLoad(),loadPublic()]);render(true);toast(noCol?t("cf_e_photos_col"):t("t_ok"));
   });
 }
 async function cfDelete(id,btn){
   if(!confirm(t("cf_confirm_del")))return;
+  const ph=cfPhotosOf(cfFind(id));
   await withBusy(btn,async()=>{
     const {error}=await sb.from("conferences").delete().eq("id",id);
     if(error)return toast(errMsg(error));
-    await cfLoad();render(true);toast(t("t_ok"));
+    upRemove(ph);
+    await Promise.all([cfLoad(),loadPublic()]);render(true);toast(t("t_ok"));
   });
 }
 function cfDelegates(id){
@@ -3258,8 +3549,6 @@ function editBoardBio(id){
     ${avatarMarkup(currentBioPhoto,init,"bio-preview")}
     <label>${t("f_bio_photo_url")}</label>
     <input id="bioPhotoInput" name="bio_photo_url" value="${esc(currentBioPhoto)}" placeholder="photo_bio_come.jpeg ou https://…" oninput="previewBioPhoto(this.value)">
-    <label>${t("f_photo_file")}</label>
-    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="handleBioPhotoFile(this)">
     <div class="row2">
       <div><label>${t("f_insta")}</label><input name="instagram_url" type="text" placeholder="instagram.com/… ou https://…" value="${esc(m.instagram_url||m.insta_url||"")}"></div>
       <div><label>${t("f_linkedin")}</label><input name="linkedin_url" type="text" placeholder="linkedin.com/in/… ou https://…" value="${esc(m.linkedin_url||"")}"></div>
@@ -3292,27 +3581,6 @@ function previewBioPhoto(val){
     div.textContent=init;
     box.replaceWith(div);
   }
-}
-function handleBioPhotoFile(input){
-  const file=input.files&&input.files[0];if(!file)return;
-  if(file.size>5*1024*1024){input.value="";return toast(t("e_file_big"))}
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const img=new Image();
-    img.onload=()=>{
-      const max=720,ratio=Math.min(1,max/Math.max(img.width,img.height));
-      const c=document.createElement("canvas");
-      c.width=Math.max(1,Math.round(img.width*ratio));
-      c.height=Math.max(1,Math.round(img.height*ratio));
-      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-      const dataUrl=c.toDataURL("image/jpeg",0.85);
-      const inp=$("#bioPhotoInput");
-      if(inp)inp.value=dataUrl;
-      previewBioPhoto(dataUrl);
-    };
-    img.src=reader.result;
-  };
-  reader.readAsDataURL(file);
 }
 async function saveBoardBio(ev,id){
   ev.preventDefault();
@@ -3499,6 +3767,7 @@ function openFormEvent(id){
 function openReg(id){
   if(!S.user){toast(t("t_need"));go("login");return}
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  if(e.conference_id){go("conferences");return}
   if(e.members_only&&!hasPaid()){toast(t("t_err_members"));go("adherer");return}
   if(Number(e.prix)>0&&!eventUrl(e))return toast(t("t_err_slug"));
   const ei=idArg(e.id),paid=Number(e.prix)>0;
@@ -4067,7 +4336,7 @@ function adminContent(){
   <h2>${t("existing")}</h2>
   ${D.events.map(e=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
    <span><button class="linkish" onclick="openEvent(${idArg(e.id)})"><b>${esc(T(e.title))}</b></button> <span class="mute">· ${isoDay(e.date)}${e.prix?" · "+e.prix+" €":""}${e.form_url?" · "+t("form_badge"):""}</span></span>
-   <span style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editEvent(${idArg(e.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${idArg(e.id)},this)">${t("del")}</button></span></div>`).join("")}
+   <span style="display:flex;gap:6px">${e.conference_id?`<button class="btn ghost sm" onclick="go('conferences')">${t("cf_edit_in")}</button>`:`<button class="btn ghost sm" onclick="editEvent(${idArg(e.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('events',${idArg(e.id)},this)">${t("del")}</button>`}</span></div>`).join("")}
   ${D.news.map(n=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
    <span>📰 ${esc(T(n.title))}</span><span style="display:flex;gap:6px"><button class="btn ghost sm" onclick="editNews(${idArg(n.id)})">${t("edit")}</button><button class="btn danger sm" onclick="delRow('news',${idArg(n.id)},this)">${t("del")}</button></span></div>`).join("")}`;
 }
@@ -4286,6 +4555,7 @@ async function createEventModal(ev){
 }
 function editEvent(id){
   const e=D.events.find(x=>String(x.id)===String(id));if(!e)return;
+  if(e.conference_id){toast(t("cf_ev_managed"));go("conferences");return}
   openSheet(`<h3>${t("edit_ev")}</h3><form onsubmit="saveEvent(event,${idArg(e.id)})">
     <label>${t("f_title")}</label><input name="title" required maxlength="120" value="${esc(e.title)}">
     <div class="row2">
