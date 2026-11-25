@@ -3198,11 +3198,20 @@ function openBoardBio(id){
     ?`<div class="bio-socials"><span class="bio-socials-lbl">${t("follow")}</span><div class="bio-socials-links">${links.join("")}</div></div>`
     :"";
   const focusCls=key==="come"?"focus-come":"";
+  const heroWrapStyle=key==="come"
+    ?` style="height:clamp(260px,42vh,380px);overflow:hidden;position:relative"`
+    :"";
+  const heroPhotoStyle=key==="come"
+    ?` style="width:100%;height:100%;object-fit:cover;object-position:65% 22%"`
+    :"";
+  const heroFadeStyle=key==="come"
+    ?` style="height:28%;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 55%,rgba(255,255,255,0.9) 88%,#ffffff 100%)"`
+    :"";
 
   openSheet(`<div class="bio-modal">
-    <div class="bio-hero-wrap">
-      ${avatarMarkup(bUrl,init,"bio-hero-photo",focusCls)}
-      <div class="bio-hero-fade"></div>
+    <div class="bio-hero-wrap"${heroWrapStyle}>
+      ${avatarMarkup(bUrl,init,"bio-hero-photo",focusCls).replace("<img ",`<img${heroPhotoStyle} `)}
+      <div class="bio-hero-fade"${heroFadeStyle}></div>
     </div>
     <div class="bio-body">
       <span class="tag">${esc(roleLabel)}</span>
@@ -3218,6 +3227,7 @@ function openBoardBio(id){
     </div>
   </div>`,"bio-sheet");
 }
+
 function editBoardBio(id){
   if(!isStaff())return toast(t("admin_only"));
   const m=D.board.find(x=>String(x.id)===String(id));if(!m)return;
