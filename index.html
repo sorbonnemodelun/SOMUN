@@ -5254,7 +5254,7 @@ async function submitAuth(ev){
     const redirectTo=location.origin+location.pathname;
     if(authMode==="forgot"){
       const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
-      if(error)return toast(authErr(error));
+      if(error){console.error("forgot error:",error);return toast(authErr(error))}
       authInfo=t("reset_sent");render();return;
     }
     if(authMode==="signup"){
@@ -5268,20 +5268,38 @@ async function submitAuth(ev){
           data:{prenom,nom}
         }
       });
-      if(error)return toast(authErr(error));
+      if(error){console.error("signup error:",error);return toast(authErr(error))}
       if(data&&data.user&&data.session){
-        await sb.from("profiles").upsert(
+        const {error:profErr}=await sb.from("profiles").upsert(
           {id:data.user.id,email,prenom,nom},
           {onConflict:"id",ignoreDuplicates:false}
-        ).catch(()=>{});
+        );
+        if(profErr)console.warn("profiles upsert warning:",profErr);
       }
       if(!data||!data.session){authMode="login";authInfo=t("check_mail");render();return}
     }else{
       const {error}=await sb.auth.signInWithPassword({email,password});
-      if(error)return toast(authErr(error));
+      if(error){console.error("login error:",error);return toast(authErr(error))}
     }
     authInfo="";toast(t("t_welcome"));go("accueil",true);
   });
+}
+const vReset=()=>`<h1>${t("reset_t")}</h1><div class="card" style="max-width:440px;margin:14px auto 0"><form onsubmit="savePwd(event)">
+ <label>${t("pwd_new")}</label><input name="password" type="password" required minlength="${MIN_PWD}" autocomplete="new-password">
+ <br><button class="btn" type="submit" style="width:100%">${t("save")}</button></form></div>`;
+async function savePwd(ev){
+  ev.preventDefault();
+  const btn=ev.target.querySelector("button[type=submit]");
+  await withBusy(btn,async()=>{
+    const {error}=await sb.auth.updateUser({password:new FormData(ev.target).get("password")});
+    if(error){console.error("reset pwd error:",error);return toast(authErr(error))}
+    toast(t("pwd_updated"));go("accueil",true);
+  });
+}
+async function logout(){
+  await sb.auth.signOut({scope:"local"});
+  S={user:null,profile:null};D.myPoles=[];D.myPoleRoles={};D.myRegs={};D.myHistory=[];D.members=[];D.memberPoles=[];D.tasks=[];
+  toast(t("t_bye"));go("accueil",true);
 }
 const vReset=()=>`<h1>${t("reset_t")}</h1><div class="card" style="max-width:440px;margin:14px auto 0"><form onsubmit="savePwd(event)">
  <label>${t("pwd_new")}</label><input name="password" type="password" required minlength="${MIN_PWD}" autocomplete="new-password">
