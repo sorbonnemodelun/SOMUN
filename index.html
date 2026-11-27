@@ -778,26 +778,32 @@ body.pg3{background:#ECEEF7}
 
 .ag-cal{margin-top:12px;display:flex;flex-direction:column;gap:18px}
 .ag-gridw{min-width:0}
-/* Calendrier du mois : une ligne par semaine ; un événement sur plusieurs jours = un seul bandeau
-   qui enjambe les cases, sur une ligne qui lui est réservée dans la semaine */
-.ag-mg{--cg:3px;--hd:28px;--bh:4px;--wh:62px;--mr:13px}
-.ag-mhd{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:var(--cg);margin-bottom:6px}
+/* Calendrier du mois : chaque semaine est une bande continue, partagée en sept jours. Un événement
+   sur plusieurs jours y forme un seul bandeau, aligné sur les jours qu'il couvre ; s'il continue la
+   semaine suivante, il touche le bord de la bande et reprend au début de la bande suivante */
+.ag-mg{--hd:30px;--bh:5px;--wh:60px;--mr:13px;--rw:12px}
+.ag-mhd{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-bottom:6px}
 .ag-mhd span{font-size:12px;font-weight:600;color:var(--mute);text-align:center}
 .ag-mhd .lg{display:none}
-.ag-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:var(--cg);row-gap:3px;min-height:var(--wh);margin-bottom:var(--cg)}
-.ag-c{grid-row:1/-1;position:relative;min-width:0;border-radius:12px;background:#fff}
+.ag-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:3px;min-height:var(--wh);margin-bottom:6px;background:#fff;border-radius:var(--rw);overflow:hidden;box-shadow:0 1px 2px rgba(2,2,89,.06)}
+.ag-c{grid-row:1/-1;position:relative;min-width:0}
+.ag-c+.ag-c{box-shadow:inset 1px 0 0 #ECEDF6}
 .ag-c.we{background:#FBFBFF}
-.ag-c.oth{background:transparent;box-shadow:inset 0 0 0 1px #D5D9EE}
-.ag-c.sel{box-shadow:inset 0 0 0 2px var(--bleu),0 12px 26px -16px rgba(2,2,89,.35)}
-.ag-dn{position:absolute;inset:0;width:100%;border:0;background:transparent;border-radius:inherit;cursor:pointer;padding:5px 0 0;display:flex;justify-content:center;align-items:flex-start;gap:3px;font:700 14px/1 var(--f-titre);color:var(--marine);font-variant-numeric:tabular-nums}
+.ag-c.oth{background:#F4F5FB}
+.ag-c.sel{background:#F5F5FE}
+.ag-dn{position:absolute;inset:0;width:100%;border:0;background:transparent;cursor:pointer;padding:4px 0 0;display:flex;justify-content:center;align-items:flex-start;gap:3px;font:700 14px/1 var(--f-titre);color:var(--marine);font-variant-numeric:tabular-nums}
+@media(hover:hover){.ag-dn:hover{background:rgba(2,2,89,.025)}}
 .ag-dn:focus-visible{outline:3px solid var(--bleu);outline-offset:-3px}
 .ag-dn small{font:500 10.5px/1.3 var(--f-texte);color:var(--mute);display:none}
 .ag-c.oth .ag-dn{color:#9A9DBB}
 .ag-dn>span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%}
 .ag-c.today .ag-dn>span{box-shadow:inset 0 0 0 2px var(--marine)}
-.ag-ev{position:relative;z-index:1;align-self:start;min-width:0;height:var(--bh);margin:0 4px;border-radius:3px;background:var(--tc);overflow:hidden;font-size:0;color:transparent;text-decoration:none;pointer-events:none}
+.ag-c.sel .ag-dn>span{background:var(--bleu);color:#fff;box-shadow:none}
+.ag-ev{position:relative;z-index:1;align-self:start;min-width:0;height:var(--bh);margin:0 3px;border-radius:3px;background:var(--tc);overflow:hidden;font-size:0;color:transparent;text-decoration:none;pointer-events:none}
 .ag-ev i,.ag-ev span{display:none}
-.ag-ev.one{margin:0 8px}
+.ag-ev.one{margin:0 9px}
+.ag-dl{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;min-width:0;pointer-events:none}
+.ag-dl .ag-ev{align-self:stretch}
 .ag-ev.cl{margin-left:0;border-top-left-radius:0;border-bottom-left-radius:0}
 .ag-ev.cr{margin-right:0;border-top-right-radius:0;border-bottom-right-radius:0}
 .ag-ev.mine{box-shadow:0 0 0 1.5px var(--or)}
@@ -808,38 +814,34 @@ body.pg3{background:#ECEEF7}
 .ag-legend i{width:18px;height:11px;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 2px var(--or)}
 .ag-legend i.p{background:#fff;box-shadow:none;outline:2px dashed var(--or);outline-offset:-2px}
 @media(min-width:720px){
-  .ag-mg{--cg:6px;--hd:38px;--bh:24px;--wh:124px;--mr:24px}
-  .ag-wk{row-gap:4px}
+  .ag-mg{--hd:40px;--bh:22px;--wh:128px;--mr:24px;--rw:14px}
+  .ag-wk{margin-bottom:8px;container-type:inline-size}
   .ag-mhd{margin-bottom:8px}
   .ag-mhd span{text-align:left;padding:0 10px;font-size:12.5px}
   .ag-mhd .lg{display:inline}.ag-mhd .st{display:none}
-  .ag-c{border-radius:14px}
   .ag-dn{padding:10px 10px 0;justify-content:flex-start;font-size:15px}
   .ag-dn small{display:inline}
   .ag-dn>span{width:auto;min-width:28px;height:28px;padding:0 5px;margin:-6px 0 0 -6px;border-radius:9px}
-  .ag-c.sel .ag-dn>span{background:var(--bleu-soft)}
   .ag-c.today .ag-dn>span{width:28px;padding:0;border-radius:50%}
-  .ag-ev{display:flex;align-items:center;gap:6px;height:auto;min-height:var(--bh);margin:0 6px;padding:0 8px;border-radius:8px;background:var(--tb);color:var(--marine);font-size:12px;font-weight:600;line-height:1.1;white-space:nowrap;pointer-events:auto;transition:filter .15s var(--ease)}
-  .ag-ev:not(.wrap){height:var(--bh)}
-  .ag-ev.wrap{align-items:flex-start;padding-top:5px;padding-bottom:5px;line-height:1.25;white-space:normal}
-  .ag-ev.wrap i{margin-top:4px}
-  .ag-ev.wrap span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+  .ag-ev{display:flex;align-items:center;gap:6px;margin:0 5px;padding:0 8px;border-radius:6px;background:var(--tb);color:var(--marine);font-size:12px;font-weight:600;line-height:1;white-space:nowrap;pointer-events:auto;transition:filter .15s var(--ease)}
   .ag-ev i{display:block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--tc)}
   .ag-ev span{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .ag-ev span b{font-weight:700}
-  /* L'heure ne s'affiche que si les cases sont assez larges ; sinon elle reste dans le panneau du jour */
-  .ag-wk{container-type:inline-size}
+  /* L'heure ne s'affiche que si les jours sont assez larges ; sinon elle reste dans le panneau du jour */
   .ag-ev .tm{display:none}
-  .ag-ev.span{background:linear-gradient(90deg,var(--tc) 0 4px,var(--tb) 4px)}
-  .ag-ev.span.cl{background:var(--tb)}
-  .ag-ev.span.cl i{display:none}
-  .ag-ev.one{margin:0 6px;padding:0 6px;background:transparent}
+  .ag-ev.span{box-shadow:inset 3px 0 0 var(--tc)}
+  .ag-ev.span i{display:none}
+  .ag-ev.span.cl{box-shadow:none;padding-left:10px}
+  .ag-dl{gap:1px}
+  .ag-ev.one{height:auto;min-height:var(--bh);align-items:flex-start;margin:0 4px;padding:4px 6px;line-height:1.25;white-space:normal;background:transparent}
+  .ag-ev.one i{margin-top:4px}
+  .ag-ev.one span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
   .ag-ev.one:hover{background:var(--tb)}
-  .ag-ev:hover{filter:brightness(.96)}
-  .ag-ev:focus-visible{outline:3px solid var(--bleu);outline-offset:1px}
-  .ag-ev.cl{margin-left:0;padding-left:12px;border-top-left-radius:0;border-bottom-left-radius:0}
+  .ag-ev:hover{filter:brightness(.97)}
+  .ag-ev:focus-visible{outline:2px solid var(--bleu);outline-offset:-2px}
+  .ag-ev.cl{margin-left:0;border-top-left-radius:0;border-bottom-left-radius:0}
   .ag-ev.cr{margin-right:0;border-top-right-radius:0;border-bottom-right-radius:0}
-  .ag-ev.mine{box-shadow:inset 0 0 0 2px var(--or)}
+  .ag-ev.mine,.ag-ev.span.mine{box-shadow:inset 0 0 0 2px var(--or)}
   .ag-ev.pend{outline:2px dashed var(--or);outline-offset:-2px}
   .ag-ev.past{opacity:.55}
   .ag-more{left:10px;right:auto;bottom:7px;font-size:11.5px;font-weight:600}
@@ -2791,33 +2793,41 @@ function agMonthHTML(evs){
   const nav=`<div class="ag-mnav"><div><button type="button" class="ag-arrow" data-nav="-1" aria-label="${esc(agCap(agMonthName(prev)))}" onclick="agShift(-1)">${agIco("chevl")}</button><h2 class="agh ag-mh" id="ag-mh">${esc(agCap(agMonthName(ym)))}</h2><button type="button" class="ag-arrow" data-nav="1" aria-label="${esc(agCap(agMonthName(next)))}" onclick="agShift(1)">${agIco("chevr")}</button></div><p>${esc(sum)}</p>${ym!==curYM?`<button class="btn ghost sm" onclick="agGoMonth('${curYM}')">${esc(t("ag_this_month"))}</button>`:""}</div>`;
   const start=(new Date(Y,M-1,1,12).getDay()+6)%7,cells=Math.ceil((start+new Date(Y,M,0).getDate())/7)*7;
   const head=[0,1,2,3,4,5,6].map(i=>{const d=new Date(2024,0,1+i,12);return `<span><span class="lg">${esc(d.toLocaleDateString(loc(),{weekday:"long"}))}</span><span class="st">${esc(d.toLocaleDateString(loc(),{weekday:"narrow"}))}</span></span>`}).join("");
-  /* Une ligne par semaine. Chaque événement devient un bandeau limité à la semaine (il reprend sur la
-     suivante s'il continue) ; les bandeaux sont rangés sur des lignes sans chevauchement, 3 au plus,
-     les autres sont comptés dans la case (« +2 autres »). */
-  const MAXL=3;let weeks="";
+  /* Une bande par semaine. En haut, les événements sur plusieurs jours : chacun forme un bandeau
+     limité à la semaine (il reprend sur la suivante), rangé sur des lignes de même hauteur, 3 au plus.
+     En dessous, chaque jour liste ses événements d'un jour, 2 au plus ; le reste est compté
+     dans la case (« +2 autres »). Un titre long sur deux lignes ne décale donc aucun bandeau. */
+  const MAXL=3,MAXD=2;let weeks="";
   for(let w=0;w<cells/7;w++){
     const days=[0,1,2,3,4,5,6].map(i=>{const d=new Date(Y,M-1,1-start+w*7+i,12);return {d,k:agIso(d)}});
     const ws=days[0].k,we=days[6].k,col=k=>days.findIndex(x=>x.k===k);
     const segs=evs.filter(e=>isoDay(e.date)<=we&&agEnd(e)>=ws).map(e=>{
       const s=isoDay(e.date),f=agEnd(e);
       return {e,a:s<ws?0:col(s),b:f>we?6:col(f),cl:s<ws,cr:f>we,multi:f>s};
-    }).filter(g=>g.a>=0&&g.b>=g.a).sort((x,y)=>x.a-y.a||(y.b-y.a)-(x.b-x.a)||(y.multi-x.multi)||String(x.e.heure||"").localeCompare(String(y.e.heure||"")));
+    }).filter(g=>g.a>=0&&g.b>=g.a);
+    const ttl=g=>String(g.e.title||"");
+    const multi=segs.filter(g=>g.multi).sort((x,y)=>x.a-y.a||(y.b-y.a)-(x.b-x.a)||ttl(x).localeCompare(ttl(y)));
+    const single=segs.filter(g=>!g.multi).sort((x,y)=>String(x.e.heure||"").localeCompare(String(y.e.heure||""))||ttl(x).localeCompare(ttl(y)));
     const lanes=[];
-    segs.forEach(g=>{let l=0;while(lanes[l]&&lanes[l].some(o=>g.a<=o.b&&g.b>=o.a))l++;(lanes[l]=lanes[l]||[]).push(g);g.l=l});
-    const hidden=[0,0,0,0,0,0,0];segs.forEach(g=>{if(g.l>=MAXL)for(let c=g.a;c<=g.b;c++)hidden[c]++});
-    const L=Math.max(1,Math.min(MAXL,lanes.length));
+    multi.forEach(g=>{let l=0;while(lanes[l]&&lanes[l].some(o=>g.a<=o.b&&g.b>=o.a))l++;(lanes[l]=lanes[l]||[]).push(g);g.l=l});
+    const B=Math.min(MAXL,lanes.length),hidden=[0,0,0,0,0,0,0];
+    multi.forEach(g=>{if(g.l>=MAXL)for(let c=g.a;c<=g.b;c++)hidden[c]++});
+    const perDay=days.map((x,i)=>single.filter(g=>g.a===i));
+    perDay.forEach((l,i)=>{if(l.length>MAXD)hidden[i]+=l.length-MAXD});
     const cellsH=days.map(({d,k},i)=>{
       const oth=!inM(k),n=(map[k]||[]).length,h=hidden[i];
       const lbl=agCap(agF(k,{weekday:"long",day:"numeric",month:"long"}))+(n?", "+tn("ag_cnt",n):"");
       const cls=["ag-c",i>4?"we":"",oth?"oth":"",k===today?"today":"",k===agDay?"sel":""].filter(Boolean).join(" ");
       return `<div class="${cls}" style="grid-column:${i+1}"><button type="button" class="ag-dn" data-d="${k}" aria-pressed="${k===agDay}" aria-label="${esc(lbl)}" onclick="agPick('${k}')"><span>${d.getDate()}</span>${oth&&(d.getDate()===1||(w===0&&i===0))?`<small>${esc(agF(k,{month:"short"}))}</small>`:""}</button>${h?`<span class="ag-more" aria-hidden="true">+${h}<span class="lg">&nbsp;${esc(h===1?t("agm_more_1"):t("agm_more_n"))}</span></span>`:""}</div>`;
     }).join("");
-    const bars=segs.filter(g=>g.l<MAXL).map(g=>{
+    const link=(g,pos)=>{
       const e=g.e,st=D.myRegs[e.id],past=agPast(e),hm=g.multi?"":hhmm(e.heure);
-      const c=["ag-ev",g.multi?"span":"one",g.a===g.b?"wrap":"",st==="confirmed"?"mine":"",st==="pending"&&!past?"pend":"",g.cl?"cl":"",g.cr?"cr":"",past?"past":""].filter(Boolean).join(" ");
-      return `<a class="${c}" ${agGo(e)} style="${agTC(e.type)};grid-column:${g.a+1}/${g.b+2};grid-row:${g.l+2}" title="${esc(T(e.title)+(agWhen(e)?" · "+agWhen(e):""))}"><i aria-hidden="true"></i><span>${hm?`<b class="tm">${esc(hm)} </b>`:""}${esc(T(e.title))}</span></a>`;
-    }).join("");
-    weeks+=`<div class="ag-wk" style="grid-template-rows:var(--hd) repeat(${L},auto) minmax(${hidden.some(Boolean)?"var(--mr)":"6px"},1fr)">${cellsH}${bars}</div>`;
+      const c=["ag-ev",g.multi?"span":"one",st==="confirmed"?"mine":"",st==="pending"&&!past?"pend":"",g.cl?"cl":"",g.cr?"cr":"",past?"past":""].filter(Boolean).join(" ");
+      return `<a class="${c}" ${agGo(e)} style="${agTC(e.type)}${pos||""}" title="${esc(T(e.title)+(agWhen(e)?" · "+agWhen(e):""))}"><i aria-hidden="true"></i><span>${hm?`<b class="tm">${esc(hm)} </b>`:""}${esc(T(e.title))}</span></a>`;
+    };
+    const bars=multi.filter(g=>g.l<MAXL).map(g=>link(g,`;grid-column:${g.a+1}/${g.b+2};grid-row:${g.l+2}`)).join("");
+    const lists=perDay.map((l,i)=>l.length?`<div class="ag-dl" style="grid-column:${i+1};grid-row:${B+2}">${l.slice(0,MAXD).map(g=>link(g)).join("")}</div>`:"").join("");
+    weeks+=`<div class="ag-wk" style="grid-template-rows:var(--hd)${B?` repeat(${B},var(--bh))`:""} auto minmax(${hidden.some(Boolean)?"var(--mr)":"8px"},1fr)">${cellsH}${bars}${lists}</div>`;
   }
   const legend=`<div class="ag-legend">${S.user?`<span><i aria-hidden="true"></i>${t("ag_yours")}</span><span><i class="p" aria-hidden="true"></i>${t("pending")}</span>`:""}<span><i class="t" aria-hidden="true"></i>${esc(agCap(t("today")))}</span></div>`;
   return `<nav class="ag-strip" aria-label="${esc(t("ag_months"))}">${strip}</nav>${nav}
@@ -4178,7 +4188,7 @@ function vJeux(){
         <h3>${t("diplo")}</h3>
         <p>${t("diplo_s")}</p>
         <div class="jeux-meta"><span>${t("diplo_m1")}</span><span>${t("diplo_m2")}</span></div>
-        ${saved?`<p class="jeux-saved">${t("diplo_saved",{p:saved.phase})}${saved.scen&&saved.scen.title?" : "+esc((lang==="en"&&saved.scen.title_en)||saved.scen.title):""}</p>`:""}
+        ${saved?`<p class="jeux-saved">${t("diplo_saved",{p:saved.phase})}${saved.scen&&saved.scen.title?(lang==="en"?": ":" : ")+esc(saved.scen["title_"+lang]||saved.scen.title):""}</p>`:""}
         <div class="jeux-cta">${saved?`<button class="btn" onclick="openSim('resume')">${t("diplo_resume")}</button><button class="btn ghost" onclick="openSim('new')">${t("diplo_new")}</button>`:`<button class="btn" onclick="openSim('new')">${t("diplo_go")}</button>`}</div>
       </div>
     </div>
