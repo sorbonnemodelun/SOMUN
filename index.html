@@ -5248,7 +5248,9 @@ async function submitAuth(ev){
   ev.preventDefault();
   const btn=ev.target.querySelector("button[type=submit]");
   await withBusy(btn,async()=>{
-    const f=new FormData(ev.target),email=f.get("email").trim(),password=f.get("password");
+    const f=new FormData(ev.target);
+    const email=String(f.get("email")||"").trim().toLowerCase();
+    const password=String(f.get("password")||"");
     const redirectTo=location.origin+location.pathname;
     if(authMode==="forgot"){
       const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
@@ -5256,9 +5258,24 @@ async function submitAuth(ev){
       authInfo=t("reset_sent");render();return;
     }
     if(authMode==="signup"){
-      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo,data:{prenom:f.get("prenom").trim(),nom:f.get("nom").trim()}}});
+      const prenom=String(f.get("prenom")||"").trim();
+      const nom=String(f.get("nom")||"").trim();
+      const {data,error}=await sb.auth.signUp({
+        email,
+        password,
+        options:{
+          emailRedirectTo:redirectTo,
+          data:{prenom,nom}
+        }
+      });
       if(error)return toast(authErr(error));
-      if(!data.session){authMode="login";authInfo=t("check_mail");render();return}
+      if(data&&data.user&&data.session){
+        await sb.from("profiles").upsert(
+          {id:data.user.id,email,prenom,nom},
+          {onConflict:"id",ignoreDuplicates:false}
+        ).catch(()=>{});
+      }
+      if(!data||!data.session){authMode="login";authInfo=t("check_mail");render();return}
     }else{
       const {error}=await sb.auth.signInWithPassword({email,password});
       if(error)return toast(authErr(error));
